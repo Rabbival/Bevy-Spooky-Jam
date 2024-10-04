@@ -5,6 +5,7 @@ pub mod event_channels;
 pub mod orb;
 pub mod patroller;
 pub mod tags;
+pub mod player;
 
 pub struct GamePlugin;
 

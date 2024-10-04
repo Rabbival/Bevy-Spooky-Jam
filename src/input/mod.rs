@@ -9,12 +9,15 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((KeyboardInputHandlerPlugin, MouseInputHandlerPlugin))
-            .add_plugins(InputManagerPlugin::<Action>::default());
+            .add_plugins(InputManagerPlugin::<PlayerAction>::default());
     }
 }
 
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
-enum Action {
-    Run,
+pub enum PlayerAction {
+    MoveLeft,
+    MoveUp,
+    MoveRight,
+    MoveDown,
     Fire,
 }
