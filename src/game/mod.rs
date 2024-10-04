@@ -11,6 +11,6 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((OrbPlugin, PatrollerPlugin, GameEventChannelsPlugin));
+        app.add_plugins((PlayerPlugin, OrbPlugin, PatrollerPlugin, GameEventChannelsPlugin));
     }
 }
