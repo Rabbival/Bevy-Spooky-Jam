@@ -1,0 +1,10 @@
+pub const AN_HOUR_IN_SECONDS: f32 = 3600.0;
+pub const A_MILLISECOND_IN_SECONDS: f32 = 0.001;
+pub const A_MINUTE_IN_SECONDS: f32 = 60.0;
+
+pub const MIN_TIME_MULTIPLIER: f32 = 0.001;
+pub const MAX_TIME_MULTIPLIER: f32 = 100.0;
+pub const DEFAULT_TIME_MULTIPLIER: f32 = 1.0;
+pub const TIMER_MAX_ASSIGNED_MULTIPLIERS: usize = 5;
+pub const TIMER_MAX_ASSIGNED_ENTITIES: usize = 12;
+pub const MAX_TIMERS_IN_SEQUENCE: usize = 8;
