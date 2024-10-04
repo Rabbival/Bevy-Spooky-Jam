@@ -3,7 +3,7 @@ use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use leafwing_input_manager::prelude::*;
 
 use crate::input::PlayerAction;
-use crate::prelude::InputSystemSet;
+use crate::prelude::*;
 
 pub struct PlayerPlugin;
 
@@ -68,10 +68,3 @@ fn handle_player_controls(query: Query<&ActionState<PlayerAction>, With<Player>>
         info!("I'm throwing a pumpkin bomb!");
     }
 }
-
-// Components
-#[derive(Component)]
-pub struct Player;
-
-#[derive(Component)]
-pub struct WorldBoundsWrapped;
