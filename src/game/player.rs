@@ -45,6 +45,7 @@ fn spawn_player(
             input_map,
         },
         Player,
+        WorldBoundsWrapped,
     ));
 }
 
@@ -71,3 +72,6 @@ fn handle_player_controls(query: Query<&ActionState<PlayerAction>, With<Player>>
 // Components
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Component)]
+pub struct WorldBoundsWrapped;
