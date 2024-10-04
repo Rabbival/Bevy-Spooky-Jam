@@ -31,7 +31,7 @@ fn spawn_player(
     commands.spawn((
         // TODO StateScoped(AppState::Game),
         MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Capsule2d::new(0.5, 10.0))),
+            mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
             material: materials.add(Color::srgb(0.3, 0.9, 0.3)),
             transform: Transform::from_xyz(
                 0.0,
