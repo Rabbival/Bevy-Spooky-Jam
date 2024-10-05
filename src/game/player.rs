@@ -28,6 +28,7 @@ fn spawn_player(
             action_state: ActionState::default(),
             input_map,
         },
+        AffectingTimerCalculators::default(),
         Player,
         WorldBoundsWrapped,
     ));
