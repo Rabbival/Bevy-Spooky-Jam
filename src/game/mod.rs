@@ -3,7 +3,6 @@ use crate::prelude::*;
 pub mod consts;
 pub mod event_channels;
 pub mod orb;
-pub mod patroller;
 pub mod player;
 pub mod tags;
 pub mod world_bounds;
@@ -17,7 +16,6 @@ impl Plugin for GamePlugin {
             PlayerPlugin,
             MonstersPlugin,
             OrbPlugin,
-            PatrollerPlugin,
             GameEventChannelsPlugin,
             WorldBoundPlugin,
         ));
