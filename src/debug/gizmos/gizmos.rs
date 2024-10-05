@@ -10,7 +10,7 @@ impl Plugin for GizmosPlugin {
 
 fn draw_monster_hearing_ring_system(
     mut gizmos: Gizmos,
-    monsters_query: Query<(&Transform, &Monster), With<Monster>>,
+    monsters_query: Query<(&Transform, &Monster)>,
 ) {
     for (transform, monster) in monsters_query.iter() {
         gizmos.circle_2d(
