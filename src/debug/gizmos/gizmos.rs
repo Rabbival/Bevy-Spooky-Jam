@@ -10,13 +10,13 @@ impl Plugin for GizmosPlugin {
 }
 
 fn draw_monster_hearing_ring_system(
-    monsters_query: Query<&Transform, With<Monster>>,
     mut gizmos: Gizmos,
+    monsters_query: Query<(&Transform, &Monster), With<Monster>>,
 ) {
-    for monster in monsters_query.iter() {
+    for (transform, monster) in monsters_query.iter() {
         gizmos.circle_2d(
-            Vec2::new(monster.translation.x, monster.translation.y),
-            1.0,
+            Vec2::new(transform.translation.x, transform.translation.y),
+            monster.hearing_ring_distance,
             NAVY,
         );
     }
