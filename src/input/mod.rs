@@ -1,20 +1,20 @@
 use crate::prelude::*;
-use leafwing_input_manager::prelude::*;
 
+pub mod enums;
 pub mod keyboard_input_handler;
 pub mod mouse_input_handler;
+pub mod player_input;
+pub mod player_input_map;
 
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((KeyboardInputHandlerPlugin, MouseInputHandlerPlugin))
-            .add_plugins(InputManagerPlugin::<PlayerAction>::default());
+        app.add_plugins((
+            KeyboardInputHandlerPlugin,
+            MouseInputHandlerPlugin,
+            PlayerInputHandlerPlugin,
+            PlayerInputMapPlugin,
+        ));
     }
-}
-
-#[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
-pub enum PlayerAction {
-    Move(BasicDirection),
-    Fire,
 }
