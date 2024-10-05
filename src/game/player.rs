@@ -11,7 +11,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Startup, spawn_player)
-            .add_systems(Update, handle_player_controls.in_set(InputSystemSet::Handling))
+            .add_systems(FixedUpdate, handle_player_controls.in_set(InputSystemSet::Handling))
         ;
     }
 }
@@ -54,20 +54,25 @@ fn spawn_player(
     ));
 }
 
-fn handle_player_controls(query: Query<&ActionState<PlayerAction>, With<Player>>) {
-    let action_state = query.single();
+fn handle_player_controls(
+    time: Res<Time>,
+    action_state_query: Query<&ActionState<PlayerAction>, With<Player>>,
+    mut player_transform_query: Query<&mut Transform, With<Player>>,
+) {
+    let action_state = action_state_query.single();
+    let mut player_transform = player_transform_query.single_mut();
     // Each action has a button-like state of its own that you can check
-    if action_state.just_pressed(&PlayerAction::MoveLeft) {
-        info!("I'm moving left!");
+    if action_state.pressed(&PlayerAction::MoveLeft) {
+        player_transform.translation.x -= 20.0 * time.delta_seconds();
     }
-    if action_state.just_pressed(&PlayerAction::MoveUp) {
-        info!("I'm moving up!");
+    if action_state.pressed(&PlayerAction::MoveUp) {
+        player_transform.translation.y += 20.0 * time.delta_seconds();
     }
-    if action_state.just_pressed(&PlayerAction::MoveRight) {
-        info!("I'm moving right!");
+    if action_state.pressed(&PlayerAction::MoveRight) {
+        player_transform.translation.x += 20.0 * time.delta_seconds();
     }
-    if action_state.just_pressed(&PlayerAction::MoveDown) {
-        info!("I'm moving down!");
+    if action_state.pressed(&PlayerAction::MoveDown) {
+        player_transform.translation.y -= 20.0 * time.delta_seconds();
     }
     if action_state.just_pressed(&PlayerAction::Fire) {
         info!("I'm throwing a pumpkin bomb!");
