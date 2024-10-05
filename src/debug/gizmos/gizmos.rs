@@ -16,7 +16,7 @@ fn draw_monster_hearing_ring_system(
         gizmos.circle_2d(
             Vec2::new(transform.translation.x, transform.translation.y),
             monster.hearing_ring_distance,
-            monster.get_hearing_ring_gizmo_color(),
+            monster.state.to_hearing_ring_gizmo_color(),
         );
     }
 }
