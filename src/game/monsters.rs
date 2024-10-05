@@ -42,6 +42,7 @@ pub fn spawn_initial_monsters(
             AffectingTimerCalculators::default(),
             Monster {
                 hearing_ring_distance: rng.gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+                ..default()
             },
             WorldBoundsWrapped,
         ));
