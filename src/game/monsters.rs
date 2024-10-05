@@ -24,7 +24,7 @@ pub fn spawn_initial_monsters(
 ) {
     let half_window_size = WINDOW_SIZE_IN_PIXELS / 2.0;
     let mut rng = rand::thread_rng();
-    for i in [0..INITIAL_MONSTERS_AMOUNT] {
+    for i in 0..INITIAL_MONSTERS_AMOUNT {
         let second_range_factor: f32 = i as f32 * (WINDOW_SIZE_IN_PIXELS / 3.0);
         commands.spawn((
             MaterialMesh2dBundle {
