@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bevy::color::palettes::css::*;
 
 #[derive(Debug, Clone, Copy, Component)]
 pub struct Orb;
@@ -13,6 +14,17 @@ pub struct Player;
 pub struct Monster {
     pub hearing_ring_distance: f32,
     pub state: MonsterState,
+}
+
+impl Monster {
+    pub fn get_hearing_ring_gizmo_color(&self) -> Color {
+        match self.state {
+            MonsterState::Idle => Color::from(GRAY),
+            MonsterState::Chasing => Color::from(MAROON),
+            MonsterState::Fleeing => Color::from(OLIVE),
+            MonsterState::CalmingDown => Color::from(NAVY),
+        }
+    }
 }
 
 #[derive(Component, Eq, PartialEq, Default)]
