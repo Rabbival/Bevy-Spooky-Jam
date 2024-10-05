@@ -18,13 +18,15 @@ mod macros;
 extern crate lazy_static;
 
 pub mod prelude {
-    pub use crate::animation::{translation_change::*, CustomAnimationPlugin};
+    pub use crate::animation::{scale_change::*, translation_change::*, CustomAnimationPlugin};
     pub use crate::app::{
         consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*, tags::*,
     };
     pub use crate::common_logic::{
         argument_validation::*,
+        beyond_screen_border::*,
         enums::basic_direction::*,
+        float_calculations::*,
         interpolation::{interpolator::*, value_by_interpolation::*},
         mismatch_error::*,
         movement_type::*,
@@ -42,11 +44,24 @@ pub mod prelude {
         print_vec::*,
     };
     pub use crate::ecs::{
-        component_utilities::*, despawn_policy::*, entity_error::*, late_despawner::*,
+        component_utilities::*,
+        entity_error::*,
+        enums::{despawn_policy::*, spawn_request_type::*},
+        late_despawner::*,
         system_sets::*,
     };
     pub use crate::game::{
-        consts::*, event_channels::*, monsters::*, orb::*, player::*, tags::*, GamePlugin,
+        bombs::{
+            bomb_error::*, bomb_spawner::*, bomb_spawning_sequence_manager::*, consts::*,
+            BombsPlugin,
+        },
+        consts::*,
+        event_channels::*,
+        monsters::*,
+        orb::*,
+        player::*,
+        tags::*,
+        GamePlugin,
     };
     pub use crate::input::{
         enums::{player_action::*, ui_action::*},

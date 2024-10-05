@@ -14,3 +14,6 @@ pub struct Monster;
 
 #[derive(Component)]
 pub struct WorldBoundsWrapped;
+
+#[derive(Component)]
+pub struct Bomb;

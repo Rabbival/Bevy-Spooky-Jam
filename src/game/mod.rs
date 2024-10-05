@@ -1,11 +1,12 @@
 use crate::prelude::*;
 
+pub mod bombs;
 pub mod consts;
 pub mod event_channels;
+pub mod monsters;
 pub mod orb;
 pub mod player;
 pub mod tags;
-pub mod monsters;
 
 pub struct GamePlugin;
 
@@ -15,6 +16,7 @@ impl Plugin for GamePlugin {
             PlayerPlugin,
             MonstersPlugin,
             OrbPlugin,
+            BombsPlugin,
             GameEventChannelsPlugin,
         ));
     }
