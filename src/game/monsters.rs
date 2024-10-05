@@ -183,8 +183,5 @@ fn update_monster_hearing_rings(
 fn is_point_inside_ring(point: &Transform, ring: &Transform, radius: f32) -> bool {
     let distance_x = (point.translation.x - ring.translation.x).powf(2.0);
     let distance_y = (point.translation.y - ring.translation.y).powf(2.0);
-    if distance_x + distance_y < radius.powf(2.0) {
-        return true
-    }
-    false
+    distance_x + distance_y < radius.powf(2.0)
 }
