@@ -13,7 +13,8 @@ impl Plugin for MonstersPlugin {
                 initiate_square_movement,
             )
                 .chain(),
-        );
+        )
+            .add_systems(Update, update_monster_hearing_rings);
     }
 }
 
@@ -151,4 +152,18 @@ fn spawn_calculator_and_push_timer(
         timer_duration,
         TimerDoneEventType::Nothing,
     ));
+}
+
+fn update_monster_hearing_rings(
+    mut monsters_query: Query<(&Transform, &mut Monster)>,
+    player_query: Query<&Transform, With<Player>>,
+) {
+    for player_transform in player_query {
+        for (monster_transform, mut monster) in monsters_query.iter_mut() {
+            // TODO search if player translation is inside monster hear ring
+            if monster.state == MonsterState::Idle {
+                monster.state = MonsterState::Alert;
+            }
+        }
+    }
 }
