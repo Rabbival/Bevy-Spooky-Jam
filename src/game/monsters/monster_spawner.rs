@@ -59,24 +59,46 @@ pub fn initiate_square_movement(
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let mut rng = rand::thread_rng();
     for monster_entity in &monsters_query {
-        let mut delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
-        let is_reversed_y = rng.gen::<bool>();
-        if is_reversed_y {
-            delta = -delta;
+        let delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
+        let is_cursed_pentagon = rng.gen::<bool>();
+        if is_cursed_pentagon {
+            let mut all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
+                Vec3::new(0.0, 150.0, 0.0),
+                Vec3::new(100.0, -150.0, 0.0),
+                Vec3::new(-150.0, 50.0, 0.0),
+                Vec3::new(150.0, 50.0, 0.0),
+                Vec3::new(-100.0, -150.0, 0.0),
+            ]);
+            let is_reversed = rng.gen::<bool>();
+            if is_reversed {
+                all_path_vertices.reverse();
+            }
+            initiate_movement_along_path(
+                &mut event_writer,
+                monster_entity,
+                rng.gen_range(1.0..3.0),
+                all_path_vertices,
+                &mut commands,
+            );
+        } else {
+            let mut all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
+                Vec3::new(delta, delta, 0.0),
+                Vec3::new(delta, -delta, 0.0),
+                Vec3::new(-delta, -delta, 0.0),
+                Vec3::new(-delta, delta, 0.0),
+            ]);
+            let is_reversed = rng.gen::<bool>();
+            if is_reversed {
+                all_path_vertices.reverse();
+            }
+            initiate_movement_along_path(
+                &mut event_writer,
+                monster_entity,
+                rng.gen_range(1.0..3.0),
+                all_path_vertices,
+                &mut commands,
+            );
         }
-        let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(delta, delta, 0.0),
-            Vec3::new(delta, -delta, 0.0),
-            Vec3::new(-delta, -delta, 0.0),
-            Vec3::new(-delta, delta, 0.0),
-        ]);
-        initiate_movement_along_path(
-            &mut event_writer,
-            monster_entity,
-            rng.gen_range(1.0..3.0),
-            all_path_vertices,
-            &mut commands,
-        );
     }
 }
 
