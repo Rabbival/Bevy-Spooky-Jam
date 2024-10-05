@@ -16,5 +16,12 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
+# MacOS
+.DS_Store
+
+# IDEs
+/.fleet
+/.vscode
+
 # No need to change the logs file every time we run the program
 game_logs/
