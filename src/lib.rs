@@ -46,7 +46,8 @@ pub mod prelude {
         system_sets::*,
     };
     pub use crate::game::{
-        consts::*, event_channels::*, orb::*, patroller::*, player::*, tags::*, GamePlugin,
+        consts::*, event_channels::*, orb::*, patroller::*, player::*, tags::*, GamePlugin, monsters::*
+        GamePlugin,
     };
     pub use crate::input::{
         enums::{player_action::*, ui_action::*},

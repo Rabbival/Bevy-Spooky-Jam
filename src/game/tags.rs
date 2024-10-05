@@ -10,4 +10,7 @@ pub struct Patroller;
 pub struct Player;
 
 #[derive(Component)]
+pub struct Monster;
+
+#[derive(Component)]
 pub struct WorldBoundsWrapped;
