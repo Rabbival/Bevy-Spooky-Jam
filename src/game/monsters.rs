@@ -158,11 +158,14 @@ fn update_monster_hearing_rings(
     mut monsters_query: Query<(&Transform, &mut Monster)>,
     player_query: Query<&Transform, With<Player>>,
 ) {
-    for player_transform in player_query {
+    for player_transform in player_query.iter() {
         for (monster_transform, mut monster) in monsters_query.iter_mut() {
-            // TODO search if player translation is inside monster hear ring
-            if monster.state == MonsterState::Idle {
+            let area_x = (player_transform.translation.x - monster_transform.translation.x).powf(2.0);
+            let area_y = (player_transform.translation.y - monster_transform.translation.y).powf(2.0);
+            if area_x + area_y < monster.hearing_ring_distance.powf(2.0) {
                 monster.state = MonsterState::Alert;
+            } else {
+                monster.state = MonsterState::Idle;
             }
         }
     }
