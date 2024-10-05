@@ -6,13 +6,16 @@ impl Plugin for PlayerInputHandlerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (handle_player_controls, handle_player_just_pressed_controls)
-                .in_set(InputSystemSet::Handling),
+            (
+                listen_for_player_pressed_controls,
+                listen_for_player_just_pressed_controls,
+            )
+                .in_set(InputSystemSet::Listening),
         );
     }
 }
 
-fn handle_player_controls(
+fn listen_for_player_pressed_controls(
     time: Res<Time>,
     mut player_query: Query<(&ActionState<PlayerAction>, &mut Transform), With<Player>>,
 ) {
@@ -27,7 +30,7 @@ fn handle_player_controls(
     }
 }
 
-fn handle_player_just_pressed_controls(
+fn listen_for_player_just_pressed_controls(
     mut player_query: Query<&ActionState<PlayerAction>, With<Player>>,
 ) {
     for action_map in &mut player_query {

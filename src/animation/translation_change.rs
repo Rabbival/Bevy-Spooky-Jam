@@ -19,7 +19,7 @@ fn listen_for_translation_update_requests(
         if let TimerGoingEventType::Move(MovementType::InDirectLine) = event_from_timer.event_type {
             match transforms.get_mut(event_from_timer.entity) {
                 Ok((mut transform, maybe_world_bounds)) => {
-                    update_transform(
+                    transform.translation = calcualte_updated_translation(
                         &mut transform,
                         event_from_timer.value_delta,
                         maybe_world_bounds.is_some(),
@@ -38,21 +38,26 @@ fn listen_for_translation_update_requests(
     }
 }
 
-fn update_transform(transform: &mut Transform, delta: Vec3, clamp_to_viewport: bool) {
+fn calcualte_updated_translation(
+    transform: &Transform,
+    delta: Vec3,
+    clamp_to_viewport: bool,
+) -> Vec3 {
     let half_screen_size = WINDOW_SIZE_IN_PIXELS / 2.0;
-    let mut updated_transform = transform.translation + delta;
+    let mut updated_translation = transform.translation + delta;
     if clamp_to_viewport {
-        if updated_transform.x < -half_screen_size {
-            updated_transform.x = half_screen_size;
+        if updated_translation.x < -half_screen_size {
+            updated_translation.x = half_screen_size;
         }
-        if updated_transform.x > half_screen_size {
-            updated_transform.x = -half_screen_size;
+        if updated_translation.x > half_screen_size {
+            updated_translation.x = -half_screen_size;
         }
-        if updated_transform.y < -half_screen_size {
-            updated_transform.y = half_screen_size;
+        if updated_translation.y < -half_screen_size {
+            updated_translation.y = half_screen_size;
         }
-        if updated_transform.y > half_screen_size {
-            updated_transform.y = -half_screen_size;
+        if updated_translation.y > half_screen_size {
+            updated_translation.y = -half_screen_size;
         }
     }
+    updated_translation
 }
