@@ -46,8 +46,7 @@ pub mod prelude {
         system_sets::*,
     };
     pub use crate::game::{
-        consts::*, event_channels::*, orb::*, patroller::*, player::*, tags::*, world_bounds::*,
-        GamePlugin,
+        consts::*, event_channels::*, orb::*, patroller::*, player::*, tags::*, GamePlugin,
     };
     pub use crate::input::{
         enums::player_action::*, keyboard_input_handler::*, mouse_input_handler::*,

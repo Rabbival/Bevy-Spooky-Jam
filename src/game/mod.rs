@@ -6,7 +6,6 @@ pub mod orb;
 pub mod patroller;
 pub mod player;
 pub mod tags;
-pub mod world_bounds;
 
 pub struct GamePlugin;
 
@@ -17,7 +16,6 @@ impl Plugin for GamePlugin {
             OrbPlugin,
             PatrollerPlugin,
             GameEventChannelsPlugin,
-            WorldBoundPlugin,
         ));
     }
 }
