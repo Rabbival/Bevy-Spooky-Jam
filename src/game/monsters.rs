@@ -13,7 +13,8 @@ impl Plugin for MonstersPlugin {
                 initiate_square_movement,
             )
                 .chain(),
-        );
+        )
+            .add_systems(Update, update_monster_hearing_rings);
     }
 }
 
@@ -42,6 +43,7 @@ pub fn spawn_initial_monsters(
             AffectingTimerCalculators::default(),
             Monster {
                 hearing_ring_distance: rng.gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+                ..default()
             },
             WorldBoundsWrapped,
         ));
@@ -150,4 +152,21 @@ fn spawn_calculator_and_push_timer(
         timer_duration,
         TimerDoneEventType::Nothing,
     ));
+}
+
+fn update_monster_hearing_rings(
+    mut monsters_query: Query<(&Transform, &mut Monster)>,
+    player_query: Query<&Transform, With<Player>>,
+) {
+    for player_transform in player_query.iter() {
+        for (monster_transform, mut monster) in monsters_query.iter_mut() {
+            let distance_x = (player_transform.translation.x - monster_transform.translation.x).powf(2.0);
+            let distance_y = (player_transform.translation.y - monster_transform.translation.y).powf(2.0);
+            if distance_x + distance_y < monster.hearing_ring_distance.powf(2.0) {
+                monster.state = MonsterState::Alert;
+            } else {
+                monster.state = MonsterState::Idle;
+            }
+        }
+    }
 }
