@@ -1,74 +1,78 @@
 use crate::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+use rand::Rng;
 
-pub struct PatrollerPlugin;
+pub struct MonstersPlugin;
 
-impl Plugin for PatrollerPlugin {
+impl Plugin for MonstersPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Startup,
             (
-                spawn_patroller,
-                (initiate_square_movement, initiate_diagonal_movement),
+                spawn_initial_monsters,
+                initiate_square_movement,
             )
                 .chain(),
-        );
+        )
+            .add_systems(Update, update_monster_hearing_rings);
     }
 }
 
-pub fn spawn_patroller(
+pub fn spawn_initial_monsters(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
 ) {
-    commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Circle::new(ORB_MAX_RADIUS))),
-            material: materials.add(Color::srgb(0.5, 0.0, 0.5)),
-            transform: Transform::from_xyz(250.0, 250.0, 0.0),
-            ..default()
-        },
-        AffectingTimerCalculators::default(),
-        Patroller,
-    ));
+    let half_window_size = WINDOW_SIZE_IN_PIXELS / 2.0;
+    let third_window_size = WINDOW_SIZE_IN_PIXELS / 3.0;
+    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
+    let mut rng = rand::thread_rng();
+    for i in 0..INITIAL_MONSTERS_AMOUNT {
+        let second_range_factor: f32 = i as f32 * third_window_size;
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
+                material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
+                transform: Transform::from_xyz(
+                    rng.gen_range(-half_window_size - second_range_factor .. half_window_size + second_range_factor),
+                    rng.gen_range(-half_window_size - second_range_factor .. half_window_size + second_range_factor),
+                    Z_LAYER_MONSTER
+                ),
+                ..default()
+            },
+            AffectingTimerCalculators::default(),
+            Monster {
+                hearing_ring_distance: rng.gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+                ..default()
+            },
+            WorldBoundsWrapped,
+        ));
+    }
 }
 
 pub fn initiate_square_movement(
     mut event_writer: EventWriter<TimerFireRequest>,
-    patroller_query: Query<Entity, With<Patroller>>,
     mut commands: Commands,
+    monsters_query: Query<Entity, With<Monster>>,
 ) {
-    for patroller_entity in &patroller_query {
+    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
+    let mut rng = rand::thread_rng();
+    for monster_entity in &monsters_query {
+        let mut delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
+        let is_reversed_y = rng.gen::<bool>();
+        if is_reversed_y {
+            delta = -delta;
+        }
         let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(100.0, 100.0, 0.0),
-            Vec3::new(100.0, -100.0, 0.0),
-            Vec3::new(-100.0, -100.0, 0.0),
-            Vec3::new(-100.0, 100.0, 0.0),
+            Vec3::new(delta, delta, 0.0),
+            Vec3::new(delta, -delta, 0.0),
+            Vec3::new(-delta, -delta, 0.0),
+            Vec3::new(-delta, delta, 0.0),
         ]);
         initiate_movement_along_path(
             &mut event_writer,
-            patroller_entity,
-            EXAMPLE_PATROLLER_SQUARE_DURATION,
-            all_path_vertices,
-            &mut commands,
-        );
-    }
-}
-
-pub fn initiate_diagonal_movement(
-    mut event_writer: EventWriter<TimerFireRequest>,
-    patroller_query: Query<Entity, With<Patroller>>,
-    mut commands: Commands,
-) {
-    for patroller_entity in &patroller_query {
-        let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(150.0, 150.0, 0.0),
-            Vec3::new(-150.0, -150.0, 0.0),
-        ]);
-        initiate_movement_along_path(
-            &mut event_writer,
-            patroller_entity,
-            EXAMPLE_PATROLLER_DIAGON_DURATION,
+            monster_entity,
+            rng.gen_range(1.0..3.0),
             all_path_vertices,
             &mut commands,
         );
@@ -77,7 +81,7 @@ pub fn initiate_diagonal_movement(
 
 fn initiate_movement_along_path(
     event_writer: &mut EventWriter<TimerFireRequest>,
-    patroller_entity: Entity,
+    monster_entity: Entity,
     timers_duration: f32,
     all_path_vertices: Vec<Vec3>,
     commands: &mut Commands,
@@ -87,7 +91,7 @@ fn initiate_movement_along_path(
     let mut emitting_timers = vec![];
     for value_calculator in going_event_value_calculators {
         spawn_calculator_and_push_timer(
-            patroller_entity,
+            monster_entity,
             value_calculator,
             timers_duration,
             &mut emitting_timers,
@@ -132,7 +136,7 @@ fn configure_value_calculators_for_patroller(
 }
 
 fn spawn_calculator_and_push_timer(
-    patroller_entity: Entity,
+    monster_entity: Entity,
     value_calculator: GoingEventValueCalculator<Vec3>,
     timer_duration: f32,
     emitting_timers: &mut Vec<EmittingTimer>,
@@ -141,11 +145,28 @@ fn spawn_calculator_and_push_timer(
     let value_calculator_id = commands.spawn(value_calculator).id();
     emitting_timers.push(EmittingTimer::new(
         vec![TimerAffectedEntity {
-            affected_entity: patroller_entity,
+            affected_entity: monster_entity,
             value_calculator_entity: Some(value_calculator_id),
         }],
         vec![TimeMultiplierId::GameTimeMultiplier],
         timer_duration,
         TimerDoneEventType::Nothing,
     ));
+}
+
+fn update_monster_hearing_rings(
+    mut monsters_query: Query<(&Transform, &mut Monster)>,
+    player_query: Query<&Transform, With<Player>>,
+) {
+    for player_transform in player_query.iter() {
+        for (monster_transform, mut monster) in monsters_query.iter_mut() {
+            let distance_x = (player_transform.translation.x - monster_transform.translation.x).powf(2.0);
+            let distance_y = (player_transform.translation.y - monster_transform.translation.y).powf(2.0);
+            if distance_x + distance_y < monster.hearing_ring_distance.powf(2.0) {
+                monster.state = MonsterState::Alert;
+            } else {
+                monster.state = MonsterState::Idle;
+            }
+        }
+    }
 }

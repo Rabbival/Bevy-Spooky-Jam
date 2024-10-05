@@ -1,10 +1,11 @@
 use crate::prelude::*;
 
 pub mod enums;
+pub mod input_maps;
 pub mod keyboard_input_handler;
 pub mod mouse_input_handler;
 pub mod player_input;
-pub mod player_input_map;
+pub mod ui_input;
 
 pub struct InputPlugin;
 
@@ -14,7 +15,8 @@ impl Plugin for InputPlugin {
             KeyboardInputHandlerPlugin,
             MouseInputHandlerPlugin,
             PlayerInputHandlerPlugin,
-            PlayerInputMapPlugin,
+            InputMapsPlugin,
+            UiInputHandlerPlugin,
         ));
     }
 }

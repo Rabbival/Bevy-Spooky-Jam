@@ -21,13 +21,14 @@ fn spawn_player(
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
             material: materials.add(Color::srgb(0.3, 0.9, 0.3)),
-            transform: Transform::from_xyz(0.0, 0.0, 10.0),
+            transform: Transform::from_xyz(0.0, 0.0, Z_LAYER_PLAYER),
             ..default()
         },
         InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map,
         },
+        AffectingTimerCalculators::default(),
         Player,
         WorldBoundsWrapped,
     ));

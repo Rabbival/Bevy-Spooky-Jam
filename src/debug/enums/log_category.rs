@@ -6,4 +6,5 @@ pub enum LogCategory {
     RequestNotFulfilled,
     Time,
     Player,
+    Monster,
 }
