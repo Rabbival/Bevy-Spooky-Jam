@@ -11,7 +11,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Startup, spawn_player)
-            .add_systems(FixedUpdate, handle_player_controls.in_set(InputSystemSet::Handling))
+            .add_systems(FixedUpdate, (handle_player_controls, handle_world_bounds_wrap_system).chain().in_set(InputSystemSet::Handling))
         ;
     }
 }
@@ -76,5 +76,23 @@ fn handle_player_controls(
     }
     if action_state.just_pressed(&PlayerAction::Fire) {
         info!("I'm throwing a pumpkin bomb!");
+    }
+}
+
+fn handle_world_bounds_wrap_system(mut world_bounds_wrapped_transform_query: Query<&mut Transform, With<WorldBoundsWrapped>>) {
+    let half_screen_size = WINDOW_SIZE_IN_PIXELS / 2.0;
+    for mut transform in world_bounds_wrapped_transform_query.iter_mut() {
+        if transform.translation.x < -half_screen_size {
+            transform.translation.x = half_screen_size;
+        }
+        if transform.translation.x > half_screen_size {
+            transform.translation.x = -half_screen_size;
+        }
+        if transform.translation.y < -half_screen_size {
+            transform.translation.y = half_screen_size;
+        }
+        if transform.translation.y > half_screen_size {
+            transform.translation.y = -half_screen_size;
+        }
     }
 }
