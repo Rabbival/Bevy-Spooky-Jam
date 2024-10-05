@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bevy::{color::palettes::css::*};
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
 
@@ -13,7 +14,8 @@ impl Plugin for MonstersPlugin {
                 initiate_square_movement,
             )
                 .chain(),
-        );
+        )
+        .init_gizmo_group::<MonsterGizmos>();
     }
 }
 
@@ -21,7 +23,9 @@ pub fn spawn_initial_monsters(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
+    // mut gizmos: Gizmos,
 ) {
+    //gizmos.circle_2d(Isometry2d::from_translation(Vec2::ZERO), 300., NAVY);
     let half_window_size = WINDOW_SIZE_IN_PIXELS / 2.0;
     let mut rng = rand::thread_rng();
     for i in 0..INITIAL_MONSTERS_AMOUNT {
@@ -58,10 +62,10 @@ pub fn initiate_square_movement(
             delta = -delta;
         }
         let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(delta, delta, Z_LAYER_MONSTER),
-            Vec3::new(delta, -delta, Z_LAYER_MONSTER),
-            Vec3::new(-delta, -delta, Z_LAYER_MONSTER),
-            Vec3::new(-delta, delta, Z_LAYER_MONSTER),
+            Vec3::new(delta, delta, 0.0),
+            Vec3::new(delta, -delta, 0.0),
+            Vec3::new(-delta, -delta, 0.0),
+            Vec3::new(-delta, delta, 0.0),
         ]);
         initiate_movement_along_path(
             &mut event_writer,
@@ -147,3 +151,6 @@ fn spawn_calculator_and_push_timer(
         TimerDoneEventType::Nothing,
     ));
 }
+
+#[derive(Default, Reflect, GizmoConfigGroup)]
+struct MonsterGizmos {}
