@@ -1,3 +1,4 @@
+use crate::debug::gizmos::gizmos::GizmosPlugin;
 use crate::prelude::*;
 
 pub mod consts;
@@ -14,6 +15,7 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             PlayerPlugin,
             MonstersPlugin,
+            GizmosPlugin,
             OrbPlugin,
             GameEventChannelsPlugin,
         ));
