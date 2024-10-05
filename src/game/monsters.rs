@@ -14,7 +14,10 @@ impl Plugin for MonstersPlugin {
             )
                 .chain(),
         )
-            .add_systems(Update, update_monster_hearing_rings);
+            .add_systems(
+                Update,
+                (update_monster_hearing_rings_fleeing, update_monster_hearing_rings_chasing).chain()
+            );
     }
 }
 
@@ -154,19 +157,41 @@ fn spawn_calculator_and_push_timer(
     ));
 }
 
-fn update_monster_hearing_rings(
+fn update_monster_hearing_rings_chasing(
     mut monsters_query: Query<(&Transform, &mut Monster)>,
     player_query: Query<&Transform, With<Player>>,
 ) {
     for player_transform in player_query.iter() {
         for (monster_transform, mut monster) in monsters_query.iter_mut() {
-            let distance_x = (player_transform.translation.x - monster_transform.translation.x).powf(2.0);
-            let distance_y = (player_transform.translation.y - monster_transform.translation.y).powf(2.0);
-            if distance_x + distance_y < monster.hearing_ring_distance.powf(2.0) {
+            if is_point_inside_ring(player_transform, monster_transform, monster.hearing_ring_distance) {
                 monster.state = MonsterState::Chasing;
-            } else {
-                monster.state = MonsterState::Idle;
+                break;
             }
+            monster.state = MonsterState::Idle;
         }
     }
+}
+
+fn update_monster_hearing_rings_fleeing(
+    mut monsters_query: Query<(&Transform, &mut Monster)>,
+    bombs_query: Query<&Transform, With<Bomb>>,
+) {
+    for bomb_transform in bombs_query.iter() {
+        for (monster_transform, mut monster) in monsters_query.iter_mut() {
+            if is_point_inside_ring(bomb_transform, monster_transform, BOMB_FULL_SIZE) {
+                monster.state = MonsterState::Fleeing;
+                break;
+            }
+            monster.state = MonsterState::Idle;
+        }
+    }
+}
+
+fn is_point_inside_ring(point: &Transform, ring: &Transform, radius: f32) -> bool {
+    let distance_x = (point.translation.x - ring.translation.x).powf(2.0);
+    let distance_y = (point.translation.y - ring.translation.y).powf(2.0);
+    if distance_x + distance_y < radius.powf(2.0) {
+        return true
+    }
+    false
 }
