@@ -24,3 +24,6 @@ pub enum MonsterState {
 
 #[derive(Component)]
 pub struct WorldBoundsWrapped;
+
+#[derive(Component)]
+pub struct Bomb;
