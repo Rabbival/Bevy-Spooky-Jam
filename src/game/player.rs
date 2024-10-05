@@ -63,16 +63,16 @@ fn handle_player_controls(
     let mut player_transform = player_transform_query.single_mut();
     // Each action has a button-like state of its own that you can check
     if action_state.pressed(&PlayerAction::MoveLeft) {
-        player_transform.translation.x -= 20.0 * time.delta_seconds();
+        player_transform.translation.x -= 200.0 * time.delta_seconds();
     }
     if action_state.pressed(&PlayerAction::MoveUp) {
-        player_transform.translation.y += 20.0 * time.delta_seconds();
+        player_transform.translation.y += 200.0 * time.delta_seconds();
     }
     if action_state.pressed(&PlayerAction::MoveRight) {
-        player_transform.translation.x += 20.0 * time.delta_seconds();
+        player_transform.translation.x += 200.0 * time.delta_seconds();
     }
     if action_state.pressed(&PlayerAction::MoveDown) {
-        player_transform.translation.y -= 20.0 * time.delta_seconds();
+        player_transform.translation.y -= 200.0 * time.delta_seconds();
     }
     if action_state.just_pressed(&PlayerAction::Fire) {
         info!("I'm throwing a pumpkin bomb!");
