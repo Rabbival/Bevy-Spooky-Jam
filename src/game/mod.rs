@@ -5,7 +5,6 @@ pub mod event_channels;
 pub mod orb;
 pub mod player;
 pub mod tags;
-pub mod world_bounds;
 pub mod monsters;
 
 pub struct GamePlugin;
@@ -17,7 +16,6 @@ impl Plugin for GamePlugin {
             MonstersPlugin,
             OrbPlugin,
             GameEventChannelsPlugin,
-            WorldBoundPlugin,
         ));
     }
 }
