@@ -14,10 +14,7 @@ impl Plugin for MonstersPlugin {
             )
                 .chain(),
         )
-            .add_systems(
-                Update,
-                (update_monster_hearing_rings_fleeing, update_monster_hearing_rings_chasing).chain()
-            );
+        .add_systems(Update, update_monster_hearing_rings);
     }
 }
 
@@ -157,32 +154,28 @@ fn spawn_calculator_and_push_timer(
     ));
 }
 
-fn update_monster_hearing_rings_chasing(
+fn update_monster_hearing_rings(
     mut monsters_query: Query<(&Transform, &mut Monster)>,
+    bombs_query: Query<&Transform, With<Bomb>>,
     player_query: Query<&Transform, With<Player>>,
 ) {
+    let mut found = false;
     for player_transform in player_query.iter() {
         for (monster_transform, mut monster) in monsters_query.iter_mut() {
             if is_point_inside_ring(player_transform, monster_transform, monster.hearing_ring_distance) {
                 monster.state = MonsterState::Chasing;
-                break;
+                found = true;
+            } else {
+                for bomb_transform in bombs_query.iter() {
+                    if is_point_inside_ring(bomb_transform, monster_transform, monster.hearing_ring_distance) {
+                        monster.state = MonsterState::Fleeing;
+                        found = true;
+                    }
+                }
             }
-            monster.state = MonsterState::Idle;
-        }
-    }
-}
-
-fn update_monster_hearing_rings_fleeing(
-    mut monsters_query: Query<(&Transform, &mut Monster)>,
-    bombs_query: Query<&Transform, With<Bomb>>,
-) {
-    for bomb_transform in bombs_query.iter() {
-        for (monster_transform, mut monster) in monsters_query.iter_mut() {
-            if is_point_inside_ring(bomb_transform, monster_transform, BOMB_FULL_SIZE) {
-                monster.state = MonsterState::Fleeing;
-                break;
+            if !found {
+                monster.state = MonsterState::Idle;
             }
-            monster.state = MonsterState::Idle;
         }
     }
 }
