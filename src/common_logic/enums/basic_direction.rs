@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use strum_macros::EnumIter;
 
-#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Clone, Copy, EnumIter)]
+#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Clone, Copy, EnumIter, Reflect)]
 pub enum BasicDirection {
     Up,
     Right,

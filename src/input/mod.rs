@@ -15,9 +15,6 @@ impl Plugin for InputPlugin {
 
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
 pub enum PlayerAction {
-    MoveLeft,
-    MoveUp,
-    MoveRight,
-    MoveDown,
+    Move(BasicDirection),
     Fire,
 }

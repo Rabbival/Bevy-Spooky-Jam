@@ -9,10 +9,11 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Startup, spawn_player)
-            .add_systems(FixedUpdate, (handle_player_controls, handle_world_bounds_wrap_system).chain().in_set(InputSystemSet::Handling))
-        ;
+        app.add_systems(Startup, spawn_player).add_systems(
+            Update,
+            (handle_player_controls, handle_player_just_pressed_controls)
+                .in_set(InputSystemSet::Handling),
+        );
     }
 }
 
@@ -22,14 +23,17 @@ fn spawn_player(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let input_map = InputMap::new([
-        (PlayerAction::MoveLeft, KeyCode::KeyA),
-        (PlayerAction::MoveLeft, KeyCode::ArrowLeft),
-        (PlayerAction::MoveUp, KeyCode::KeyW),
-        (PlayerAction::MoveUp, KeyCode::ArrowUp),
-        (PlayerAction::MoveRight, KeyCode::KeyD),
-        (PlayerAction::MoveRight, KeyCode::ArrowRight),
-        (PlayerAction::MoveDown, KeyCode::KeyS),
-        (PlayerAction::MoveDown, KeyCode::ArrowDown),
+        (PlayerAction::Move(BasicDirection::Left), KeyCode::KeyA),
+        (PlayerAction::Move(BasicDirection::Left), KeyCode::ArrowLeft),
+        (PlayerAction::Move(BasicDirection::Up), KeyCode::KeyW),
+        (PlayerAction::Move(BasicDirection::Up), KeyCode::ArrowUp),
+        (PlayerAction::Move(BasicDirection::Right), KeyCode::KeyD),
+        (
+            PlayerAction::Move(BasicDirection::Right),
+            KeyCode::ArrowRight,
+        ),
+        (PlayerAction::Move(BasicDirection::Down), KeyCode::KeyS),
+        (PlayerAction::Move(BasicDirection::Down), KeyCode::ArrowDown),
         (PlayerAction::Fire, KeyCode::Enter),
         (PlayerAction::Fire, KeyCode::NumpadEnter),
     ]);
@@ -38,11 +42,7 @@ fn spawn_player(
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
             material: materials.add(Color::srgb(0.3, 0.9, 0.3)),
-            transform: Transform::from_xyz(
-                0.0,
-                0.0,
-                10.0,
-            ),
+            transform: Transform::from_xyz(0.0, 0.0, 10.0),
             ..default()
         },
         InputManagerBundle::<PlayerAction> {
@@ -56,43 +56,27 @@ fn spawn_player(
 
 fn handle_player_controls(
     time: Res<Time>,
-    action_state_query: Query<&ActionState<PlayerAction>, With<Player>>,
-    mut player_transform_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<(&ActionState<PlayerAction>, &mut Transform), With<Player>>,
 ) {
-    let action_state = action_state_query.single();
-    let mut player_transform = player_transform_query.single_mut();
-    // Each action has a button-like state of its own that you can check
-    if action_state.pressed(&PlayerAction::MoveLeft) {
-        player_transform.translation.x -= 200.0 * time.delta_seconds();
-    }
-    if action_state.pressed(&PlayerAction::MoveUp) {
-        player_transform.translation.y += 200.0 * time.delta_seconds();
-    }
-    if action_state.pressed(&PlayerAction::MoveRight) {
-        player_transform.translation.x += 200.0 * time.delta_seconds();
-    }
-    if action_state.pressed(&PlayerAction::MoveDown) {
-        player_transform.translation.y -= 200.0 * time.delta_seconds();
-    }
-    if action_state.just_pressed(&PlayerAction::Fire) {
-        info!("I'm throwing a pumpkin bomb!");
+    for (action_map, mut player_transform) in &mut player_query {
+        for action in action_map.get_pressed() {
+            let delta = match action {
+                PlayerAction::Move(move_direction) => 200.0 * move_direction.to_world_direction(),
+                _ => Vec2::ZERO,
+            };
+            player_transform.translation += Vec3::new(delta.x, delta.y, 0.0) * time.delta_seconds()
+        }
     }
 }
 
-fn handle_world_bounds_wrap_system(mut world_bounds_wrapped_transform_query: Query<&mut Transform, With<WorldBoundsWrapped>>) {
-    let half_screen_size = WINDOW_SIZE_IN_PIXELS / 2.0;
-    for mut transform in world_bounds_wrapped_transform_query.iter_mut() {
-        if transform.translation.x < -half_screen_size {
-            transform.translation.x = half_screen_size;
-        }
-        if transform.translation.x > half_screen_size {
-            transform.translation.x = -half_screen_size;
-        }
-        if transform.translation.y < -half_screen_size {
-            transform.translation.y = half_screen_size;
-        }
-        if transform.translation.y > half_screen_size {
-            transform.translation.y = -half_screen_size;
+fn handle_player_just_pressed_controls(
+    mut player_query: Query<&ActionState<PlayerAction>, With<Player>>,
+) {
+    for action_map in &mut player_query {
+        for action in action_map.get_just_pressed() {
+            if let PlayerAction::Fire = action {
+                print_info("throwing a bomb", vec![LogCategory::Player]);
+            }
         }
     }
 }
