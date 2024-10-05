@@ -23,10 +23,15 @@ fn spawn_player(
 ) {
     let input_map = InputMap::new([
         (PlayerAction::MoveLeft, KeyCode::KeyA),
+        (PlayerAction::MoveLeft, KeyCode::ArrowLeft),
         (PlayerAction::MoveUp, KeyCode::KeyW),
+        (PlayerAction::MoveUp, KeyCode::ArrowUp),
         (PlayerAction::MoveRight, KeyCode::KeyD),
+        (PlayerAction::MoveRight, KeyCode::ArrowRight),
         (PlayerAction::MoveDown, KeyCode::KeyS),
+        (PlayerAction::MoveDown, KeyCode::ArrowDown),
         (PlayerAction::Fire, KeyCode::Enter),
+        (PlayerAction::Fire, KeyCode::NumpadEnter),
     ]);
     commands.spawn((
         // TODO StateScoped(AppState::Game),
