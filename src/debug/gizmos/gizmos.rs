@@ -14,10 +14,14 @@ fn draw_monster_hearing_ring_system(
     monsters_query: Query<(&Transform, &Monster), With<Monster>>,
 ) {
     for (transform, monster) in monsters_query.iter() {
+        let mut gizmo_color = MAROON;
+        if monster.state == MonsterState::Idle {
+            gizmo_color = NAVY;
+        }
         gizmos.circle_2d(
             Vec2::new(transform.translation.x, transform.translation.y),
             monster.hearing_ring_distance,
-            NAVY,
+            gizmo_color,
         );
     }
 }

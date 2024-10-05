@@ -15,7 +15,7 @@ pub struct Monster {
     pub state: MonsterState,
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Eq, PartialEq, Default)]
 pub enum MonsterState {
     #[default]
     Idle,
