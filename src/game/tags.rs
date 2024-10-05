@@ -10,7 +10,9 @@ pub struct Patroller;
 pub struct Player;
 
 #[derive(Component)]
-pub struct Monster;
+pub struct Monster {
+    pub hearing_ring_distance: f32,
+}
 
 #[derive(Component)]
 pub struct WorldBoundsWrapped;

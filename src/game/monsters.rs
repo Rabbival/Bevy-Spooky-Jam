@@ -13,8 +13,7 @@ impl Plugin for MonstersPlugin {
                 initiate_square_movement,
             )
                 .chain(),
-        )
-        .init_gizmo_group::<MonsterGizmos>();
+        );
     }
 }
 
@@ -24,9 +23,11 @@ pub fn spawn_initial_monsters(
     mut commands: Commands,
 ) {
     let half_window_size = WINDOW_SIZE_IN_PIXELS / 2.0;
+    let third_window_size = WINDOW_SIZE_IN_PIXELS / 3.0;
+    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let mut rng = rand::thread_rng();
     for i in 0..INITIAL_MONSTERS_AMOUNT {
-        let second_range_factor: f32 = i as f32 * (WINDOW_SIZE_IN_PIXELS / 3.0);
+        let second_range_factor: f32 = i as f32 * third_window_size;
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
@@ -39,7 +40,9 @@ pub fn spawn_initial_monsters(
                 ..default()
             },
             AffectingTimerCalculators::default(),
-            Monster,
+            Monster {
+                hearing_ring_distance: rng.gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+            },
             WorldBoundsWrapped,
         ));
     }
@@ -148,6 +151,3 @@ fn spawn_calculator_and_push_timer(
         TimerDoneEventType::Nothing,
     ));
 }
-
-#[derive(Default, Reflect, GizmoConfigGroup)]
-struct MonsterGizmos {}
