@@ -19,7 +19,9 @@ pub struct Monster {
 pub enum MonsterState {
     #[default]
     Idle,
-    Alert
+    Chasing,
+    Fleeing,
+    CalmingDown,
 }
 
 #[derive(Component)]
