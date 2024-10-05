@@ -46,18 +46,22 @@ pub fn spawn_initial_monsters(
 
 pub fn initiate_square_movement(
     mut event_writer: EventWriter<TimerFireRequest>,
-    monsters_query: Query<Entity, With<Monster>>,
     mut commands: Commands,
+    monsters_query: Query<Entity, With<Monster>>,
 ) {
+    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let mut rng = rand::thread_rng();
     for monster_entity in &monsters_query {
-        let delta_x = rng.gen_range(-100.0..100.0);
-        let delta_y = rng.gen_range(-100.0..100.0);
+        let mut delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
+        let is_reversed_y = rng.gen::<bool>();
+        if is_reversed_y {
+            delta = -delta;
+        }
         let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(delta_x, delta_y, Z_LAYER_MONSTER),
-            Vec3::new(delta_x, -delta_y, Z_LAYER_MONSTER),
-            Vec3::new(-delta_x, -delta_y, Z_LAYER_MONSTER),
-            Vec3::new(-delta_x, delta_y, Z_LAYER_MONSTER),
+            Vec3::new(delta, delta, Z_LAYER_MONSTER),
+            Vec3::new(delta, -delta, Z_LAYER_MONSTER),
+            Vec3::new(-delta, -delta, Z_LAYER_MONSTER),
+            Vec3::new(-delta, delta, Z_LAYER_MONSTER),
         ]);
         initiate_movement_along_path(
             &mut event_writer,
