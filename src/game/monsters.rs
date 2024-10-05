@@ -10,7 +10,7 @@ impl Plugin for MonstersPlugin {
             Startup,
             (
                 spawn_initial_monsters,
-                (initiate_square_movement, initiate_diagonal_movement),
+                initiate_square_movement,
             )
                 .chain(),
         );
@@ -33,7 +33,7 @@ pub fn spawn_initial_monsters(
                 transform: Transform::from_xyz(
                     rng.gen_range(-half_window_size - second_range_factor .. half_window_size + second_range_factor),
                     rng.gen_range(-half_window_size - second_range_factor .. half_window_size + second_range_factor),
-                    10.0
+                    Z_LAYER_MONSTER
                 ),
                 ..default()
             },
@@ -49,6 +49,7 @@ pub fn initiate_square_movement(
     monsters_query: Query<Entity, With<Monster>>,
     mut commands: Commands,
 ) {
+    let mut rng = rand::thread_rng();
     for monster_entity in &monsters_query {
         let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
             Vec3::new(100.0, 100.0, 0.0),
@@ -59,27 +60,7 @@ pub fn initiate_square_movement(
         initiate_movement_along_path(
             &mut event_writer,
             monster_entity,
-            EXAMPLE_PATROLLER_SQUARE_DURATION,
-            all_path_vertices,
-            &mut commands,
-        );
-    }
-}
-
-pub fn initiate_diagonal_movement(
-    mut event_writer: EventWriter<TimerFireRequest>,
-    monsters_query: Query<Entity, With<Monster>>,
-    mut commands: Commands,
-) {
-    for monster_entity in &monsters_query {
-        let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(150.0, 150.0, 0.0),
-            Vec3::new(-150.0, -150.0, 0.0),
-        ]);
-        initiate_movement_along_path(
-            &mut event_writer,
-            monster_entity,
-            EXAMPLE_PATROLLER_DIAGONAL_DURATION,
+            rng.gen_range(1.0..3.0),
             all_path_vertices,
             &mut commands,
         );
