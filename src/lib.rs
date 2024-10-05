@@ -46,9 +46,11 @@ pub mod prelude {
         system_sets::*,
     };
     pub use crate::game::{
-        consts::*, event_channels::*, orb::*, patroller::*, tags::*, GamePlugin,
+        consts::*, event_channels::*, orb::*, patroller::*, player::*, tags::*, GamePlugin,
     };
-    pub use crate::input::{keyboard_input_handler::*, mouse_input_handler::*, InputPlugin};
+    pub use crate::input::{
+        enums::player_action::*, player_input_handler::*, player_input_map::*, InputPlugin,
+    };
     pub use crate::os_access::{
         enums::{folder_to_access::*, system_file_type::*},
         folder_access::*,
@@ -94,5 +96,6 @@ pub mod prelude {
     };
     pub use crate::trait_unions::*;
     pub use bevy::{prelude::*, utils::HashMap};
+    pub use leafwing_input_manager::prelude::*;
     pub use std::marker::PhantomData;
 }
