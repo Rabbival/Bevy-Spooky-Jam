@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+use rand::Rng;
 
 pub struct MonstersPlugin;
 
@@ -21,13 +22,19 @@ pub fn spawn_initial_monsters(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
 ) {
+    let half_window_size = WINDOW_SIZE_IN_PIXELS / 2.0;
+    let mut rng = rand::thread_rng();
     for i in [0..INITIAL_MONSTERS_AMOUNT] {
-
+        let second_range_factor: f32 = i as f32 * (WINDOW_SIZE_IN_PIXELS / 3.0);
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
                 material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
-                transform: Transform::from_xyz(250.0, 250.0, 10.0),
+                transform: Transform::from_xyz(
+                    rng.gen_range(-half_window_size - second_range_factor .. half_window_size + second_range_factor),
+                    rng.gen_range(-half_window_size - second_range_factor .. half_window_size + second_range_factor),
+                    10.0
+                ),
                 ..default()
             },
             AffectingTimerCalculators::default(),
