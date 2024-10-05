@@ -11,6 +11,7 @@ pub struct TimerGoingEvent<T: Numeric> {
 pub enum TimerGoingEventType {
     ChangeTimeMultiplierSpeed,
     Move(MovementType),
+    Scale,
 }
 
 plugin_for_implementors_of_trait!(TimerGoingEventPlugin, Numeric);

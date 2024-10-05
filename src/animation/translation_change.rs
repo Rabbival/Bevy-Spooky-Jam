@@ -18,12 +18,12 @@ fn listen_for_translation_update_requests(
     for event_from_timer in event_reader.read() {
         if let TimerGoingEventType::Move(MovementType::InDirectLine) = event_from_timer.event_type {
             match transforms.get_mut(event_from_timer.entity) {
-                Ok((mut transform, maybe_world_bounds)) => {
-                    transform.translation = calcualte_updated_translation(
-                        &mut transform,
-                        event_from_timer.value_delta,
-                        maybe_world_bounds.is_some(),
-                    );
+                Ok((mut transform, maybe_world_bound)) => {
+                    transform.translation += event_from_timer.value_delta;
+                    if maybe_world_bound.is_some() {
+                        transform.translation =
+                            calculate_reach_beyond_screen_border(transform.translation);
+                    }
                 }
                 Err(_) => {
                     print_error(
@@ -36,28 +36,4 @@ fn listen_for_translation_update_requests(
             }
         }
     }
-}
-
-fn calcualte_updated_translation(
-    transform: &Transform,
-    delta: Vec3,
-    clamp_to_viewport: bool,
-) -> Vec3 {
-    let half_screen_size = WINDOW_SIZE_IN_PIXELS / 2.0;
-    let mut updated_translation = transform.translation + delta;
-    if clamp_to_viewport {
-        if updated_translation.x < -half_screen_size {
-            updated_translation.x = half_screen_size;
-        }
-        if updated_translation.x > half_screen_size {
-            updated_translation.x = -half_screen_size;
-        }
-        if updated_translation.y < -half_screen_size {
-            updated_translation.y = half_screen_size;
-        }
-        if updated_translation.y > half_screen_size {
-            updated_translation.y = -half_screen_size;
-        }
-    }
-    updated_translation
 }
