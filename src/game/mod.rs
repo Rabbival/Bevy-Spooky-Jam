@@ -4,9 +4,9 @@ use crate::prelude::*;
 pub mod bombs;
 pub mod consts;
 pub mod event_channels;
-pub mod monsters;
 pub mod orb;
 pub mod player;
+pub mod monsters;
 pub mod tags;
 
 pub struct GamePlugin;

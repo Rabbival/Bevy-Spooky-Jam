@@ -1,10 +1,11 @@
 use crate::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
+use crate::prelude::consts::Z_LAYER_MONSTER;
 
-pub struct MonstersPlugin;
+pub struct MonsterSpawnerPlugin;
 
-impl Plugin for MonstersPlugin {
+impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Startup,
@@ -14,7 +15,7 @@ impl Plugin for MonstersPlugin {
             )
                 .chain(),
         )
-        .add_systems(Update, update_monster_hearing_rings);
+            .add_systems(Update, update_monster_hearing_rings);
     }
 }
 
