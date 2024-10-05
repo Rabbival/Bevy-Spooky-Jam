@@ -68,7 +68,7 @@ pub fn initiate_diagonal_movement(
         initiate_movement_along_path(
             &mut event_writer,
             patroller_entity,
-            EXAMPLE_PATROLLER_DIAGON_DURATION,
+            EXAMPLE_PATROLLER_DIAGONAL_DURATION,
             all_path_vertices,
             &mut commands,
         );
