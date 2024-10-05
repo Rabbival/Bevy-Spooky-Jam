@@ -51,11 +51,13 @@ pub fn initiate_square_movement(
 ) {
     let mut rng = rand::thread_rng();
     for monster_entity in &monsters_query {
+        let delta_x = rng.gen_range(-100.0..100.0);
+        let delta_y = rng.gen_range(-100.0..100.0);
         let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(100.0, 100.0, 0.0),
-            Vec3::new(100.0, -100.0, 0.0),
-            Vec3::new(-100.0, -100.0, 0.0),
-            Vec3::new(-100.0, 100.0, 0.0),
+            Vec3::new(delta_x, delta_y, Z_LAYER_MONSTER),
+            Vec3::new(delta_x, -delta_y, Z_LAYER_MONSTER),
+            Vec3::new(-delta_x, -delta_y, Z_LAYER_MONSTER),
+            Vec3::new(-delta_x, delta_y, Z_LAYER_MONSTER),
         ]);
         initiate_movement_along_path(
             &mut event_writer,
@@ -69,7 +71,7 @@ pub fn initiate_square_movement(
 
 fn initiate_movement_along_path(
     event_writer: &mut EventWriter<TimerFireRequest>,
-    patroller_entity: Entity,
+    monster_entity: Entity,
     timers_duration: f32,
     all_path_vertices: Vec<Vec3>,
     commands: &mut Commands,
@@ -79,7 +81,7 @@ fn initiate_movement_along_path(
     let mut emitting_timers = vec![];
     for value_calculator in going_event_value_calculators {
         spawn_calculator_and_push_timer(
-            patroller_entity,
+            monster_entity,
             value_calculator,
             timers_duration,
             &mut emitting_timers,
@@ -124,7 +126,7 @@ fn configure_value_calculators_for_patroller(
 }
 
 fn spawn_calculator_and_push_timer(
-    patroller_entity: Entity,
+    monster_entity: Entity,
     value_calculator: GoingEventValueCalculator<Vec3>,
     timer_duration: f32,
     emitting_timers: &mut Vec<EmittingTimer>,
@@ -133,7 +135,7 @@ fn spawn_calculator_and_push_timer(
     let value_calculator_id = commands.spawn(value_calculator).id();
     emitting_timers.push(EmittingTimer::new(
         vec![TimerAffectedEntity {
-            affected_entity: patroller_entity,
+            affected_entity: monster_entity,
             value_calculator_entity: Some(value_calculator_id),
         }],
         vec![TimeMultiplierId::GameTimeMultiplier],
