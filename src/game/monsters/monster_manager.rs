@@ -22,6 +22,8 @@ fn update_monster_hearing_rings(
                 }
                 if maybe_bomb.is_some() {
                     monster.state = MonsterState::Fleeing;
+                    // TODO fix this, it can be a memory leak!
+                    monster.bombs_location_seen.push(surrounding_object_transform.translation);
                     break;
                 }
             }
