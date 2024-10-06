@@ -179,17 +179,19 @@ fn spawn_calculator_and_push_timer(
 
 fn update_monster_hearing_rings(
     mut monsters_query: Query<(&Transform, &mut Monster), With<Monster>>,
-    mut surrounding_objects_query: Query<(&Transform, Option<&Bomb>, Option<&Player>)>,
+    surrounding_objects_query: Query<(&Transform, Option<&Bomb>, Option<&Player>)>,
 ) {
     for (monster_transform, mut monster) in monsters_query.iter_mut() {
         for (surrounding_object_transform, bomb, player) in surrounding_objects_query.iter() {
-            if player.is_some() && is_point_inside_ring(surrounding_object_transform, monster_transform, monster.hearing_ring_distance) {
-                monster.state = MonsterState::Chasing;
-                break;
-            }
-            if bomb.is_some() && is_point_inside_ring(surrounding_object_transform, monster_transform, monster.hearing_ring_distance) {
-                monster.state = MonsterState::Fleeing;
-                break;
+            if is_point_inside_ring(surrounding_object_transform, monster_transform, monster.hearing_ring_distance) {
+                if player.is_some() {
+                    monster.state = MonsterState::Chasing;
+                    break;
+                }
+                if bomb.is_some() {
+                    monster.state = MonsterState::Fleeing;
+                    break;
+                }
             }
             monster.state = MonsterState::Idle;
         }
