@@ -96,6 +96,7 @@ fn try_finding_place_for_bomb(
         );
         for transform in transforms_not_to_spawn_next_to {
             if calculate_distance_including_through_screen_border(vector, transform.translation)
+                .distance
                 < BOMB_SAFE_RADIUS
             {
                 continue;
