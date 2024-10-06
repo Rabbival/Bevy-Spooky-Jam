@@ -1,10 +1,11 @@
 use crate::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
+use crate::prelude::consts::Z_LAYER_MONSTER;
 
-pub struct MonstersPlugin;
+pub struct MonsterSpawnerPlugin;
 
-impl Plugin for MonstersPlugin {
+impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Startup,
@@ -58,24 +59,46 @@ pub fn initiate_square_movement(
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let mut rng = rand::thread_rng();
     for monster_entity in &monsters_query {
-        let mut delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
-        let is_reversed_y = rng.gen::<bool>();
-        if is_reversed_y {
-            delta = -delta;
+        let delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
+        let is_cursed_pentagon = rng.gen::<bool>();
+        if is_cursed_pentagon {
+            let mut all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
+                Vec3::new(0.0, 150.0, 0.0),
+                Vec3::new(100.0, -150.0, 0.0),
+                Vec3::new(-150.0, 50.0, 0.0),
+                Vec3::new(150.0, 50.0, 0.0),
+                Vec3::new(-100.0, -150.0, 0.0),
+            ]);
+            let is_reversed = rng.gen::<bool>();
+            if is_reversed {
+                all_path_vertices.reverse();
+            }
+            initiate_movement_along_path(
+                &mut event_writer,
+                monster_entity,
+                rng.gen_range(1.0..3.0),
+                all_path_vertices,
+                &mut commands,
+            );
+        } else {
+            let mut all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
+                Vec3::new(delta, delta, 0.0),
+                Vec3::new(delta, -delta, 0.0),
+                Vec3::new(-delta, -delta, 0.0),
+                Vec3::new(-delta, delta, 0.0),
+            ]);
+            let is_reversed = rng.gen::<bool>();
+            if is_reversed {
+                all_path_vertices.reverse();
+            }
+            initiate_movement_along_path(
+                &mut event_writer,
+                monster_entity,
+                rng.gen_range(1.0..3.0),
+                all_path_vertices,
+                &mut commands,
+            );
         }
-        let all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(delta, delta, 0.0),
-            Vec3::new(delta, -delta, 0.0),
-            Vec3::new(-delta, -delta, 0.0),
-            Vec3::new(-delta, delta, 0.0),
-        ]);
-        initiate_movement_along_path(
-            &mut event_writer,
-            monster_entity,
-            rng.gen_range(1.0..3.0),
-            all_path_vertices,
-            &mut commands,
-        );
     }
 }
 
@@ -155,18 +178,28 @@ fn spawn_calculator_and_push_timer(
 }
 
 fn update_monster_hearing_rings(
-    mut monsters_query: Query<(&Transform, &mut Monster)>,
-    player_query: Query<&Transform, With<Player>>,
+    mut monsters_query: Query<(&Transform, &mut Monster), With<Monster>>,
+    surrounding_objects_query: Query<(&Transform, Option<&Bomb>, Option<&Player>)>,
 ) {
-    for player_transform in player_query.iter() {
-        for (monster_transform, mut monster) in monsters_query.iter_mut() {
-            let distance_x = (player_transform.translation.x - monster_transform.translation.x).powf(2.0);
-            let distance_y = (player_transform.translation.y - monster_transform.translation.y).powf(2.0);
-            if distance_x + distance_y < monster.hearing_ring_distance.powf(2.0) {
-                monster.state = MonsterState::Chasing;
-            } else {
-                monster.state = MonsterState::Idle;
+    for (monster_transform, mut monster) in monsters_query.iter_mut() {
+        for (surrounding_object_transform, bomb, player) in surrounding_objects_query.iter() {
+            if is_point_inside_ring(surrounding_object_transform, monster_transform, monster.hearing_ring_distance) {
+                if player.is_some() {
+                    monster.state = MonsterState::Chasing;
+                    break;
+                }
+                if bomb.is_some() {
+                    monster.state = MonsterState::Fleeing;
+                    break;
+                }
             }
+            monster.state = MonsterState::Idle;
         }
     }
+}
+
+fn is_point_inside_ring(point: &Transform, ring: &Transform, radius: f32) -> bool {
+    let distance_x = (point.translation.x - ring.translation.x).powf(2.0);
+    let distance_y = (point.translation.y - ring.translation.y).powf(2.0);
+    distance_x + distance_y < radius.powf(2.0)
 }
