@@ -4,4 +4,4 @@ pub const BOMB_SPAWN_INTERVAL: f32 = 8.0;
 pub const BOMB_FULL_SIZE: f32 = 24.0;
 pub const BOMB_SPAWN_SIZE: f32 = 1.0;
 pub const TIME_IT_TAKES_BOMB_TO_GROW: f32 = 0.3;
-pub const Z_LAYER_BOMB: f32 = 9.1;
+pub const Z_LAYER_BOMB: f32 = 11.0;
