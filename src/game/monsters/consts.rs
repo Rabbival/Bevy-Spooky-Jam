@@ -1,2 +1,5 @@
+pub const MONSTER_SPAWNING_ATTEMPTS: usize = 32;
+pub const MONSTER_SAFE_RADIUS: f32 = 32.0;
 pub const MONSTER_SPAWN_INTERVAL: f32 = 11.0;
+pub const MONSTER_FULL_SIZE: f32 = 32.0;
 pub const Z_LAYER_MONSTER: f32 = 9.0;
