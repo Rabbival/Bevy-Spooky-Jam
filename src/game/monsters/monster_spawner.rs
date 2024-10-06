@@ -2,7 +2,7 @@ use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
 
 use crate::prelude::*;
-use crate::prelude::consts::Z_LAYER_MONSTER;
+use crate::prelude::consts::{MONSTER_FULL_SIZE, MONSTER_SAFE_RADIUS, MONSTER_SPAWNING_ATTEMPTS, Z_LAYER_MONSTER};
 use crate::prelude::monster_error::MonsterError;
 
 pub struct MonsterSpawnerPlugin;
@@ -79,17 +79,17 @@ fn try_finding_place_for_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
 ) -> Result<Vec3, MonsterError> {
     let mut rng = rand::thread_rng();
-    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_FULL_SIZE * 2.0;
-    for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
+    let as_far_as_a_monster_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - MONSTER_FULL_SIZE * 2.0;
+    for _attempt in 0..MONSTER_SPAWNING_ATTEMPTS {
         let vector = Vec3::new(
-            rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
-            rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
+            rng.gen_range(-as_far_as_a_monster_can_spawn..as_far_as_a_monster_can_spawn),
+            rng.gen_range(-as_far_as_a_monster_can_spawn..as_far_as_a_monster_can_spawn),
             Z_LAYER_MONSTER,
         );
         for transform in transforms_not_to_spawn_next_to {
             if calculate_distance_including_through_screen_border(vector, transform.translation)
                 .distance
-                < BOMB_SAFE_RADIUS
+                < MONSTER_SAFE_RADIUS
             {
                 continue;
             }
@@ -262,13 +262,13 @@ fn update_monster_hearing_rings(
     surrounding_objects_query: Query<(&Transform, Option<&Bomb>, Option<&Player>)>,
 ) {
     for (monster_transform, mut monster) in monsters_query.iter_mut() {
-        for (surrounding_object_transform, bomb, player) in surrounding_objects_query.iter() {
+        for (surrounding_object_transform, maybe_bomb, maybe_player) in surrounding_objects_query.iter() {
             if is_point_inside_ring(surrounding_object_transform, monster_transform, monster.hearing_ring_distance) {
-                if player.is_some() {
+                if maybe_player.is_some() {
                     monster.state = MonsterState::Chasing;
                     break;
                 }
-                if bomb.is_some() {
+                if maybe_bomb.is_some() {
                     monster.state = MonsterState::Fleeing;
                     break;
                 }
