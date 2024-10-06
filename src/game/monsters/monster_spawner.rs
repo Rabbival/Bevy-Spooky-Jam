@@ -258,7 +258,7 @@ fn spawn_calculator_and_push_timer(
 }
 
 fn update_monster_hearing_rings(
-    mut monsters_query: Query<(&Transform, &mut Monster), With<Monster>>,
+    mut monsters_query: Query<(&Transform, &mut Monster)>,
     surrounding_objects_query: Query<(&Transform, Option<&Bomb>, Option<&Player>)>,
 ) {
     for (monster_transform, mut monster) in monsters_query.iter_mut() {
