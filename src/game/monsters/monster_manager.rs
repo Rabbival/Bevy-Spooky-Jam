@@ -17,6 +17,7 @@ fn update_monster_hearing_rings(
             if is_point_inside_ring(surrounding_object_transform, monster_transform, monster.hearing_ring_distance) {
                 if maybe_player.is_some() {
                     monster.state = MonsterState::Chasing;
+                    monster.last_player_location_seen = surrounding_object_transform.translation;
                     break;
                 }
                 if maybe_bomb.is_some() {
