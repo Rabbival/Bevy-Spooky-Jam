@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use crate::prelude::consts::MONSTER_SPAWN_INTERVAL;
 
 pub struct MonsterSpawningSequenceManagerPlugin;
 
@@ -17,7 +18,7 @@ fn spawn_monster_spawner_timer_sequence(
         &vec![EmittingTimer::new(
             vec![],
             vec![TimeMultiplierId::GameTimeMultiplier],
-            BOMB_SPAWN_INTERVAL,
+            MONSTER_SPAWN_INTERVAL,
             TimerDoneEventType::Spawn(SpawnRequestType::Monster),
         )],
         &mut commands,
