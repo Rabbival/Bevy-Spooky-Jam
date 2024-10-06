@@ -1,10 +1,18 @@
+use bevy::color::palettes::css::ORANGE;
+
 use crate::prelude::*;
 
 pub struct GizmosPlugin;
 
 impl Plugin for GizmosPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, draw_monster_hearing_ring_system);
+        app.add_systems(
+            Update,
+            (
+                draw_monster_hearing_ring_system,
+                draw_player_bomb_picking_range,
+            ),
+        );
     }
 }
 
@@ -17,6 +25,19 @@ fn draw_monster_hearing_ring_system(
             Vec2::new(transform.translation.x, transform.translation.y),
             monster.hearing_ring_distance,
             monster.state.to_hearing_ring_gizmo_color(),
+        );
+    }
+}
+
+fn draw_player_bomb_picking_range(
+    mut gizmos: Gizmos,
+    player_query: Query<&Transform, With<Player>>,
+) {
+    for transform in player_query.iter() {
+        gizmos.circle_2d(
+            Vec2::new(transform.translation.x, transform.translation.y),
+            PLAYER_BOMB_PICKING_RANGE,
+            Color::from(ORANGE),
         );
     }
 }

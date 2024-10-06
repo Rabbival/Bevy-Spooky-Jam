@@ -51,7 +51,7 @@ fn try_spawning_a_bomb(
                 ..default()
             },
             AffectingTimerCalculators::default(),
-            Bomb,
+            Bomb::new(),
         ))
         .id();
     timer_fire_request_writer.send(TimerFireRequest {

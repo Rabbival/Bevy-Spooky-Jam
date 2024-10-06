@@ -52,21 +52,21 @@ pub mod prelude {
     };
     pub use crate::game::{
         bombs::{
-            bomb_error::*, bomb_spawner::*, bomb_spawning_sequence_manager::*, consts::*,
+            bomb::*, bomb_error::*, bomb_event_channel::*, bomb_spawner::*,
+            bomb_spawning_sequence_manager::*, bomb_state::*, bomb_throwing_manager::*, consts::*,
             BombsPlugin,
         },
         consts::*,
         event_channels::*,
         monsters::*,
         orb::*,
-        player::*,
+        player::{player_event_channel::*, player_movement::*, player_spawner::*, PlayerPlugin},
         tags::*,
         GamePlugin,
     };
     pub use crate::input::{
         enums::{player_action::*, ui_action::*},
         input_maps::{player_input_map::*, ui_input_map::*, InputMapsPlugin},
-        keyboard_input_handler::*,
         mouse_input_handler::*,
         player_input::*,
         ui_input::*,
