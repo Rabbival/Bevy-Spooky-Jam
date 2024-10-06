@@ -21,19 +21,30 @@ fn listen_for_player_pressed_controls(
     mut commands: Commands,
 ) {
     for (action_map, player_transform, player_entity) in &player_query {
+        let mut movement = Vec2::ZERO;
         for action in action_map.get_pressed() {
-            match action {
-                PlayerAction::Move(move_direction) => {
-                    send_player_movement_request(
-                        &mut timer_fire_request_writer,
-                        player_transform,
-                        move_direction,
-                        player_entity,
-                        &mut commands,
-                    );
-                }
-                _ => {}
-            };
+            if action == PlayerAction::Move(BasicDirection::Up) {
+                movement.y += 1.0;
+            }
+            if action == PlayerAction::Move(BasicDirection::Down) {
+                movement.y -= 1.0;
+            }
+            if action == PlayerAction::Move(BasicDirection::Right) {
+                movement.x += 1.0;
+            }
+            if action == PlayerAction::Move(BasicDirection::Left) {
+                movement.x -= 1.0;
+            }
+        }
+        movement = movement.normalize_or_zero();
+        if movement != Vec2::ZERO {
+            send_player_movement_request(
+                &mut timer_fire_request_writer,
+                player_transform,
+                movement,
+                player_entity,
+                &mut commands,
+            );
         }
     }
 }
@@ -41,14 +52,14 @@ fn listen_for_player_pressed_controls(
 fn send_player_movement_request(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     player_transform: &Transform,
-    move_direction: BasicDirection,
+    movement: Vec2,
     player_entity: Entity,
     commands: &mut Commands,
 ) {
     let value_calculator = spawn_player_movement_calculator(
         player_transform,
         Vec3::from((
-            PLAYER_MOVEMENT_DELTA * move_direction.to_world_direction(),
+            PLAYER_MOVEMENT_DELTA * movement,
             0.0,
         )),
         commands,
