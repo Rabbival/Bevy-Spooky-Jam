@@ -17,7 +17,7 @@ fn spawn_player(
 ) {
     let input_map = player_input_map.0.clone();
     commands.spawn((
-        // TODO StateScoped(AppState::Game),
+        // TODO add StateScoped(AppState::Game),
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
             material: materials.add(Color::srgb(0.3, 0.9, 0.3)),
