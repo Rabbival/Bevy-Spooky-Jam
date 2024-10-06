@@ -1,7 +1,9 @@
-use crate::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
+
+use crate::prelude::*;
 use crate::prelude::consts::Z_LAYER_MONSTER;
+use crate::prelude::monster_error::MonsterError;
 
 pub struct MonsterSpawnerPlugin;
 
@@ -15,8 +17,86 @@ impl Plugin for MonsterSpawnerPlugin {
             )
                 .chain(),
         )
-            .add_systems(Update, update_monster_hearing_rings);
+        .add_systems(
+            Update,
+            (
+                update_monster_hearing_rings,
+                listen_for_monster_spawning_requests,
+            )
+        );
     }
+}
+
+fn listen_for_monster_spawning_requests(
+    mut timer_done_event_reader: EventReader<TimerDoneEvent>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+) {
+    for done_event in timer_done_event_reader.read() {
+        if let TimerDoneEventType::Spawn(SpawnRequestType::Monster) = done_event.event_type {
+            if let Err(monster_error) = try_spawning_a_monster(
+                &transforms_not_to_spawn_next_to,
+                &mut meshes,
+                &mut materials,
+                &mut commands,
+            ) {
+                print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
+            }
+        }
+    }
+}
+
+fn try_spawning_a_monster(
+    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
+    commands: &mut Commands,
+) -> Result<(), MonsterError> {
+    let mut rng = rand::thread_rng();
+    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
+    let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
+    commands
+        .spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
+                material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
+                transform: Transform::from_translation(place_to_spawn_in),
+                ..default()
+            },
+            AffectingTimerCalculators::default(),
+            Monster {
+                hearing_ring_distance: rng.gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+                ..default()
+            },
+            WorldBoundsWrapped,
+        ));
+    Ok(())
+}
+
+fn try_finding_place_for_monster(
+    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+) -> Result<Vec3, MonsterError> {
+    let mut rng = rand::thread_rng();
+    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_FULL_SIZE * 2.0;
+    for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
+        let vector = Vec3::new(
+            rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
+            rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
+            Z_LAYER_MONSTER,
+        );
+        for transform in transforms_not_to_spawn_next_to {
+            if calculate_distance_including_through_screen_border(vector, transform.translation)
+                .distance
+                < BOMB_SAFE_RADIUS
+            {
+                continue;
+            }
+        }
+        return Ok(vector);
+    }
+    Err(MonsterError::CouldntFindAPlaceToSpawnMonsterIn)
 }
 
 pub fn spawn_initial_monsters(
