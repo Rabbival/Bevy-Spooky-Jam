@@ -1,75 +1,35 @@
-use bevy::prelude::*;
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
-use leafwing_input_manager::prelude::*;
-
-use crate::input::PlayerAction;
 use crate::prelude::*;
+use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Startup, spawn_player)
-            .add_systems(Update, handle_player_controls.in_set(InputSystemSet::Handling))
-        ;
+        app.add_systems(Startup, spawn_player);
     }
 }
 
 fn spawn_player(
-    mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    player_input_map: Res<PlayerInputMap>,
+    mut commands: Commands,
 ) {
-    let input_map = InputMap::new([
-        (PlayerAction::MoveLeft, KeyCode::KeyA),
-        (PlayerAction::MoveLeft, KeyCode::ArrowLeft),
-        (PlayerAction::MoveUp, KeyCode::KeyW),
-        (PlayerAction::MoveUp, KeyCode::ArrowUp),
-        (PlayerAction::MoveRight, KeyCode::KeyD),
-        (PlayerAction::MoveRight, KeyCode::ArrowRight),
-        (PlayerAction::MoveDown, KeyCode::KeyS),
-        (PlayerAction::MoveDown, KeyCode::ArrowDown),
-        (PlayerAction::Fire, KeyCode::Enter),
-        (PlayerAction::Fire, KeyCode::NumpadEnter),
-    ]);
+    let input_map = player_input_map.0.clone();
     commands.spawn((
         // TODO StateScoped(AppState::Game),
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
             material: materials.add(Color::srgb(0.3, 0.9, 0.3)),
-            transform: Transform::from_xyz(
-                0.0,
-                0.0,
-                10.0,
-            ),
+            transform: Transform::from_xyz(0.0, 0.0, Z_LAYER_PLAYER),
             ..default()
         },
         InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map,
         },
+        AffectingTimerCalculators::default(),
         Player,
         WorldBoundsWrapped,
     ));
-}
-
-fn handle_player_controls(query: Query<&ActionState<PlayerAction>, With<Player>>) {
-    let action_state = query.single();
-    // Each action has a button-like state of its own that you can check
-    if action_state.just_pressed(&PlayerAction::MoveLeft) {
-        info!("I'm moving left!");
-    }
-    if action_state.just_pressed(&PlayerAction::MoveUp) {
-        info!("I'm moving up!");
-    }
-    if action_state.just_pressed(&PlayerAction::MoveRight) {
-        info!("I'm moving right!");
-    }
-    if action_state.just_pressed(&PlayerAction::MoveDown) {
-        info!("I'm moving down!");
-    }
-    if action_state.just_pressed(&PlayerAction::Fire) {
-        info!("I'm throwing a pumpkin bomb!");
-    }
 }

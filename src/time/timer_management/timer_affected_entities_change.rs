@@ -6,7 +6,8 @@ impl Plugin for TimerAffectedEntitiesChangePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            listen_for_affected_entity_removal_request.in_set(EndOfFrameSystemSet::PostLateDespawn),
+            listen_for_affected_entity_removal_request
+                .in_set(EndOfFrameSystemSet::PreTimerClearing),
         );
     }
 }
@@ -19,7 +20,7 @@ pub fn listen_for_affected_entity_removal_request(
         if let Err(time_related_error) =
             remove_affected_entity(removal_request, &mut emitting_timers)
         {
-            print_error(time_related_error, vec![LogCategory::RequestNotFulfilled])
+            print_warning(time_related_error, vec![LogCategory::RequestNotFulfilled])
         } else {
             print_info(
                 format!(

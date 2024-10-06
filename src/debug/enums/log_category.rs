@@ -5,4 +5,6 @@ pub enum LogCategory {
     ValueValidation,
     RequestNotFulfilled,
     Time,
+    Player,
+    Monster,
 }
