@@ -11,7 +11,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             PlayerSpawnerPlugin,
-            PlayerMovemetPlugin,
+            PlayerMovementPlugin,
             PlayerRequestPlugin,
         ));
     }
