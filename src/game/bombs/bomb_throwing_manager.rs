@@ -12,13 +12,16 @@ impl Plugin for BombThrowingManagerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (listen_for_bomb_throwing_attempts, listen_for_bomb_releasing)
+            (
+                listen_for_bomb_picking_attempts,
+                listen_for_bomb_throwing_requests,
+            )
                 .in_set(InputSystemSet::Handling),
         );
     }
 }
 
-fn listen_for_bomb_throwing_attempts(
+fn listen_for_bomb_picking_attempts(
     mut player_request_listener: EventReader<PlayerRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_query: Query<(&mut Bomb, &Transform, Entity)>,
@@ -90,7 +93,7 @@ fn pick_bomb_up(
     });
 }
 
-fn listen_for_bomb_releasing(
+fn listen_for_bomb_throwing_requests(
     mut player_request_listener: EventReader<PlayerRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
 ) {
