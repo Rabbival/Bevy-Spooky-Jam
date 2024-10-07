@@ -52,15 +52,16 @@ pub mod prelude {
     };
     pub use crate::game::{
         bombs::{
-            bomb::*, bomb_error::*, bomb_event_channel::*, bomb_spawner::*,
-            bomb_spawning_sequence_manager::*, bomb_state::*, bomb_throwing_manager::*, consts::*,
-            BombsPlugin,
+            bomb::*, bomb_error::*, bomb_spawner::*, bomb_spawning_sequence_manager::*,
+            bomb_state::*, bomb_throwing_manager::*, consts::*, BombsPlugin,
         },
         consts::*,
         event_channels::*,
         monsters::*,
         orb::*,
-        player::{player_event_channel::*, player_movement::*, player_spawner::*, PlayerPlugin},
+        player_management::{
+            player::*, player_event_channel::*, player_movement::*, player_spawner::*, PlayerPlugin,
+        },
         tags::*,
         GamePlugin,
     };

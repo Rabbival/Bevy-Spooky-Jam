@@ -6,7 +6,7 @@ pub mod consts;
 pub mod event_channels;
 pub mod monsters;
 pub mod orb;
-pub mod player;
+pub mod player_management;
 pub mod tags;
 
 pub struct GamePlugin;

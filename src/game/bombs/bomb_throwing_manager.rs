@@ -33,6 +33,10 @@ fn listen_for_bomb_throwing_attempts(
             {
                 bomb_query.get_mut(bomb_entity).unwrap().0.bomb_state = BombState::Held;
                 pick_bomb_up(bomb_entity, &mut time_multiplier_request_writer);
+                print_info(
+                    &format!("player picked up bomb entity: {:?}", bomb_entity),
+                    vec![LogCategory::Player],
+                );
             }
         }
     }
@@ -74,8 +78,9 @@ fn pick_bomb_up(
     time_multiplier_request_writer: &mut EventWriter<SetTimeMultiplier>,
 ) {
     //TODO
-    //Pull bomb towards player
-    //Declare somehow that player has bomb and thus can't pick any more bombs and maybe moves slower?
+    //Pull bomb towards player (timer)
+    //Set player bomb to Some(bomb_entity)
+    //* Should the player be slower while holding a bomb because it's heavy?
     //Attach bomb as child entity to player
 
     time_multiplier_request_writer.send(SetTimeMultiplier {

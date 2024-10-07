@@ -9,6 +9,7 @@ impl Plugin for PlayerInputHandlerPlugin {
             (
                 listen_for_player_pressed_controls,
                 listen_for_player_just_pressed_controls,
+                listen_for_player_just_released_controls,
             )
                 .in_set(InputSystemSet::Listening),
         );
@@ -33,13 +34,20 @@ fn listen_for_player_pressed_controls(
 
 fn listen_for_player_just_pressed_controls(
     mut player_request_writer: EventWriter<PlayerRequest>,
-    mut player_query: Query<&ActionState<PlayerAction>, With<Player>>,
+    mut player_query: Query<(&ActionState<PlayerAction>, &Player)>,
 ) {
-    for action_map in &mut player_query {
+    for (action_map, player) in &mut player_query {
         for action in action_map.get_just_pressed() {
             match action {
                 PlayerAction::BombInteraction => {
-                    player_request_writer.send(PlayerRequest::PickUpBomb);
+                    if player.held_bomb.is_none() {
+                        player_request_writer.send(PlayerRequest::PickUpBomb);
+                    } else {
+                        print_info(
+                            "can't pick a bomb, the player already has one",
+                            vec![LogCategory::Player],
+                        );
+                    }
                 }
                 _ => {}
             };

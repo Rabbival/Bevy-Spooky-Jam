@@ -29,7 +29,7 @@ fn spawn_player(
             input_map,
         },
         AffectingTimerCalculators::default(),
-        Player,
+        Player::default(),
         WorldBoundsWrapped,
     ));
 }

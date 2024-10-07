@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+pub mod player;
 pub mod player_event_channel;
 pub mod player_movement;
 pub mod player_spawner;
