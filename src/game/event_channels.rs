@@ -1,11 +1,10 @@
 use crate::prelude::*;
 
 #[derive(Debug, Event)]
-pub enum OrbEvent{
+pub enum OrbEvent {
     SpawnOrb(Vec2),
     CollectAllOrbs(Vec2),
 }
-
 
 pub struct GameEventChannelsPlugin;
 
