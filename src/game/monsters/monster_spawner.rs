@@ -13,7 +13,7 @@ impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Startup,
-            (spawn_initial_monsters, initiate_square_movement).chain(),
+            (spawn_initial_monsters, initiate_path_movement).chain(),
         )
         .add_systems(Update, listen_for_monster_spawning_requests);
     }
@@ -130,55 +130,50 @@ pub fn spawn_initial_monsters(
     }
 }
 
-pub fn initiate_square_movement(
+pub fn initiate_path_movement(
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
     monsters_query: Query<Entity, With<Monster>>,
 ) {
-    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let mut rng = rand::thread_rng();
     for monster_entity in &monsters_query {
-        let delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
-        let is_cursed_pentagon = rng.gen::<bool>();
-        if is_cursed_pentagon {
-            let mut all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-                Vec3::new(0.0, 150.0, 0.0),
-                Vec3::new(100.0, -150.0, 0.0),
-                Vec3::new(-150.0, 50.0, 0.0),
-                Vec3::new(150.0, 50.0, 0.0),
-                Vec3::new(-100.0, -150.0, 0.0),
-            ]);
-            let is_reversed = rng.gen::<bool>();
-            if is_reversed {
-                all_path_vertices.reverse();
-            }
-            initiate_movement_along_path(
-                &mut event_writer,
-                monster_entity,
-                rng.gen_range(1.0..3.0),
-                all_path_vertices,
-                &mut commands,
-            );
-        } else {
-            let mut all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-                Vec3::new(delta, delta, 0.0),
-                Vec3::new(delta, -delta, 0.0),
-                Vec3::new(-delta, -delta, 0.0),
-                Vec3::new(-delta, delta, 0.0),
-            ]);
-            let is_reversed = rng.gen::<bool>();
-            if is_reversed {
-                all_path_vertices.reverse();
-            }
-            initiate_movement_along_path(
-                &mut event_writer,
-                monster_entity,
-                rng.gen_range(1.0..3.0),
-                all_path_vertices,
-                &mut commands,
-            );
-        }
+        initiate_movement_along_path(
+            &mut event_writer,
+            monster_entity,
+            rng.gen_range(1.0..3.0),
+            generate_inital_path_to_follow(),
+            &mut commands,
+        );
     }
+}
+
+fn generate_inital_path_to_follow() -> Vec<Vec3> {
+    let mut all_path_vertices: Vec<Vec3>;
+    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
+    let mut rng = rand::thread_rng();
+    let is_cursed_pentagon = rng.gen::<bool>();
+    if is_cursed_pentagon {
+        all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
+            Vec3::new(0.0, 150.0, 0.0),
+            Vec3::new(100.0, -150.0, 0.0),
+            Vec3::new(-150.0, 50.0, 0.0),
+            Vec3::new(150.0, 50.0, 0.0),
+            Vec3::new(-100.0, -150.0, 0.0),
+        ]);
+    } else {
+        let delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
+        all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
+            Vec3::new(delta, delta, 0.0),
+            Vec3::new(delta, -delta, 0.0),
+            Vec3::new(-delta, -delta, 0.0),
+            Vec3::new(-delta, delta, 0.0),
+        ]);
+    }
+    let is_reversed = rng.gen::<bool>();
+    if is_reversed {
+        all_path_vertices.reverse();
+    }
+    all_path_vertices
 }
 
 fn initiate_movement_along_path(
