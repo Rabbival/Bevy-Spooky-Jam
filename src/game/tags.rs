@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use bevy::color::palettes::css::*;
 
 #[derive(Debug, Clone, Copy, Component)]
 pub struct Orb;
@@ -20,17 +19,6 @@ pub enum MonsterState {
     Chasing,
     Fleeing,
     CalmingDown,
-}
-
-impl MonsterState {
-    pub fn to_hearing_ring_gizmo_color(&self) -> Color {
-        match self {
-            MonsterState::Idle => Color::from(GRAY),
-            MonsterState::Chasing => Color::from(MAROON),
-            MonsterState::Fleeing => Color::from(OLIVE),
-            MonsterState::CalmingDown => Color::from(NAVY),
-        }
-    }
 }
 
 #[derive(Component)]
