@@ -17,16 +17,13 @@ fn listen_for_player_movement_requests(
     player_query: Query<(&Transform, Entity), With<Player>>,
     mut commands: Commands,
 ) {
-    for requested_move_direction in
+    for normalized_move_direction in
         read_single_field_variant!(player_request_listener, PlayerRequest::Move)
     {
         for (player_transform, player_entity) in &player_query {
             let value_calculator = spawn_player_movement_calculator(
                 &player_transform,
-                Vec3::from((
-                    PLAYER_MOVEMENT_DELTA * requested_move_direction.to_world_direction(),
-                    0.0,
-                )),
+                Vec3::from((PLAYER_MOVEMENT_DELTA * *normalized_move_direction, 0.0)),
                 &mut commands,
             );
             timer_fire_request_writer.send(TimerFireRequest {

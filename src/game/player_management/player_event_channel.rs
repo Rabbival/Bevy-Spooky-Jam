@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Event, Debug, Clone, Copy, PartialEq)]
 pub enum PlayerRequest {
-    Move(BasicDirection),
+    Move(Vec2),
     PickUpBomb,
     ThrowBomb,
 }

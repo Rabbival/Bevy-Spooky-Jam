@@ -21,14 +21,33 @@ fn listen_for_player_pressed_controls(
     player_query: Query<&ActionState<PlayerAction>, With<Player>>,
 ) {
     for action_map in &player_query {
-        for action in action_map.get_pressed() {
-            match action {
-                PlayerAction::Move(move_direction) => {
-                    player_request_writer.send(PlayerRequest::Move(move_direction));
-                }
-                _ => {}
-            };
+        if let Some(normalized_movement_vector) = determine_move_direction(action_map) {
+            player_request_writer.send(PlayerRequest::Move(normalized_movement_vector));
         }
+    }
+}
+
+fn determine_move_direction(action_map: &ActionState<PlayerAction>) -> Option<Vec2> {
+    let mut movement_direction = Vec2::ZERO;
+    for action in action_map.get_pressed() {
+        if action == PlayerAction::Move(BasicDirection::Up) {
+            movement_direction.y += 1.0;
+        }
+        if action == PlayerAction::Move(BasicDirection::Down) {
+            movement_direction.y -= 1.0;
+        }
+        if action == PlayerAction::Move(BasicDirection::Right) {
+            movement_direction.x += 1.0;
+        }
+        if action == PlayerAction::Move(BasicDirection::Left) {
+            movement_direction.x -= 1.0;
+        }
+    }
+    movement_direction = movement_direction.normalize_or_zero();
+    if movement_direction == Vec2::ZERO {
+        None
+    } else {
+        Some(movement_direction)
     }
 }
 
