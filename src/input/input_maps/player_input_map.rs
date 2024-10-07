@@ -20,8 +20,8 @@ impl Plugin for PlayerInputMapPlugin {
                 ),
                 (PlayerAction::Move(BasicDirection::Down), KeyCode::KeyS),
                 (PlayerAction::Move(BasicDirection::Down), KeyCode::ArrowDown),
-                (PlayerAction::Fire, KeyCode::Enter),
-                (PlayerAction::Fire, KeyCode::NumpadEnter),
+                (PlayerAction::BombInteraction, KeyCode::Space),
+                (PlayerAction::BombInteraction, KeyCode::NumpadEnter),
             ])));
     }
 }

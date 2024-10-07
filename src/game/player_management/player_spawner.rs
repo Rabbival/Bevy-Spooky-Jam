@@ -1,9 +1,9 @@
 use crate::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 
-pub struct PlayerPlugin;
+pub struct PlayerSpawnerPlugin;
 
-impl Plugin for PlayerPlugin {
+impl Plugin for PlayerSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
     }
@@ -29,7 +29,7 @@ fn spawn_player(
             input_map,
         },
         AffectingTimerCalculators::default(),
-        Player,
+        Player::default(),
         WorldBoundsWrapped,
     ));
 }
