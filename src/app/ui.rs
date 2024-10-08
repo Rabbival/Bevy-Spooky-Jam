@@ -5,7 +5,8 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_ui);
+        app.add_systems(Startup, spawn_ui)
+            .add_systems(Update, update_player_game_stopwatch);
     }
 }
 
@@ -50,4 +51,10 @@ fn spawn_ui(mut commands: Commands) {
         },
         PlayerGameStopwatch { elapsed_ms: 0 },
     ));
+}
+
+fn update_player_game_stopwatch(player_game_stopwatch_query: Query<(&Transform, PlayerGameStopwatch), With<PlayerGameStopwatch>>) {
+    for (stopwatch_transform, stopwatch) in player_game_stopwatch_query.iter() {
+        stopwatch_transform.sections[0].value = stopwatch.elapsed_ms.to_string();
+    }
 }
