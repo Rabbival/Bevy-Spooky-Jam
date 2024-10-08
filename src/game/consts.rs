@@ -2,8 +2,3 @@ pub const MULTIPLIER_WHEN_SLOW_MOTION: f32 = 0.05;
 pub const SLOW_MOTION_KICK_IN_AND_OUT_TIME: f32 = 0.2;
 
 pub const INITIAL_MONSTERS_AMOUNT: i32 = 3;
-
-pub const PLAYER_MOVEMENT_DELTA: f32 = 4.0;
-pub const Z_LAYER_PLAYER: f32 = 10.0;
-
-pub const PLAYER_BOMB_PICKING_RANGE: f32 = 24.0;

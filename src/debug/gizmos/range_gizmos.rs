@@ -1,5 +1,5 @@
 use bevy::color::palettes::css::{ORANGE, YELLOW};
-
+use crate::game::player_management::consts::PLAYER_BOMB_PICKING_RANGE;
 use crate::prelude::*;
 
 pub struct RangeGizmosPlugin;
