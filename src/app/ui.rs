@@ -53,8 +53,9 @@ fn spawn_ui(mut commands: Commands) {
     ));
 }
 
-fn update_player_game_stopwatch(player_game_stopwatch_query: Query<(&Transform, PlayerGameStopwatch), With<PlayerGameStopwatch>>) {
-    for (stopwatch_transform, stopwatch) in player_game_stopwatch_query.iter() {
-        stopwatch_transform.sections[0].value = stopwatch.elapsed_ms.to_string();
+fn update_player_game_stopwatch(mut player_game_stopwatch_text_query: Query<(&mut Text, &mut PlayerGameStopwatch), With<PlayerGameStopwatch>>) {
+    for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
+        stopwatch.elapsed_ms += 1;
+        text.sections[0].value = stopwatch.elapsed_ms.to_string();
     }
 }
