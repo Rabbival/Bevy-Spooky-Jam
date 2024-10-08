@@ -6,7 +6,12 @@ impl Plugin for BombThrowingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (listen_for_bomb_throwing_requests,).in_set(InputSystemSet::Handling),
+            (
+                update_bomb_text_color_after_throw,
+                listen_for_bomb_throwing_requests,
+            )
+                .chain()
+                .in_set(InputSystemSet::Handling),
         );
     }
 }
@@ -110,4 +115,24 @@ fn bomb_throw_calculator(
             TimerGoingEventType::Move(MovementType::InDirectLine),
         ))
         .id()
+}
+
+fn update_bomb_text_color_after_throw(
+    mut player_request_listener: EventReader<PlayerRequest>,
+    player_query: Query<&Player>,
+    mut text_query: Query<(&mut Text, &Parent)>,
+) {
+    for _bomb_throw_request in
+        read_no_field_variant!(player_request_listener, PlayerRequest::ThrowBomb)
+    {
+        for player in &player_query {
+            if let Some(bomb_entity) = player.held_bomb {
+                for (mut text, text_parent_entity) in &mut text_query {
+                    if text_parent_entity.get() == bomb_entity {
+                        text.sections[0].style.color = BombState::Ticking.to_color().text;
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,11 +1,5 @@
 use crate::prelude::*;
 
-#[derive(Debug, Clone, Copy, Component)]
-pub struct Orb;
-
-#[derive(Debug, Clone, Copy, Component)]
-pub struct Patroller;
-
 #[derive(Component, Default)]
 pub struct Monster {
     pub hearing_ring_distance: f32,
