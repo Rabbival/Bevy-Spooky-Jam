@@ -5,5 +5,5 @@ pub struct WorldBoundsWrapped;
 
 #[derive(Component)]
 pub struct PlayerGameStopwatch {
-    elapsed_ms: u64,
+    pub elapsed_ms: u64,
 }
