@@ -43,6 +43,7 @@ fn listen_for_bomb_throwing_requests(
                         &mut time_multiplier_request_writer,
                         bomb_entity,
                         &bomb_transform,
+                        &bomb,
                         cursor_world_position.0,
                         &mut commands,
                     );
@@ -76,10 +77,12 @@ fn fire_bomb_and_unslow_time(
     time_multiplier_request_writer: &mut EventWriter<SetTimeMultiplier>,
     bomb_entity: Entity,
     bomb_transform: &Transform,
+    bomb: &Bomb,
     cursor_position: Vec2,
     commands: &mut Commands,
 ) {
     let throw_value_calculator = bomb_throw_calculator(bomb_transform, cursor_position, commands);
+    let countdown_calculator = bomb_countdown_calculator(bomb, commands);
     timer_fire_request_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
             vec![TimerAffectedEntity {
@@ -89,6 +92,30 @@ fn fire_bomb_and_unslow_time(
             vec![TimeMultiplierId::GameTimeMultiplier],
             BOMB_THROW_TIME,
             TimerDoneEventType::Nothing,
+        ),
+        parent_sequence: None,
+    });
+    timer_fire_request_writer.send(TimerFireRequest {
+        timer: EmittingTimer::new(
+            vec![TimerAffectedEntity {
+                affected_entity: bomb_entity,
+                value_calculator_entity: Some(throw_value_calculator),
+            }],
+            vec![TimeMultiplierId::GameTimeMultiplier],
+            BOMB_THROW_TIME,
+            TimerDoneEventType::Nothing,
+        ),
+        parent_sequence: None,
+    });
+    timer_fire_request_writer.send(TimerFireRequest {
+        timer: EmittingTimer::new(
+            vec![TimerAffectedEntity {
+                affected_entity: bomb_entity,
+                value_calculator_entity: Some(countdown_calculator),
+            }],
+            vec![TimeMultiplierId::GameTimeMultiplier],
+            bomb.full_duration as f32,
+            TimerDoneEventType::ExplodeInRadius(BOMB_EXPLOSION_RADIUS),
         ),
         parent_sequence: None,
     });
@@ -113,6 +140,20 @@ fn bomb_throw_calculator(
                 Interpolator::default(),
             ),
             TimerGoingEventType::Move(MovementType::InDirectLine),
+        ))
+        .id()
+}
+
+fn bomb_countdown_calculator(bomb: &Bomb, commands: &mut Commands) -> Entity {
+    commands
+        .spawn(GoingEventValueCalculator::new(
+            TimerCalculatorSetPolicy::KeepNewTimer,
+            ValueByInterpolation::from_goal_and_current(
+                bomb.full_duration as f32,
+                0.0,
+                Interpolator::default(),
+            ),
+            TimerGoingEventType::BombCountdown,
         ))
         .id()
 }
