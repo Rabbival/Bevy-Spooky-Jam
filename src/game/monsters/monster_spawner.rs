@@ -19,6 +19,7 @@ fn listen_for_monster_spawning_requests(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
     for done_event in timer_done_event_reader.read() {
@@ -27,6 +28,7 @@ fn listen_for_monster_spawning_requests(
                 &transforms_not_to_spawn_next_to,
                 &mut meshes,
                 &mut materials,
+                &mut event_writer,
                 &mut commands,
             ) {
                 print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
@@ -39,12 +41,13 @@ fn try_spawning_a_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
-    commands: &mut Commands,
+    mut event_writer: &mut EventWriter<TimerFireRequest>,
+    mut commands: &mut Commands,
 ) -> Result<(), MonsterError> {
     let mut rng = rand::thread_rng();
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
-    commands.spawn((
+    let monster_entity = commands.spawn((
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
             material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
@@ -58,7 +61,14 @@ fn try_spawning_a_monster(
             ..default()
         },
         WorldBoundsWrapped,
-    ));
+    )).id();
+    initiate_movement_along_path(
+        &mut event_writer,
+        monster_entity,
+        rng.gen_range(1.0..3.0),
+        generate_initial_path_to_follow(),
+        &mut commands,
+    );
     Ok(())
 }
 
