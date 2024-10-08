@@ -18,7 +18,7 @@ fn update_monster_hearing_rings(
     player_query: Query<&Transform, With<Player>>,
     bomb_query: Query<(&Transform, &Bomb), With<Bomb>>,
 ) {
-    for (monster_transform, mut monster) in monsters_query.iter_mut() {
+    'monsters_loop: for (monster_transform, mut monster) in monsters_query.iter_mut() {
         for player_transform in &player_query {
             if is_point_inside_ring(
                 player_transform,
@@ -27,7 +27,7 @@ fn update_monster_hearing_rings(
             ) {
                 monster.state = MonsterState::Chasing;
                 //TODO: set chasing point
-                continue;
+                continue 'monsters_loop;
             }
         }
         //TODO: maybe take outside to a smaller function

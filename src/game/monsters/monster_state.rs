@@ -1,6 +1,15 @@
 use bevy::color::palettes::basic::{GRAY, MAROON, NAVY, OLIVE};
 
-use crate::prelude::{Color, MonsterState};
+use crate::prelude::*;
+
+#[derive(Component, Eq, PartialEq, Default)]
+pub enum MonsterState {
+    #[default]
+    Idle,
+    Chasing,
+    Fleeing,
+    CalmingDown,
+}
 
 impl MonsterState {
     pub fn to_hearing_ring_gizmo_color(&self) -> Color {
