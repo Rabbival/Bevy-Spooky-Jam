@@ -9,10 +9,7 @@ pub struct MonsterSpawnerPlugin;
 
 impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Startup,
-            (spawn_initial_monsters, initiate_path_movement).chain(),
-        )
+        app.add_systems(Startup, spawn_initial_monsters)
         .add_systems(Update, listen_for_monster_spawning_requests);
     }
 }
@@ -90,6 +87,7 @@ fn try_finding_place_for_monster(
 }
 
 pub fn spawn_initial_monsters(
+    mut event_writer: EventWriter<TimerFireRequest>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
@@ -100,7 +98,7 @@ pub fn spawn_initial_monsters(
     let mut rng = rand::thread_rng();
     for i in 0..INITIAL_MONSTERS_AMOUNT {
         let second_range_factor: f32 = i as f32 * third_window_size;
-        commands.spawn((
+        let monster_entity = commands.spawn((
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
                 material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
@@ -124,17 +122,7 @@ pub fn spawn_initial_monsters(
                 ..default()
             },
             WorldBoundsWrapped,
-        ));
-    }
-}
-
-pub fn initiate_path_movement(
-    mut event_writer: EventWriter<TimerFireRequest>,
-    mut commands: Commands,
-    monsters_query: Query<Entity, With<Monster>>,
-) {
-    let mut rng = rand::thread_rng();
-    for monster_entity in &monsters_query {
+        )).id();
         initiate_movement_along_path(
             &mut event_writer,
             monster_entity,
