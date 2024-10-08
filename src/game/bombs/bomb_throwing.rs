@@ -90,19 +90,10 @@ fn fire_bomb_and_unslow_time(
                 value_calculator_entity: Some(throw_value_calculator),
             }],
             vec![TimeMultiplierId::GameTimeMultiplier],
-            BOMB_THROW_TIME,
-            TimerDoneEventType::Nothing,
-        ),
-        parent_sequence: None,
-    });
-    timer_fire_request_writer.send(TimerFireRequest {
-        timer: EmittingTimer::new(
-            vec![TimerAffectedEntity {
-                affected_entity: bomb_entity,
-                value_calculator_entity: Some(throw_value_calculator),
-            }],
-            vec![TimeMultiplierId::GameTimeMultiplier],
-            BOMB_THROW_TIME,
+            bomb_transform
+                .translation
+                .distance(cursor_position.extend(Z_LAYER_BOMB))
+                / BOMB_THROWING_SPEED,
             TimerDoneEventType::Nothing,
         ),
         parent_sequence: None,

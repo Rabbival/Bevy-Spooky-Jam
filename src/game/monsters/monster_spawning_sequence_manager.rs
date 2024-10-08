@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use crate::prelude::consts::MONSTER_SPAWN_INTERVAL;
 
 pub struct MonsterSpawningSequenceManagerPlugin;
 

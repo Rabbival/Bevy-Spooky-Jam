@@ -1,12 +1,12 @@
-use bevy::color::palettes::css::{ORANGE, YELLOW};
-
+use crate::game::player_management::consts::PLAYER_BOMB_PICKING_RANGE;
 use crate::prelude::*;
+use bevy::color::palettes::css::{ORANGE, YELLOW};
 
 pub struct RangeGizmosPlugin;
 
 impl Plugin for RangeGizmosPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
+        app.add_systems(Startup, config_line_width).add_systems(
             Update,
             (
                 draw_monster_hearing_ring_system,
@@ -15,6 +15,11 @@ impl Plugin for RangeGizmosPlugin {
             ),
         );
     }
+}
+
+fn config_line_width(mut config_store: ResMut<GizmoConfigStore>) {
+    let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
+    config.line_width = 0.3;
 }
 
 fn draw_monster_hearing_ring_system(

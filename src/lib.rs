@@ -58,7 +58,10 @@ pub mod prelude {
             consts::*, explosion_manager::*, BombsPlugin,
         },
         consts::*,
-        monsters::*,
+        monsters::{
+            consts::*, monster::*, monster_error::*, monster_manager::*, monster_spawner::*,
+            monster_spawning_sequence_manager::*, monster_state::*, MonstersPlugin,
+        },
         player_management::{
             player::*, player_event_channel::*, player_movement::*, player_spawner::*, PlayerPlugin,
         },
