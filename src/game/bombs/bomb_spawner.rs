@@ -7,14 +7,38 @@ pub struct BombSpawnerPlugin;
 
 impl Plugin for BombSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, listen_for_bomb_spawning_requests);
+        app.add_systems(Startup, spawn_inital_bombs).add_systems(
+            Update,
+            (
+                listen_for_bomb_spawning_requests,
+                listen_for_bombs_done_growing,
+            ),
+        );
+    }
+}
+
+fn spawn_inital_bombs(
+    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+) {
+    if let Err(bomb_error) = try_spawning_a_bomb(
+        &mut timer_fire_request_writer,
+        &transforms_not_to_spawn_next_to,
+        &mut meshes,
+        &mut materials,
+        &mut commands,
+    ) {
+        print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
     }
 }
 
 fn listen_for_bomb_spawning_requests(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
-    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Monster>)>>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
@@ -36,7 +60,7 @@ fn listen_for_bomb_spawning_requests(
 
 fn try_spawning_a_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
-    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Monster>)>>,
+    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
     commands: &mut Commands,
@@ -45,9 +69,10 @@ fn try_spawning_a_bomb(
     let newborn_bomb = commands
         .spawn((
             MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Circle::new(BOMB_SPAWN_SIZE))),
-                material: materials.add(Color::srgb(0.8, 0.2, 0.0)),
-                transform: Transform::from_translation(place_to_spawn_in),
+                mesh: Mesh2dHandle(meshes.add(Circle::new(BOMB_SIZE))),
+                material: materials.add(BombState::PreHeld.to_color().bomb),
+                transform: Transform::from_translation(place_to_spawn_in)
+                    .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
             },
             AffectingTimerCalculators::default(),
@@ -62,7 +87,7 @@ fn try_spawning_a_bomb(
             }],
             vec![TimeMultiplierId::GameTimeMultiplier],
             TIME_IT_TAKES_BOMB_TO_GROW,
-            TimerDoneEventType::Nothing,
+            TimerDoneEventType::SpawnChildForAffectedEntities(SpawnRequestType::BombText),
         ),
         parent_sequence: None,
     });
@@ -74,8 +99,8 @@ fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
         .spawn(GoingEventValueCalculator::new(
             TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
             ValueByInterpolation::from_goal_and_current(
-                BOMB_SPAWN_SIZE,
-                BOMB_FULL_SIZE,
+                BOMB_SPAWN_SCALE,
+                1.0,
                 Interpolator::default(),
             ),
             TimerGoingEventType::Scale,
@@ -84,11 +109,15 @@ fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
 }
 
 fn try_finding_place_for_bomb(
-    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Monster>)>>,
+    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
 ) -> Result<Vec3, BombError> {
+    if FunctionalityOverride::AlwaysSpawnBombsInMiddle.enabled() {
+        return Ok(Vec3::ZERO);
+    }
+
     let mut rng = rand::thread_rng();
-    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_FULL_SIZE * 2.0;
-    for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
+    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_SIZE * 2.0;
+    'bomb_spawning_loop: for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
         let vector = Vec3::new(
             rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
             rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
@@ -99,10 +128,41 @@ fn try_finding_place_for_bomb(
                 .distance
                 < BOMB_SAFE_RADIUS
             {
-                continue;
+                continue 'bomb_spawning_loop;
             }
         }
         return Ok(vector);
     }
     Err(BombError::CouldntFindAPlaceToSpawnBombIn)
+}
+
+fn listen_for_bombs_done_growing(
+    mut timer_done_event_reader: EventReader<TimerDoneEvent>,
+    bomb_query: Query<&Bomb>,
+    mut commands: Commands,
+) {
+    for done_event in timer_done_event_reader.read() {
+        if let TimerDoneEventType::SpawnChildForAffectedEntities(SpawnRequestType::BombText) =
+            done_event.event_type
+        {
+            for affected_entity in done_event.affected_entities.affected_entities_iter() {
+                if let Ok(bomb) = bomb_query.get(affected_entity) {
+                    commands
+                        .spawn(Text2dBundle {
+                            text: Text::from_section(
+                                format!("{:?}", bomb.currently_displayed),
+                                TextStyle {
+                                    font_size: BOMB_TIME_LEFT_FONT_SIZE,
+                                    color: BombState::PreHeld.to_color().text,
+                                    ..default()
+                                },
+                            ),
+                            transform: Transform::from_translation(Vec3::Z),
+                            ..default()
+                        })
+                        .set_parent(affected_entity);
+                }
+            }
+        }
+    }
 }

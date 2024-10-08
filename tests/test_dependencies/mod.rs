@@ -9,7 +9,6 @@ pub fn get_app_with_resources_and_events() -> App {
         .init_resource::<Assets<ColorMaterial>>()
         .add_event::<ValueCalculatorRequest>()
         .add_event::<TimerDoneEvent>()
-        .add_event::<OrbEvent>()
         .add_event::<TimerGoingEvent<f32>>()
         .add_event::<TimerGoingEvent<Vec2>>()
         .add_event::<TimerGoingEvent<Vec3>>()

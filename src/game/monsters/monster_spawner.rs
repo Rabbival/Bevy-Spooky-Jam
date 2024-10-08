@@ -72,7 +72,7 @@ fn try_finding_place_for_monster(
 ) -> Result<Vec3, MonsterError> {
     let mut rng = rand::thread_rng();
     let as_far_as_a_monster_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - MONSTER_FULL_SIZE * 2.0;
-    for _attempt in 0..MONSTER_SPAWNING_ATTEMPTS {
+    'monster_spawning_loop: for _attempt in 0..MONSTER_SPAWNING_ATTEMPTS {
         let vector = Vec3::new(
             rng.gen_range(-as_far_as_a_monster_can_spawn..as_far_as_a_monster_can_spawn),
             rng.gen_range(-as_far_as_a_monster_can_spawn..as_far_as_a_monster_can_spawn),
@@ -83,7 +83,7 @@ fn try_finding_place_for_monster(
                 .distance
                 < MONSTER_SAFE_RADIUS
             {
-                continue;
+                continue 'monster_spawning_loop;
             }
         }
         return Ok(vector);
@@ -141,13 +141,13 @@ pub fn initiate_path_movement(
             &mut event_writer,
             monster_entity,
             rng.gen_range(1.0..3.0),
-            generate_inital_path_to_follow(),
+            generate_initial_path_to_follow(),
             &mut commands,
         );
     }
 }
 
-fn generate_inital_path_to_follow() -> Vec<Vec3> {
+fn generate_initial_path_to_follow() -> Vec<Vec3> {
     let mut all_path_vertices: Vec<Vec3>;
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let mut rng = rand::thread_rng();

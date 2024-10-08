@@ -57,18 +57,17 @@ fn listen_for_player_just_pressed_controls(
 ) {
     for (action_map, player) in &mut player_query {
         for action in action_map.get_just_pressed() {
-            match action {
-                PlayerAction::BombInteraction => {
-                    if player.held_bomb.is_none() {
-                        player_request_writer.send(PlayerRequest::PickUpBomb);
-                    } else {
-                        print_info(
-                            "can't pick a bomb, the player already has one",
-                            vec![LogCategory::Player],
-                        );
-                    }
+            if action == PlayerAction::BombInteraction {
+                if player.held_bomb.is_none()
+                    || FunctionalityOverride::PlayerMayCarryInfiniteBombs.enabled()
+                {
+                    player_request_writer.send(PlayerRequest::PickUpBomb);
+                } else {
+                    print_info(
+                        "can't pick a bomb, the player already has one",
+                        vec![LogCategory::Player],
+                    );
                 }
-                _ => {}
             };
         }
     }
@@ -80,11 +79,8 @@ fn listen_for_player_just_released_controls(
 ) {
     for action_map in &mut player_query {
         for action in action_map.get_just_released() {
-            match action {
-                PlayerAction::BombInteraction => {
-                    player_request_writer.send(PlayerRequest::ThrowBomb);
-                }
-                _ => {}
+            if action == PlayerAction::BombInteraction {
+                player_request_writer.send(PlayerRequest::ThrowBomb);
             };
         }
     }

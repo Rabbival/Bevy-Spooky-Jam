@@ -2,4 +2,5 @@
 pub enum SpawnRequestType {
     Bomb,
     Monster,
+    BombText,
 }

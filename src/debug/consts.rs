@@ -6,7 +6,6 @@ lazy_static! {
     pub static ref LOG_CATEGORYS_TO_PRINT: Vec<LogCategory> = vec![
         LogCategory::Crucial,
         LogCategory::RequestNotFulfilled,
-        LogCategory::Player,
         LogCategory::Monster,
     ];
     pub static ref LOG_CATEGORYS_TO_APPEND_TO_SESSION_LOG: Vec<LogCategory> =
@@ -15,5 +14,9 @@ lazy_static! {
         BevyLogLevel::Error,
         BevyLogLevel::Warning,
         BevyLogLevel::Info
+    ];
+    pub static ref ACTIVE_FUNCTIONALITY_OVERRIDES: Vec<FunctionalityOverride> = vec![
+        // FunctionalityOverride::AlwaysSpawnBombsInMiddle,
+        // FunctionalityOverride::PlayerMayCarryInfiniteBombs
     ];
 }
