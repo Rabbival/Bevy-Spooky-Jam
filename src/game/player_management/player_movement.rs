@@ -1,8 +1,9 @@
+use crate::game::player_management::consts::PLAYER_MOVEMENT_DELTA;
 use crate::{prelude::*, read_single_field_variant};
 
-pub struct PlayerMovemetPlugin;
+pub struct PlayerMovementPlugin;
 
-impl Plugin for PlayerMovemetPlugin {
+impl Plugin for PlayerMovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,

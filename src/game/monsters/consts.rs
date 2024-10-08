@@ -1,3 +1,4 @@
+pub const INITIAL_MONSTERS_AMOUNT: i32 = 3;
 pub const MONSTER_SPAWNING_ATTEMPTS: usize = 32;
 pub const MONSTER_SAFE_RADIUS: f32 = 32.0;
 pub const MONSTER_SPAWN_INTERVAL: f32 = 11.0;
