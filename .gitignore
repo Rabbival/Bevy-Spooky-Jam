@@ -25,3 +25,4 @@ Cargo.lock
 
 # No need to change the logs file every time we run the program
 game_logs/
+/assets/Assets Master.ai
