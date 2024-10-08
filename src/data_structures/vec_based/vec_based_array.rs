@@ -163,7 +163,7 @@ mod tests {
     fn test_remove_by_item() {
         let vec = vec![1, 2];
         let mut vec_based_array: VecBasedArray<usize, 2> = VecBasedArray::new(vec.clone());
-        let original_vec_based_array_copy = vec_based_array.clone();
+        let original_vec_based_array_copy = vec_based_array;
 
         let valid_removal_result = vec_based_array.remove_by_item(1);
         let item_not_found_removal_result = vec_based_array.remove_by_item(1);

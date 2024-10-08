@@ -8,6 +8,12 @@ pub struct Bomb {
     pub bomb_state: BombState,
 }
 
+impl Default for Bomb {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Bomb {
     pub fn new() -> Self {
         let mut rng = rand::thread_rng();

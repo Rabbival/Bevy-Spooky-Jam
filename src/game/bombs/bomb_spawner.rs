@@ -111,7 +111,7 @@ fn try_finding_place_for_bomb(
 
     let mut rng = rand::thread_rng();
     let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_FULL_SIZE * 2.0;
-    for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
+    'bomb_spawning_loop: for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
         let vector = Vec3::new(
             rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
             rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
@@ -122,7 +122,7 @@ fn try_finding_place_for_bomb(
                 .distance
                 < BOMB_SAFE_RADIUS
             {
-                continue;
+                continue 'bomb_spawning_loop;
             }
         }
         return Ok(vector);

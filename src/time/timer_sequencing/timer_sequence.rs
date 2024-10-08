@@ -110,7 +110,7 @@ mod tests {
     #[should_panic(expected = "spawn attempt return an error")]
     fn nothing_spawns_if_timer_list_is_empty() {
         let mut app = App::new();
-        attempt_timer_sequence_spawning(&mut app, &vec![], false);
+        attempt_timer_sequence_spawning(&mut app, &[], false);
     }
 
     #[test]
@@ -133,7 +133,7 @@ mod tests {
 
     fn test_correct_index_advancing(looping: bool) {
         let mut app = App::new();
-        let _ = attempt_timer_sequence_spawning(&mut app, &two_emitting_timers_vec(), looping);
+        attempt_timer_sequence_spawning(&mut app, &two_emitting_timers_vec(), looping);
         match try_fetch_single_timer_sequence(&mut app) {
             Ok(timer_sequence) => {
                 assert_correct_index_advancing(timer_sequence, looping);
@@ -211,6 +211,6 @@ mod tests {
     fn try_fetch_single_timer_sequence(app: &mut App) -> Result<&TimerSequence, QuerySingleError> {
         app.world_mut()
             .query::<&TimerSequence>()
-            .get_single(&app.world())
+            .get_single(app.world())
     }
 }

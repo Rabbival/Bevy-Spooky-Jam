@@ -35,7 +35,7 @@ fn listen_for_bomb_picking_attempts(
                 make_player_hold_bomb(
                     player_entity,
                     &mut player,
-                    &player_transform,
+                    player_transform,
                     bomb_entity,
                     &mut bomb_query,
                     &mut commands,
@@ -49,7 +49,7 @@ fn listen_for_bomb_picking_attempts(
                 );
 
                 print_info(
-                    &format!("player picked up bomb entity: {:?}", bomb_entity),
+                    format!("player picked up bomb entity: {:?}", bomb_entity),
                     vec![LogCategory::Player],
                 );
             }
