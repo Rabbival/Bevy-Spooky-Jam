@@ -1,9 +1,7 @@
-use crate::prelude::monster_manager::MonsterManagerPlugin;
-use crate::prelude::monster_spawner::MonsterSpawnerPlugin;
-use crate::prelude::monster_spawning_sequence_manager::MonsterSpawningSequenceManagerPlugin;
 use crate::prelude::*;
 
 pub mod consts;
+pub mod monster;
 pub mod monster_error;
 pub mod monster_manager;
 pub mod monster_spawner;
