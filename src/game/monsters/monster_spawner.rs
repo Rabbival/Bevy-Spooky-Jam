@@ -1,7 +1,10 @@
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
 
-use crate::prelude::consts::{INITIAL_MONSTERS_AMOUNT, MONSTER_FULL_SIZE, MONSTER_SAFE_RADIUS, MONSTER_SPAWNING_ATTEMPTS, Z_LAYER_MONSTER};
+use crate::prelude::consts::{
+    INITIAL_MONSTERS_AMOUNT, MONSTER_FULL_SIZE, MONSTER_SAFE_RADIUS, MONSTER_SPAWNING_ATTEMPTS,
+    Z_LAYER_MONSTER,
+};
 use crate::prelude::monster_error::MonsterError;
 use crate::prelude::*;
 
@@ -10,7 +13,7 @@ pub struct MonsterSpawnerPlugin;
 impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_initial_monsters)
-        .add_systems(Update, listen_for_monster_spawning_requests);
+            .add_systems(Update, listen_for_monster_spawning_requests);
     }
 }
 
@@ -47,21 +50,23 @@ fn try_spawning_a_monster(
     let mut rng = rand::thread_rng();
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
-    let monster_entity = commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
-            material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
-            transform: Transform::from_translation(place_to_spawn_in),
-            ..default()
-        },
-        AffectingTimerCalculators::default(),
-        Monster {
-            hearing_ring_distance: rng
-                .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
-            ..default()
-        },
-        WorldBoundsWrapped,
-    )).id();
+    let monster_entity = commands
+        .spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
+                material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
+                transform: Transform::from_translation(place_to_spawn_in),
+                ..default()
+            },
+            AffectingTimerCalculators::default(),
+            Monster {
+                hearing_ring_distance: rng
+                    .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+                ..default()
+            },
+            WorldBoundsWrapped,
+        ))
+        .id();
     initiate_movement_along_path(
         &mut event_writer,
         monster_entity,
@@ -108,31 +113,33 @@ pub fn spawn_initial_monsters(
     let mut rng = rand::thread_rng();
     for i in 0..INITIAL_MONSTERS_AMOUNT {
         let second_range_factor: f32 = i as f32 * third_window_size;
-        let monster_entity = commands.spawn((
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
-                material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
-                transform: Transform::from_xyz(
-                    rng.gen_range(
-                        -half_window_size - second_range_factor
-                            ..half_window_size + second_range_factor,
+        let monster_entity = commands
+            .spawn((
+                MaterialMesh2dBundle {
+                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
+                    material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
+                    transform: Transform::from_xyz(
+                        rng.gen_range(
+                            -half_window_size - second_range_factor
+                                ..half_window_size + second_range_factor,
+                        ),
+                        rng.gen_range(
+                            -half_window_size - second_range_factor
+                                ..half_window_size + second_range_factor,
+                        ),
+                        Z_LAYER_MONSTER,
                     ),
-                    rng.gen_range(
-                        -half_window_size - second_range_factor
-                            ..half_window_size + second_range_factor,
-                    ),
-                    Z_LAYER_MONSTER,
-                ),
-                ..default()
-            },
-            AffectingTimerCalculators::default(),
-            Monster {
-                hearing_ring_distance: rng
-                    .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
-                ..default()
-            },
-            WorldBoundsWrapped,
-        )).id();
+                    ..default()
+                },
+                AffectingTimerCalculators::default(),
+                Monster {
+                    hearing_ring_distance: rng
+                        .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+                    ..default()
+                },
+                WorldBoundsWrapped,
+            ))
+            .id();
         initiate_movement_along_path(
             &mut event_writer,
             monster_entity,

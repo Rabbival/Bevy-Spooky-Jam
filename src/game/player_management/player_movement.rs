@@ -1,5 +1,5 @@
-use crate::{prelude::*, read_single_field_variant};
 use crate::game::player_management::consts::PLAYER_MOVEMENT_DELTA;
+use crate::{prelude::*, read_single_field_variant};
 
 pub struct PlayerMovementPlugin;
 

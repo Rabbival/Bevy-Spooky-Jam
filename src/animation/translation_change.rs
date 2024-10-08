@@ -27,7 +27,9 @@ fn listen_for_translation_update_requests(
                 }
                 Err(_) => {
                     print_error(
-                        EntityError::EntityNotInQuery("couldn't fetch transform from query on translation update function"),
+                        EntityError::EntityNotInQuery(
+                            "couldn't fetch transform from query on translation update function",
+                        ),
                         vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
                     );
                 }
