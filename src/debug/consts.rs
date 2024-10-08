@@ -16,4 +16,8 @@ lazy_static! {
         BevyLogLevel::Warning,
         BevyLogLevel::Info
     ];
+    pub static ref ACTIVE_FUNCTIONALITY_OVERRIDES: Vec<FunctionalityOverride> = vec![
+        // FunctionalityOverride::AlwaysSpawnBombsInMiddle,
+        // FunctionalityOverride::PlayerMayCarryInfiniteBombs
+    ];
 }

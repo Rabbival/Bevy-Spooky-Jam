@@ -7,7 +7,26 @@ pub struct BombSpawnerPlugin;
 
 impl Plugin for BombSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, listen_for_bomb_spawning_requests);
+        app.add_systems(Startup, spawn_inital_bombs)
+            .add_systems(Update, listen_for_bomb_spawning_requests);
+    }
+}
+
+fn spawn_inital_bombs(
+    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Monster>)>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+) {
+    if let Err(bomb_error) = try_spawning_a_bomb(
+        &mut timer_fire_request_writer,
+        &transforms_not_to_spawn_next_to,
+        &mut meshes,
+        &mut materials,
+        &mut commands,
+    ) {
+        print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
     }
 }
 
@@ -86,6 +105,10 @@ fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
 fn try_finding_place_for_bomb(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Monster>)>>,
 ) -> Result<Vec3, BombError> {
+    if FunctionalityOverride::AlwaysSpawnBombsInMiddle.enabled() {
+        return Ok(Vec3::ZERO);
+    }
+
     let mut rng = rand::thread_rng();
     let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_FULL_SIZE * 2.0;
     for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {

@@ -59,7 +59,9 @@ fn listen_for_player_just_pressed_controls(
         for action in action_map.get_just_pressed() {
             match action {
                 PlayerAction::BombInteraction => {
-                    if player.held_bomb.is_none() {
+                    if player.held_bomb.is_none()
+                        || FunctionalityOverride::PlayerMayCarryInfiniteBombs.enabled()
+                    {
                         player_request_writer.send(PlayerRequest::PickUpBomb);
                     } else {
                         print_info(
