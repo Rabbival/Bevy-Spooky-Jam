@@ -1,4 +1,4 @@
-use bevy::color::palettes::css::ORANGE;
+use bevy::color::palettes::css::{ORANGE, YELLOW};
 
 use crate::prelude::*;
 
@@ -12,6 +12,7 @@ impl Plugin for RangeGizmosPlugin {
             (
                 draw_monster_hearing_ring_system,
                 draw_player_bomb_picking_range,
+                draw_bomb_explosion_radius,
             ),
         );
     }
@@ -26,7 +27,7 @@ fn draw_monster_hearing_ring_system(
     mut gizmos: Gizmos,
     monsters_query: Query<(&Transform, &Monster), With<Monster>>,
 ) {
-    for (transform, monster) in monsters_query.iter() {
+    for (transform, monster) in &monsters_query {
         gizmos.circle_2d(
             Vec2::new(transform.translation.x, transform.translation.y),
             monster.hearing_ring_distance,
@@ -39,11 +40,26 @@ fn draw_player_bomb_picking_range(
     mut gizmos: Gizmos,
     player_query: Query<&Transform, With<Player>>,
 ) {
-    for transform in player_query.iter() {
+    for transform in &player_query {
         gizmos.circle_2d(
             Vec2::new(transform.translation.x, transform.translation.y),
             PLAYER_BOMB_PICKING_RANGE,
             Color::from(ORANGE),
         );
+    }
+}
+
+fn draw_bomb_explosion_radius(
+    mut gizmos: Gizmos,
+    bomb_query: Query<(&Transform, &Bomb), With<Bomb>>,
+) {
+    for (transform, bomb) in &bomb_query {
+        if let BombState::Ticking = bomb.bomb_state {
+            gizmos.circle_2d(
+                Vec2::new(transform.translation.x, transform.translation.y),
+                BOMB_EXPLOSION_RADIUS,
+                Color::from(YELLOW),
+            );
+        }
     }
 }

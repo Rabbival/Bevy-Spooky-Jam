@@ -15,6 +15,7 @@ pub enum TimerDoneEventType {
     DespawnAffectedEntities(DespawnPolicy),
     Spawn(SpawnRequestType),
     SpawnChildForAffectedEntities(SpawnRequestType),
+    ExplodeInRadius(f32),
 }
 
 pub struct TimerDoneEventPlugin;
