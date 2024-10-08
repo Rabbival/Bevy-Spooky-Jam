@@ -1,9 +1,11 @@
 use crate::prelude::*;
 
+use bevy::time::Stopwatch;
+
 #[derive(Component)]
 pub struct WorldBoundsWrapped;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct PlayerGameStopwatch {
-    pub elapsed_ms: u64,
+    pub timer: Stopwatch,
 }

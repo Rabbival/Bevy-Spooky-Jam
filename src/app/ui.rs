@@ -1,5 +1,7 @@
 use crate::prelude::*;
+
 use bevy::text::Text2dBounds;
+use bevy::time::Stopwatch;
 
 pub struct UiPlugin;
 
@@ -49,13 +51,26 @@ fn spawn_ui(mut commands: Commands) {
             ),
             ..default()
         },
-        PlayerGameStopwatch { elapsed_ms: 0 },
+        PlayerGameStopwatch { ..default() },
     ));
 }
 
-fn update_player_game_stopwatch(mut player_game_stopwatch_text_query: Query<(&mut Text, &mut PlayerGameStopwatch), With<PlayerGameStopwatch>>) {
+fn update_player_game_stopwatch(
+    mut player_game_stopwatch_text_query: Query<(&mut Text, &mut PlayerGameStopwatch), With<PlayerGameStopwatch>>,
+    time: Res<Time>,
+) {
     for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
-        stopwatch.elapsed_ms += 1;
-        text.sections[0].value = stopwatch.elapsed_ms.to_string();
+        stopwatch.timer.tick(time.delta());
+        text.sections[0].value = get_elapsed_secs_as_a_parsed_string(stopwatch.timer.clone());
     }
+}
+
+fn get_elapsed_secs_as_a_parsed_string(timer: Stopwatch) -> String {
+    let seconds = (timer.elapsed_secs() % 60.0) as i32;
+    let minutes = (timer.elapsed_secs() / 60.0) as i32;
+    let mut parsed_string = minutes.to_string().to_owned();
+    parsed_string.push_str("'");
+    parsed_string.push_str(&seconds.to_string().to_owned());
+    parsed_string.push_str("''");
+    parsed_string
 }
