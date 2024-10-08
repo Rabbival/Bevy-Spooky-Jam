@@ -1,9 +1,7 @@
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
 
-use crate::prelude::consts::{
-    MONSTER_FULL_SIZE, MONSTER_SAFE_RADIUS, MONSTER_SPAWNING_ATTEMPTS, Z_LAYER_MONSTER,
-};
+use crate::prelude::consts::{INITIAL_MONSTERS_AMOUNT, MONSTER_FULL_SIZE, MONSTER_SAFE_RADIUS, MONSTER_SPAWNING_ATTEMPTS, Z_LAYER_MONSTER};
 use crate::prelude::monster_error::MonsterError;
 use crate::prelude::*;
 
