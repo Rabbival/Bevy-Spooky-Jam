@@ -39,7 +39,7 @@ pub mod prelude {
         consts::*,
         enums::{bevy_log_level::*, functionality_override::*, log_category::*, os_access_log::*},
         game_session_log::*,
-        gizmos::{range_gizmos::*, GizmosPlugin},
+        gizmos::{range_gizmos::*, ray_gizmos::*, GizmosPlugin},
         print_config_struct::*,
         print_log::*,
         print_vec::*,
@@ -58,9 +58,7 @@ pub mod prelude {
             BombsPlugin,
         },
         consts::*,
-        event_channels::*,
         monsters::*,
-        orb::*,
         player_management::{
             player::*, player_event_channel::*, player_movement::*, player_spawner::*, PlayerPlugin,
         },
