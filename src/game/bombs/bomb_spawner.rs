@@ -77,6 +77,7 @@ fn try_spawning_a_bomb(
             },
             AffectingTimerCalculators::default(),
             Bomb::new(),
+            WorldBoundsWrapped,
         ))
         .id();
     timer_fire_request_writer.send(TimerFireRequest {
@@ -150,7 +151,7 @@ fn listen_for_bombs_done_growing(
                     commands
                         .spawn(Text2dBundle {
                             text: Text::from_section(
-                                format!("{:?}", bomb.currently_displayed),
+                                format!("{:?}", bomb.full_duration),
                                 TextStyle {
                                     font_size: BOMB_TIME_LEFT_FONT_SIZE,
                                     color: BombState::PreHeld.to_color().text,

@@ -58,6 +58,7 @@ pub mod prelude {
             consts::*, explosion_manager::*, BombsPlugin,
         },
         consts::*,
+        facing_direction::*,
         monsters::{
             consts::*, monster::*, monster_error::*, monster_manager::*, monster_spawner::*,
             monster_spawning_sequence_manager::*, monster_state::*, MonstersPlugin,

@@ -180,6 +180,9 @@ fn initiate_movement_along_path(
     all_path_vertices: Vec<Vec3>,
     commands: &mut Commands,
 ) {
+    if FunctionalityOverride::EnemiesDontMove.enabled() {
+        return;
+    }
     let going_event_value_calculators =
         configure_value_calculators_for_patroller(all_path_vertices, 2.0);
     let mut emitting_timers = vec![];
