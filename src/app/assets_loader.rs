@@ -1,4 +1,3 @@
-use crate::prelude::*;
 use bevy::prelude::*;
 
 #[derive(Resource, Clone, Default)]
@@ -9,7 +8,10 @@ pub struct SpritesAtlas {
 
 #[derive(Resource, Deref, DerefMut, Clone, Default)]
 pub struct TextFonts {
+    #[deref]
     pub kenny_blocks_handle: Handle<Font>,
+    pub kenny_high_square_handle: Handle<Font>,
+    pub kenny_pixel_handle: Handle<Font>,
 }
 
 pub struct AssetsLoaderPlugin;
@@ -45,6 +47,8 @@ fn sprites_atlas_setup(
 
 fn text_font_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(TextFonts {
-        kenny_blocks_handle: asset_server.load("fonts/kenney_blocks.ttf")
+        kenny_blocks_handle: asset_server.load("fonts/kenney_blocks.ttf"),
+        kenny_high_square_handle: asset_server.load("fonts/kenney_blocks.ttf"),
+        kenny_pixel_handle: asset_server.load("fonts/kenney_blocks.ttf"),
     });
 }
