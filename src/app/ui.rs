@@ -56,7 +56,10 @@ fn spawn_ui(mut commands: Commands) {
 }
 
 fn update_player_game_stopwatch(
-    mut player_game_stopwatch_text_query: Query<(&mut Text, &mut PlayerGameStopwatch), With<PlayerGameStopwatch>>,
+    mut player_game_stopwatch_text_query: Query<
+        (&mut Text, &mut PlayerGameStopwatch),
+        With<PlayerGameStopwatch>,
+    >,
     time: Res<Time>,
 ) {
     for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
@@ -69,5 +72,10 @@ fn get_elapsed_secs_as_a_parsed_string(timer: Stopwatch) -> String {
     let minutes = (timer.elapsed_secs() / 60.0) as i32;
     let seconds = (timer.elapsed_secs() % 60.0) as i32;
     let milliseconds = (timer.elapsed_secs().fract() * 100.0) as i32;
-    format!("{:0>2}'{:0>2}''{:0>2}", minutes.to_string(), seconds.to_string(), milliseconds.to_string())
+    format!(
+        "{:0>2}'{:0>2}''{:0>2}",
+        minutes.to_string(),
+        seconds.to_string(),
+        milliseconds.to_string()
+    )
 }
