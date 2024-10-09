@@ -68,9 +68,9 @@ fn update_player_game_stopwatch(
 fn get_elapsed_secs_as_a_parsed_string(timer: Stopwatch) -> String {
     let seconds = (timer.elapsed_secs() % 60.0) as i32;
     let minutes = (timer.elapsed_secs() / 60.0) as i32;
-    let mut parsed_string = minutes.to_string().to_owned();
+    let mut parsed_string = format!("{:0>2}", minutes.to_string().to_owned());
     parsed_string.push_str("'");
-    parsed_string.push_str(&seconds.to_string().to_owned());
+    parsed_string.push_str(&format!("{:0>2}", seconds.to_string().to_owned()));
     parsed_string.push_str("''");
     parsed_string
 }
