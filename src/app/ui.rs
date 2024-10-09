@@ -51,14 +51,42 @@ fn spawn_ui(mut commands: Commands) {
             ),
             ..default()
         },
-        PlayerGameStopwatch { ..default() },
+        PlayerGameStopwatchUi { ..default() },
+    ));
+    commands.spawn((
+        Text2dBundle {
+            text: Text::from_section(
+                "Score: 0",
+                TextStyle {
+                    font_size: 30.0,
+                    color: Color::BLACK,
+                    ..default()
+                },
+            )
+            .with_justify(JustifyText::Right),
+            text_2d_bounds: Text2dBounds {
+                size: Vec2::new(
+                    WINDOW_SIZE_IN_PIXELS / 6.0,
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                )
+            },
+            transform: Transform::from_translation(
+                Vec2::new(
+                    WINDOW_SIZE_IN_PIXELS / 6.0,
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                )
+                .extend(101.0),
+            ),
+            ..default()
+        },
+        PlayerScoreTextUi,
     ));
 }
 
 fn update_player_game_stopwatch(
     mut player_game_stopwatch_text_query: Query<
-        (&mut Text, &mut PlayerGameStopwatch),
-        With<PlayerGameStopwatch>,
+        (&mut Text, &mut PlayerGameStopwatchUi),
+        With<PlayerGameStopwatchUi>,
     >,
     time: Res<Time>,
 ) {

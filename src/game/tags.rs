@@ -7,9 +7,12 @@ use bevy::time::Stopwatch;
 pub struct WorldBoundsWrapped;
 
 #[derive(Component, Default)]
-pub struct PlayerGameStopwatch {
+pub struct PlayerGameStopwatchUi {
     pub timer: Stopwatch,
 }
+
+#[derive(Component, Default)]
+pub struct PlayerScoreTextUi;
 
 #[derive(Component, Default)]
 pub struct WorldChampionshipLeaderboardScoring {
