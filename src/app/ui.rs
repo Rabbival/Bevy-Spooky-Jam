@@ -81,6 +81,34 @@ fn spawn_ui(mut commands: Commands) {
         },
         PlayerScoreTextUi,
     ));
+    commands.spawn((
+        Text2dBundle {
+            text: Text::from_section(
+                "Hi: 10.000.000",
+                TextStyle {
+                    font_size: 30.0,
+                    color: Color::BLACK,
+                    ..default()
+                },
+            )
+            .with_justify(JustifyText::Right),
+            text_2d_bounds: Text2dBounds {
+                size: Vec2::new(
+                    WINDOW_SIZE_IN_PIXELS / 3.0,
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                )
+            },
+            transform: Transform::from_translation(
+                Vec2::new(
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) - 210.0,
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                )
+                .extend(101.0),
+            ),
+            ..default()
+        },
+        LeaderboardScoreTextUi,
+    ));
 }
 
 fn update_player_game_stopwatch(
