@@ -64,11 +64,11 @@ fn update_player_game_stopwatch(
 ) {
     for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
         stopwatch.timer.tick(time.delta());
-        text.sections[0].value = get_elapsed_secs_as_a_parsed_string(stopwatch.timer.clone());
+        text.sections[0].value = get_elapsed_secs_as_a_formatted_string(stopwatch.timer.clone());
     }
 }
 
-fn get_elapsed_secs_as_a_parsed_string(timer: Stopwatch) -> String {
+fn get_elapsed_secs_as_a_formatted_string(timer: Stopwatch) -> String {
     let minutes = (timer.elapsed_secs() / 60.0) as i32;
     let seconds = (timer.elapsed_secs() % 60.0) as i32;
     let milliseconds = (timer.elapsed_secs().fract() * 100.0) as i32;
