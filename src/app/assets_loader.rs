@@ -48,7 +48,7 @@ fn sprites_atlas_setup(
 fn text_font_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(TextFonts {
         kenny_blocks_handle: asset_server.load("fonts/kenney_blocks.ttf"),
-        kenny_high_square_handle: asset_server.load("fonts/kenney_blocks.ttf"),
-        kenny_pixel_handle: asset_server.load("fonts/kenney_blocks.ttf"),
+        kenny_high_square_handle: asset_server.load("fonts/kenney_high_square.ttf"),
+        kenny_pixel_handle: asset_server.load("fonts/kenney_pixel.ttf"),
     });
 }

@@ -40,7 +40,7 @@ fn spawn_ui(
             text: Text::from_section(
                 "00'00''00",
                 TextStyle {
-                    font: text_fonts_resource.kenny_high_square_handle.clone(),
+                    font: text_fonts_resource.kenny_blocks_handle.clone(),
                     font_size: 60.0,
                     color: Color::BLACK,
                     ..default()
@@ -66,6 +66,7 @@ fn spawn_ui(
             text: Text::from_section(
                 "Score: 1.000.000",
                 TextStyle {
+                    font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
                     color: Color::BLACK,
                     ..default()
@@ -94,6 +95,7 @@ fn spawn_ui(
             text: Text::from_section(
                 "Hi: 10.000.000",
                 TextStyle {
+                    font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
                     color: Color::BLACK,
                     ..default()
