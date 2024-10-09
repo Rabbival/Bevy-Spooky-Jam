@@ -1,8 +1,10 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+use crate::app::assets_loader::AssetsLoaderPlugin;
 use crate::app::ui::UiPlugin;
 use crate::prelude::*;
 
+pub mod assets_loader;
 pub mod consts;
 pub mod generic_plugins;
 pub mod main_camera;
@@ -23,6 +25,7 @@ pub fn main() {
             MainCameraPlugin,
             CustomAnimationPlugin,
             GamePlugin,
+            AssetsLoaderPlugin,
             UiPlugin,
             TimePlugin,
             LateDespawnerPlugin,

@@ -1,6 +1,6 @@
 use bevy::color::{
-    palettes::css::{DARK_RED, DARK_SLATE_GRAY, LIGHT_GRAY, YELLOW},
-    Color,
+    palettes::css::{ANTIQUE_WHITE, DARK_RED, DARK_SLATE_GRAY, YELLOW},
+    Color, Srgba,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -19,12 +19,12 @@ impl BombState {
     pub fn to_color(&self) -> BombAndTextColors {
         match self {
             Self::PreHeld => BombAndTextColors {
-                bomb: Color::from(DARK_SLATE_GRAY),
-                text: Color::from(LIGHT_GRAY),
+                bomb: Color::from(ANTIQUE_WHITE),
+                text: Color::from(Srgba::new(0.0, 0.0, 0.0, 1.0)),
             },
             Self::Held => BombAndTextColors {
                 bomb: Color::from(DARK_RED),
-                text: Color::from(LIGHT_GRAY),
+                text: Color::from(DARK_SLATE_GRAY),
             },
             Self::Ticking => BombAndTextColors {
                 bomb: Color::from(DARK_RED),

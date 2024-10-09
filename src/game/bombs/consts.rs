@@ -10,8 +10,11 @@ pub const BOMB_SPAWN_SCALE: f32 = 0.01;
 pub const BOMB_MAX_TIME: usize = 8;
 pub const BOMB_MIN_TIME: usize = 4;
 
-pub const BOMB_THROWING_SPEED: f32 = 1200.0;
+pub const BOMB_THROWING_TIME: f32 = 0.2;
+pub const BOMB_THROWING_DISTANCE: f32 = 400.0;
 
-pub const BOMB_TIME_LEFT_FONT_SIZE: f32 = 42.0;
+pub const BOMB_TIME_LEFT_FONT_SIZE: f32 = 30.0;
 
 pub const BOMB_EXPLOSION_RADIUS: f32 = 120.0;
+pub const BOMB_BLAST_FACTOR: f32 = 50000.0;
+pub const POST_BOMB_HIT_DESPAWN_TIME: f32 = 0.08;

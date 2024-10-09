@@ -18,5 +18,7 @@ lazy_static! {
     pub static ref ACTIVE_FUNCTIONALITY_OVERRIDES: Vec<FunctionalityOverride> = vec![
         // FunctionalityOverride::AlwaysSpawnBombsInMiddle,
         // FunctionalityOverride::PlayerMayCarryInfiniteBombs
+        // FunctionalityOverride::AllBombsExplodeAfterOneSecond,
+        // FunctionalityOverride::EnemiesDontMove
     ];
 }

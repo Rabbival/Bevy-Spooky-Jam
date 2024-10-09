@@ -1,7 +1,7 @@
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+use bevy::sprite::*;
 use rand::Rng;
 
-use crate::prelude::*;
+use crate::{app::assets_loader::{SpritesAtlas, TextFonts}, prelude::*};
 
 pub struct BombSpawnerPlugin;
 
@@ -18,6 +18,7 @@ impl Plugin for BombSpawnerPlugin {
 }
 
 fn spawn_inital_bombs(
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -25,6 +26,7 @@ fn spawn_inital_bombs(
     mut commands: Commands,
 ) {
     if let Err(bomb_error) = try_spawning_a_bomb(
+        &mut sprites_atlas_resource,
         &mut timer_fire_request_writer,
         &transforms_not_to_spawn_next_to,
         &mut meshes,
@@ -36,6 +38,7 @@ fn spawn_inital_bombs(
 }
 
 fn listen_for_bomb_spawning_requests(
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
@@ -46,6 +49,7 @@ fn listen_for_bomb_spawning_requests(
     for done_event in timer_done_event_reader.read() {
         if let TimerDoneEventType::Spawn(SpawnRequestType::Bomb) = done_event.event_type {
             if let Err(bomb_error) = try_spawning_a_bomb(
+                &mut sprites_atlas_resource,
                 &mut timer_fire_request_writer,
                 &transforms_not_to_spawn_next_to,
                 &mut meshes,
@@ -59,6 +63,7 @@ fn listen_for_bomb_spawning_requests(
 }
 
 fn try_spawning_a_bomb(
+    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -70,13 +75,22 @@ fn try_spawning_a_bomb(
         .spawn((
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Circle::new(BOMB_SIZE))),
-                material: materials.add(BombState::PreHeld.to_color().bomb),
+                material: materials.add(ColorMaterial {
+                    color: BombState::PreHeld.to_color().bomb,
+                    texture: Some(sprites_atlas_resource.pumpkin_image_handle.clone()),
+                    ..default()
+                }),
                 transform: Transform::from_translation(place_to_spawn_in)
                     .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
             },
+            TextureAtlas {
+                layout: sprites_atlas_resource.atlas_handle.clone(),
+                index: 0,
+            },
             AffectingTimerCalculators::default(),
             Bomb::new(),
+            WorldBoundsWrapped,
         ))
         .id();
     timer_fire_request_writer.send(TimerFireRequest {
@@ -138,8 +152,9 @@ fn try_finding_place_for_bomb(
 
 fn listen_for_bombs_done_growing(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
-    bomb_query: Query<&Bomb>,
     mut commands: Commands,
+    bomb_query: Query<&Bomb>,
+    text_fonts_resource: ResMut<TextFonts>,
 ) {
     for done_event in timer_done_event_reader.read() {
         if let TimerDoneEventType::SpawnChildForAffectedEntities(SpawnRequestType::BombText) =
@@ -150,8 +165,9 @@ fn listen_for_bombs_done_growing(
                     commands
                         .spawn(Text2dBundle {
                             text: Text::from_section(
-                                format!("{:?}", bomb.currently_displayed),
+                                format!("{:?}", bomb.full_duration),
                                 TextStyle {
+                                    font: text_fonts_resource.kenny_blocks_handle.clone(),
                                     font_size: BOMB_TIME_LEFT_FONT_SIZE,
                                     color: BombState::PreHeld.to_color().text,
                                     ..default()

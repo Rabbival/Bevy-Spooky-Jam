@@ -40,7 +40,7 @@ fn update_monster_hearing_rings(
             ) {
                 match bomb_that_is_closest_to_explosion {
                     Some(closest_explosion_bomb) => {
-                        if bomb.currently_displayed < closest_explosion_bomb.currently_displayed {
+                        if bomb.time_until_explosion < closest_explosion_bomb.time_until_explosion {
                             bomb_that_is_closest_to_explosion = Some(bomb);
                         }
                     }

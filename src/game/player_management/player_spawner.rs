@@ -31,7 +31,11 @@ fn spawn_player(
             input_map,
         },
         AffectingTimerCalculators::default(),
-        Player::default(),
+        Player {
+            score: 0,
+            ..default()
+        },
+        FacingDirection::new(Z_LAYER_PLAYER),
         WorldBoundsWrapped,
     ));
 }
