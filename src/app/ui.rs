@@ -81,7 +81,7 @@ fn spawn_ui(
             },
             transform: Transform::from_translation(
                 Vec2::new(
-                    (-WINDOW_SIZE_IN_PIXELS / 2.0) + 130.0,
+                    (-WINDOW_SIZE_IN_PIXELS / 2.0) + 100.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
                 )
                 .extend(101.0),
@@ -93,7 +93,7 @@ fn spawn_ui(
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Hi: 10.000.000",
+                "Hi  Score: 1000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
@@ -101,7 +101,7 @@ fn spawn_ui(
                     ..default()
                 },
             )
-            .with_justify(JustifyText::Right),
+            .with_justify(JustifyText::Left),
             text_2d_bounds: Text2dBounds {
                 size: Vec2::new(
                     WINDOW_SIZE_IN_PIXELS / 3.0,
@@ -110,7 +110,7 @@ fn spawn_ui(
             },
             transform: Transform::from_translation(
                 Vec2::new(
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - 210.0,
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) - 110.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
                 )
                 .extend(101.0),
@@ -140,7 +140,7 @@ fn update_player_scoring(
 ) {
     for player in players_query.iter() {
         for mut player_scoring_text in player_scoring_text_query.iter_mut() {
-            player_scoring_text.sections[0].value = format!("Score: {:}", player.score.to_string());
+            player_scoring_text.sections[0].value = format!("Score: {:0>7}", player.score.to_string());
         }
     }
 }
