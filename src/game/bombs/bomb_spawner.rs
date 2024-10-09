@@ -1,7 +1,7 @@
 use bevy::sprite::*;
 use rand::Rng;
 
-use crate::{app::assets_loader::SpritesAtlas, prelude::*};
+use crate::{app::assets_loader::{SpritesAtlas, TextFonts}, prelude::*};
 
 pub struct BombSpawnerPlugin;
 
@@ -88,7 +88,7 @@ fn try_spawning_a_bomb(
             },
             TextureAtlas {
                 layout: sprites_atlas_resource.atlas_handle.clone(),
-                index: 2,
+                index: 0,
             },
             AffectingTimerCalculators::default(),
             Bomb::new(),
@@ -154,8 +154,9 @@ fn try_finding_place_for_bomb(
 
 fn listen_for_bombs_done_growing(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
-    bomb_query: Query<&Bomb>,
     mut commands: Commands,
+    bomb_query: Query<&Bomb>,
+    text_fonts_resource: ResMut<TextFonts>,
 ) {
     for done_event in timer_done_event_reader.read() {
         if let TimerDoneEventType::SpawnChildForAffectedEntities(SpawnRequestType::BombText) =
@@ -168,6 +169,7 @@ fn listen_for_bombs_done_growing(
                             text: Text::from_section(
                                 format!("{:?}", bomb.full_duration),
                                 TextStyle {
+                                    font: text_fonts_resource.kenny_pixel_handle.clone(),
                                     font_size: BOMB_TIME_LEFT_FONT_SIZE,
                                     color: BombState::PreHeld.to_color().text,
                                     ..default()

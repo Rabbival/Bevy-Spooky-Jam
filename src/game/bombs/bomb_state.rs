@@ -1,5 +1,5 @@
 use bevy::color::{
-    palettes::css::{DARK_RED, DARK_SLATE_GRAY, LIGHT_GRAY, YELLOW},
+    palettes::css::{DARK_RED, DARK_SLATE_GRAY, YELLOW},
     Color,
 };
 
@@ -20,11 +20,11 @@ impl BombState {
         match self {
             Self::PreHeld => BombAndTextColors {
                 bomb: Color::from(DARK_SLATE_GRAY),
-                text: Color::from(LIGHT_GRAY),
+                text: Color::from(DARK_SLATE_GRAY),
             },
             Self::Held => BombAndTextColors {
                 bomb: Color::from(DARK_RED),
-                text: Color::from(LIGHT_GRAY),
+                text: Color::from(DARK_SLATE_GRAY),
             },
             Self::Ticking => BombAndTextColors {
                 bomb: Color::from(DARK_RED),
