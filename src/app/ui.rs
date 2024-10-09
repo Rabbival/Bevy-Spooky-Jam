@@ -3,6 +3,8 @@ use crate::prelude::*;
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
 
+use super::assets_loader::TextFonts;
+
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
@@ -14,7 +16,10 @@ impl Plugin for UiPlugin {
     }
 }
 
-fn spawn_ui(mut commands: Commands) {
+fn spawn_ui(
+    text_fonts_resource: ResMut<TextFonts>,
+    mut commands: Commands,
+) {
     commands.spawn(SpriteBundle {
         sprite: Sprite {
             color: Color::srgba(1.0, 1.0, 1.0, 0.55),
@@ -35,6 +40,7 @@ fn spawn_ui(mut commands: Commands) {
             text: Text::from_section(
                 "00'00''00",
                 TextStyle {
+                    font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 60.0,
                     color: Color::BLACK,
                     ..default()
