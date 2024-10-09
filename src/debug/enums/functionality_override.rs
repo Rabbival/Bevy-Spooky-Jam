@@ -4,6 +4,8 @@ use crate::prelude::ACTIVE_FUNCTIONALITY_OVERRIDES;
 pub enum FunctionalityOverride {
     AlwaysSpawnBombsInMiddle,
     PlayerMayCarryInfiniteBombs,
+    AllBombsExplodeAfterOneSecond,
+    EnemiesDontMove,
 }
 
 impl FunctionalityOverride {

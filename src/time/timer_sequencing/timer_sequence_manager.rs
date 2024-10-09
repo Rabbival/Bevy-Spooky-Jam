@@ -64,14 +64,14 @@ fn advance_sequence(
     if sequence_status.sequence_done {
         for timer in timer_sequence.timers_in_order.iter() {
             for value_calculator_entity in timer.calculator_entities_iter() {
-                despawn_entity_notify_on_fail(
+                despawn_recursive_notify_on_fail(
                     value_calculator_entity,
                     "an EmittingTimer's ValueCalculator",
                     commands,
                 );
             }
         }
-        despawn_entity_notify_on_fail(sequence_entity, "timer sequence", commands);
+        despawn_recursive_notify_on_fail(sequence_entity, "timer sequence", commands);
     }
     Ok(())
 }

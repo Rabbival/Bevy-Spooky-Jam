@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{game::player_management::consts::Z_LAYER_PLAYER, prelude::*};
 
 pub struct PlayerInputHandlerPlugin;
 
@@ -18,10 +18,11 @@ impl Plugin for PlayerInputHandlerPlugin {
 
 fn listen_for_player_pressed_controls(
     mut player_request_writer: EventWriter<PlayerRequest>,
-    player_query: Query<&ActionState<PlayerAction>, With<Player>>,
+    mut player_query: Query<(&ActionState<PlayerAction>, &mut FacingDirection), With<Player>>,
 ) {
-    for action_map in &player_query {
+    for (action_map, mut facing_direction) in &mut player_query {
         if let Some(normalized_movement_vector) = determine_move_direction(action_map) {
+            facing_direction.0 = normalized_movement_vector.extend(Z_LAYER_PLAYER);
             player_request_writer.send(PlayerRequest::Move(normalized_movement_vector));
         }
     }
