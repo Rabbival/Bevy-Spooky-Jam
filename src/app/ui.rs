@@ -3,16 +3,23 @@ use crate::prelude::*;
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
 
+use super::assets_loader::TextFonts;
+
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_ui)
-            .add_systems(Update, update_player_game_stopwatch);
+        app.add_systems(Startup, spawn_ui).add_systems(
+            Update,
+            (update_player_game_stopwatch, update_player_scoring),
+        );
     }
 }
 
-fn spawn_ui(mut commands: Commands) {
+fn spawn_ui(
+    text_fonts_resource: ResMut<TextFonts>,
+    mut commands: Commands,
+) {
     commands.spawn(SpriteBundle {
         sprite: Sprite {
             color: Color::srgba(1.0, 1.0, 1.0, 0.55),
@@ -33,6 +40,7 @@ fn spawn_ui(mut commands: Commands) {
             text: Text::from_section(
                 "00'00''00",
                 TextStyle {
+                    font: text_fonts_resource.kenny_blocks_handle.clone(),
                     font_size: 60.0,
                     color: Color::BLACK,
                     ..default()
@@ -58,6 +66,7 @@ fn spawn_ui(mut commands: Commands) {
             text: Text::from_section(
                 "Score: 1.000.000",
                 TextStyle {
+                    font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
                     color: Color::BLACK,
                     ..default()
@@ -68,11 +77,11 @@ fn spawn_ui(mut commands: Commands) {
                 size: Vec2::new(
                     WINDOW_SIZE_IN_PIXELS / 3.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
-                )
+                ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
-                    (-WINDOW_SIZE_IN_PIXELS / 2.0) + 130.0,
+                    (-WINDOW_SIZE_IN_PIXELS / 2.0) + 100.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
                 )
                 .extend(101.0),
@@ -84,23 +93,24 @@ fn spawn_ui(mut commands: Commands) {
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Hi: 10.000.000",
+                "Hi  Score: 1000000",
                 TextStyle {
+                    font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
                     color: Color::BLACK,
                     ..default()
                 },
             )
-            .with_justify(JustifyText::Right),
+            .with_justify(JustifyText::Left),
             text_2d_bounds: Text2dBounds {
                 size: Vec2::new(
                     WINDOW_SIZE_IN_PIXELS / 3.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
-                )
+                ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - 210.0,
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) - 110.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
                 )
                 .extend(101.0),
@@ -121,6 +131,17 @@ fn update_player_game_stopwatch(
     for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
         stopwatch.timer.tick(time.delta());
         text.sections[0].value = get_elapsed_secs_as_a_formatted_string(stopwatch.timer.clone());
+    }
+}
+
+fn update_player_scoring(
+    players_query: Query<&Player>,
+    mut player_scoring_text_query: Query<&mut Text, With<PlayerScoreTextUi>>,
+) {
+    for player in players_query.iter() {
+        for mut player_scoring_text in player_scoring_text_query.iter_mut() {
+            player_scoring_text.sections[0].value = format!("Score: {:0>7}", player.score.to_string());
+        }
     }
 }
 
