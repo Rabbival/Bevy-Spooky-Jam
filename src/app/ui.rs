@@ -7,8 +7,10 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_ui)
-            .add_systems(Update, update_player_game_stopwatch);
+        app.add_systems(Startup, spawn_ui).add_systems(
+            Update,
+            (update_player_game_stopwatch, update_player_scoring),
+        );
     }
 }
 
@@ -68,7 +70,7 @@ fn spawn_ui(mut commands: Commands) {
                 size: Vec2::new(
                     WINDOW_SIZE_IN_PIXELS / 3.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
-                )
+                ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
@@ -96,7 +98,7 @@ fn spawn_ui(mut commands: Commands) {
                 size: Vec2::new(
                     WINDOW_SIZE_IN_PIXELS / 3.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
-                )
+                ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
@@ -121,6 +123,17 @@ fn update_player_game_stopwatch(
     for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
         stopwatch.timer.tick(time.delta());
         text.sections[0].value = get_elapsed_secs_as_a_formatted_string(stopwatch.timer.clone());
+    }
+}
+
+fn update_player_scoring(
+    players_query: Query<&Player>,
+    mut player_scoring_text_query: Query<&mut Text, With<PlayerScoreTextUi>>,
+) {
+    for player in players_query.iter() {
+        for mut player_scoring_text in player_scoring_text_query.iter_mut() {
+            player_scoring_text.sections[0].value = format!("Score: {:}", player.score.to_string());
+        }
     }
 }
 

@@ -1,5 +1,5 @@
-use std::time::Duration;
 use crate::prelude::*;
+use std::time::Duration;
 
 use bevy::time::Stopwatch;
 
