@@ -3,7 +3,8 @@ use bevy::prelude::*;
 #[derive(Resource, Clone, Default)]
 pub struct SpritesAtlas {
     pub atlas_handle: Handle<TextureAtlasLayout>,
-    pub image_handle: Handle<Image>
+    pub image_handle: Handle<Image>,
+    pub pumpkin_image_handle: Handle<Image>,
 }
 
 #[derive(Resource, Deref, DerefMut, Clone, Default)]
@@ -41,7 +42,8 @@ fn sprites_atlas_setup(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
     commands.insert_resource(SpritesAtlas {
         atlas_handle: texture_atlas_handle,
-        image_handle
+        image_handle: image_handle,
+        pumpkin_image_handle: asset_server.load("images/pumpkin.png"),
     });
 }
 

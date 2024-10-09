@@ -73,15 +73,13 @@ fn try_spawning_a_bomb(
     let place_to_spawn_in = try_finding_place_for_bomb(transforms_not_to_spawn_next_to)?;
     let newborn_bomb = commands
         .spawn((
-            /*MaterialMesh2dBundle {
+            MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Circle::new(BOMB_SIZE))),
-                material: materials.add(BombState::PreHeld.to_color().bomb),
-                transform: Transform::from_translation(place_to_spawn_in)
-                    .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
-                ..default()
-            },*/
-            SpriteBundle {
-                texture: sprites_atlas_resource.image_handle.clone(),
+                material: materials.add(ColorMaterial {
+                    color: BombState::PreHeld.to_color().bomb,
+                    texture: Some(sprites_atlas_resource.pumpkin_image_handle.clone()),
+                    ..default()
+                }),
                 transform: Transform::from_translation(place_to_spawn_in)
                     .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
