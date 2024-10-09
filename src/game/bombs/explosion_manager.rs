@@ -53,9 +53,13 @@ fn explode_bomb(
     commands: &mut Commands,
 ) {
     for (transform, entity, maybe_affecting_timer_calculators) in transform_query {
-        if transform.translation.distance(bomb_transform.translation) <= explosion_radius {
+        let from_bomb_to_object_in_blast = calculate_distance_including_through_screen_border(
+            transform.translation,
+            bomb_transform.translation,
+        );
+        if from_bomb_to_object_in_blast.distance <= explosion_radius {
             let blast_move_calculator =
-                move_due_to_blast_calculator(bomb_transform, transform, commands);
+                move_due_to_blast_calculator(from_bomb_to_object_in_blast.vec, transform, commands);
             let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
                 DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences
             } else {
@@ -78,12 +82,10 @@ fn explode_bomb(
 }
 
 fn move_due_to_blast_calculator(
-    bomb_transform: &Transform,
+    location_delta_from_bomb: Vec3,
     object_in_blase_transform: &Transform,
     commands: &mut Commands,
 ) -> Entity {
-    let location_delta_from_bomb =
-        object_in_blase_transform.translation - bomb_transform.translation;
     let blast_strength =
         BOMB_BLAST_FACTOR / clamp_and_notify(location_delta_from_bomb.norm_squared(), 1.0, 900.0);
     let delta_due_to_blast = location_delta_from_bomb.normalize() * blast_strength;
