@@ -35,6 +35,7 @@ fn spawn_player(
             score: 0,
             ..default()
         },
+        FacingDirection::new(Z_LAYER_PLAYER),
         WorldBoundsWrapped,
     ));
 }

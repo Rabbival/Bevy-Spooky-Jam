@@ -15,6 +15,7 @@ pub fn listen_for_despawn_requests_from_timers(
     mut event_reader: EventReader<TimerDoneEvent>,
     mut remove_from_timer_event_writer: EventWriter<RemoveFromTimerAffectedEntities>,
     affecting_timers_query: Query<&AffectingTimerCalculators>,
+    parent_timer_sequence_query: Query<&TimerParentSequence>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
@@ -29,8 +30,16 @@ pub fn listen_for_despawn_requests_from_timers(
                             affected_entity.affected_entity,
                         );
                     }
+                    DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences => {
+                        destroy_affecting_timers_and_calculators_and_sequences(
+                            affected_entity.affected_entity,
+                            &affecting_timers_query,
+                            &parent_timer_sequence_query,
+                            &mut commands,
+                        );
+                    }
                 }
-                despawn_entity_notify_on_fail(
+                despawn_recursive_notify_on_fail(
                     affected_entity.affected_entity,
                     "(affected entity from timer despawn affected entities request)",
                     &mut commands,
@@ -61,6 +70,45 @@ fn remove_from_all_affecting_entities(
         print_warning(
             format!(
                 "Was asked to remove entity {:?} from affecting timers, but it has none.",
+                affected_entity
+            ),
+            vec![LogCategory::RequestNotFulfilled],
+        );
+    }
+}
+
+fn destroy_affecting_timers_and_calculators_and_sequences(
+    affected_entity: Entity,
+    affecting_timers_query: &Query<&AffectingTimerCalculators>,
+    parent_timer_sequence_query: &Query<&TimerParentSequence>,
+    commands: &mut Commands,
+) {
+    if let Ok(affecting_timers) = affecting_timers_query.get(affected_entity) {
+        for affecting_timers_of_type in affecting_timers.values() {
+            for affecting_timer in affecting_timers_of_type {
+                despawn_recursive_notify_on_fail(
+                    affecting_timer.value_calculator,
+                    "EmittingTimer",
+                    commands,
+                );
+                if let Some(timer) = commands.get_entity(affecting_timer.timer) {
+                    timer.despawn_recursive();
+                    if let Ok(parent_sequence_component) =
+                        parent_timer_sequence_query.get(affecting_timer.timer)
+                    {
+                        if let Some(timer_sequence) =
+                            commands.get_entity(parent_sequence_component.parent_sequence)
+                        {
+                            timer_sequence.despawn_recursive();
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        print_warning(
+            format!(
+                "Was asked to destroy the calculator, timer and sequence of entity {:?}, but it has no affecting timers component.",
                 affected_entity
             ),
             vec![LogCategory::RequestNotFulfilled],
