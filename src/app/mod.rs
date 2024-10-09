@@ -1,5 +1,6 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+use crate::app::ui::UiPlugin;
 use crate::prelude::*;
 
 pub mod consts;
@@ -7,6 +8,7 @@ pub mod generic_plugins;
 pub mod main_camera;
 pub mod screen_setup;
 pub mod tags;
+pub mod ui;
 
 #[bevy_main]
 pub fn main() {
@@ -21,6 +23,7 @@ pub fn main() {
             MainCameraPlugin,
             CustomAnimationPlugin,
             GamePlugin,
+            UiPlugin,
             TimePlugin,
             LateDespawnerPlugin,
         ))
