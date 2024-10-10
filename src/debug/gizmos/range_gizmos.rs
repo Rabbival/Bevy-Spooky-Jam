@@ -53,7 +53,7 @@ fn draw_bomb_explosion_radius(
     bomb_query: Query<(&Transform, &Bomb), With<Bomb>>,
 ) {
     for (transform, bomb) in &bomb_query {
-        if let BombState::Ticking = bomb.bomb_state {
+        if let BombState::PostHeld = bomb.bomb_state {
             gizmos.circle_2d(
                 Vec2::new(transform.translation.x, transform.translation.y),
                 BOMB_EXPLOSION_RADIUS,

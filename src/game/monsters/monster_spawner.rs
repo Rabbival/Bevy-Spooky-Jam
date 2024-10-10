@@ -38,8 +38,8 @@ fn try_spawning_a_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
-    mut event_writer: &mut EventWriter<TimerFireRequest>,
-    mut commands: &mut Commands,
+    event_writer: &mut EventWriter<TimerFireRequest>,
+    commands: &mut Commands,
 ) -> Result<(), MonsterError> {
     let mut rng = rand::thread_rng();
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
@@ -62,11 +62,11 @@ fn try_spawning_a_monster(
         ))
         .id();
     initiate_movement_along_path(
-        &mut event_writer,
+        event_writer,
         monster_entity,
         rng.gen_range(1.0..3.0),
         generate_initial_path_to_follow(),
-        &mut commands,
+        commands,
     );
     Ok(())
 }
@@ -83,10 +83,7 @@ fn try_finding_place_for_monster(
             Z_LAYER_MONSTER,
         );
         for transform in transforms_not_to_spawn_next_to {
-            if calculate_distance_including_through_screen_border(vector, transform.translation)
-                .distance
-                < MONSTER_SAFE_RADIUS
-            {
+            if vector.distance(transform.translation) < MONSTER_SAFE_RADIUS {
                 continue 'monster_spawning_loop;
             }
         }
