@@ -1,7 +1,10 @@
 use bevy::sprite::*;
 use rand::Rng;
 
-use crate::{app::assets_loader::{SpritesAtlas, TextFonts}, prelude::*};
+use crate::{
+    app::assets_loader::{SpritesAtlas, TextFonts},
+    prelude::*,
+};
 
 pub struct BombSpawnerPlugin;
 
@@ -167,7 +170,6 @@ fn listen_for_bombs_done_growing(
                                     font: text_fonts_resource.kenny_blocks_handle.clone(),
                                     font_size: BOMB_TIME_LEFT_FONT_SIZE,
                                     color: BombState::PreHeld.to_colors().unwrap().text,
-                                    ..default()
                                 },
                             ),
                             transform: Transform::from_translation(Vec3::Z),

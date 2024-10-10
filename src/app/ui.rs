@@ -16,10 +16,7 @@ impl Plugin for UiPlugin {
     }
 }
 
-fn spawn_ui(
-    text_fonts_resource: ResMut<TextFonts>,
-    mut commands: Commands,
-) {
+fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
     commands.spawn(SpriteBundle {
         sprite: Sprite {
             color: Color::srgba(1.0, 1.0, 1.0, 0.55),
@@ -43,7 +40,6 @@ fn spawn_ui(
                     font: text_fonts_resource.kenny_blocks_handle.clone(),
                     font_size: 60.0,
                     color: Color::BLACK,
-                    ..default()
                 },
             )
             .with_justify(JustifyText::Left),
@@ -98,7 +94,6 @@ fn spawn_ui(
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
                     color: Color::BLACK,
-                    ..default()
                 },
             )
             .with_justify(JustifyText::Left),
@@ -140,7 +135,8 @@ fn update_player_scoring(
 ) {
     for player in players_query.iter() {
         for mut player_scoring_text in player_scoring_text_query.iter_mut() {
-            player_scoring_text.sections[0].value = format!("Score: {:0>7}", player.score.to_string());
+            player_scoring_text.sections[0].value =
+                format!("Score: {:0>7}", player.score.to_string());
         }
     }
 }
