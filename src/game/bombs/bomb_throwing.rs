@@ -6,12 +6,7 @@ impl Plugin for BombThrowingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (
-                update_bomb_text_color_after_throw,
-                listen_for_bomb_throwing_requests,
-            )
-                .chain()
-                .in_set(InputSystemSet::Handling),
+            listen_for_bomb_throwing_requests.in_set(InputSystemSet::Handling),
         );
     }
 }
@@ -44,15 +39,7 @@ fn listen_for_bomb_throwing_requests(
                         &bomb_transform,
                         player_transform.translation
                             + player_facing_direction.0 * BOMB_THROWING_DISTANCE,
-                        &bomb,
                         &mut commands,
-                    );
-                } else {
-                    print_error(
-                        EntityError::EntityNotInQuery(
-                            "bomb entity when trying to shoot bomb, from the player's held bomb field",
-                        ),
-                        vec![LogCategory::RequestNotFulfilled, LogCategory::Player],
                     );
                 }
             }
@@ -67,7 +54,7 @@ fn disconnect_bomb_from_player(
     bomb: &mut Bomb,
     commands: &mut Commands,
 ) {
-    bomb.bomb_state = BombState::Ticking;
+    bomb.bomb_state = BombState::PostHeld;
     commands.entity(bomb_entity).remove::<Parent>();
     bomb_transform.translation += player_transform.translation; //now its transform is no longer relative to the player
 }
@@ -78,11 +65,10 @@ fn fire_bomb_and_unslow_time(
     bomb_entity: Entity,
     bomb_transform: &Transform,
     bomb_destination: Vec3,
-    bomb: &Bomb,
     commands: &mut Commands,
 ) {
     let throw_value_calculator = bomb_throw_calculator(bomb_transform, bomb_destination, commands);
-    let countdown_calculator = bomb_countdown_calculator(bomb, commands);
+
     timer_fire_request_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
             vec![TimerAffectedEntity {
@@ -95,18 +81,7 @@ fn fire_bomb_and_unslow_time(
         ),
         parent_sequence: None,
     });
-    timer_fire_request_writer.send(TimerFireRequest {
-        timer: EmittingTimer::new(
-            vec![TimerAffectedEntity {
-                affected_entity: bomb_entity,
-                value_calculator_entity: Some(countdown_calculator),
-            }],
-            vec![TimeMultiplierId::GameTimeMultiplier],
-            bomb.full_duration as f32,
-            TimerDoneEventType::ExplodeInRadius(BOMB_EXPLOSION_RADIUS),
-        ),
-        parent_sequence: None,
-    });
+
     time_multiplier_request_writer.send(SetTimeMultiplier {
         multiplier_id: TimeMultiplierId::GameTimeMultiplier,
         new_multiplier: 1.0,
@@ -130,38 +105,4 @@ fn bomb_throw_calculator(
             TimerGoingEventType::Move(MovementType::InDirectLine),
         ))
         .id()
-}
-
-fn bomb_countdown_calculator(bomb: &Bomb, commands: &mut Commands) -> Entity {
-    commands
-        .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::KeepNewTimer,
-            ValueByInterpolation::from_goal_and_current(
-                bomb.full_duration as f32,
-                0.0,
-                Interpolator::default(),
-            ),
-            TimerGoingEventType::BombCountdown,
-        ))
-        .id()
-}
-
-fn update_bomb_text_color_after_throw(
-    mut player_request_listener: EventReader<PlayerRequest>,
-    player_query: Query<&Player>,
-    mut text_query: Query<(&mut Text, &Parent)>,
-) {
-    for _bomb_throw_request in
-        read_no_field_variant!(player_request_listener, PlayerRequest::ThrowBomb)
-    {
-        for player in &player_query {
-            if let Some(bomb_entity) = player.held_bomb {
-                for (mut text, text_parent_entity) in &mut text_query {
-                    if text_parent_entity.get() == bomb_entity {
-                        text.sections[0].style.color = BombState::Ticking.to_color().text;
-                    }
-                }
-            }
-        }
-    }
 }

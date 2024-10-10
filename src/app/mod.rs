@@ -23,7 +23,6 @@ pub fn main() {
             MainCameraPlugin,
             CustomAnimationPlugin,
             GamePlugin,
-            UiPlugin,
             TimePlugin,
             LateDespawnerPlugin,
         ))
@@ -32,6 +31,10 @@ pub fn main() {
 
     if !LOG_CATEGORYS_TO_APPEND_TO_SESSION_LOG.is_empty() {
         app.add_plugins(GameSessionLogPlugin);
+    }
+
+    if FunctionalityOverride::DontSpawnUI.disabled() {
+        app.add_plugins(UiPlugin);
     }
 
     app.run();

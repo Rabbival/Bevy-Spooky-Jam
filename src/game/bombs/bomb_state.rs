@@ -7,7 +7,7 @@ use bevy::color::{
 pub enum BombState {
     PreHeld,
     Held,
-    Ticking,
+    PostHeld,
 }
 
 pub struct BombAndTextColors {
@@ -16,20 +16,17 @@ pub struct BombAndTextColors {
 }
 
 impl BombState {
-    pub fn to_color(&self) -> BombAndTextColors {
+    pub fn to_colors(&self) -> Option<BombAndTextColors> {
         match self {
-            Self::PreHeld => BombAndTextColors {
+            Self::PreHeld => Some(BombAndTextColors {
                 bomb: Color::from(DARK_SLATE_GRAY),
                 text: Color::from(LIGHT_GRAY),
-            },
-            Self::Held => BombAndTextColors {
-                bomb: Color::from(DARK_RED),
-                text: Color::from(LIGHT_GRAY),
-            },
-            Self::Ticking => BombAndTextColors {
+            }),
+            Self::Held => Some(BombAndTextColors {
                 bomb: Color::from(DARK_RED),
                 text: Color::from(YELLOW),
-            },
+            }),
+            Self::PostHeld => None,
         }
     }
 }

@@ -19,6 +19,7 @@ lazy_static! {
         // FunctionalityOverride::AlwaysSpawnBombsInMiddle,
         // FunctionalityOverride::PlayerMayCarryInfiniteBombs
         // FunctionalityOverride::AllBombsExplodeAfterOneSecond,
-        // FunctionalityOverride::EnemiesDontMove
+        // FunctionalityOverride::EnemiesDontMove,
+        FunctionalityOverride::DontSpawnUI
     ];
 }

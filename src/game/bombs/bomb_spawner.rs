@@ -70,13 +70,13 @@ fn try_spawning_a_bomb(
         .spawn((
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Circle::new(BOMB_SIZE))),
-                material: materials.add(BombState::PreHeld.to_color().bomb),
+                material: materials.add(BombState::PreHeld.to_colors().unwrap().bomb),
                 transform: Transform::from_translation(place_to_spawn_in)
                     .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
             },
             AffectingTimerCalculators::default(),
-            Bomb::new(),
+            Bomb::default(),
             WorldBoundsWrapped,
         ))
         .id();
@@ -125,10 +125,7 @@ fn try_finding_place_for_bomb(
             Z_LAYER_BOMB,
         );
         for transform in transforms_not_to_spawn_next_to {
-            if calculate_distance_including_through_screen_border(vector, transform.translation)
-                .distance
-                < BOMB_SAFE_RADIUS
-            {
+            if vector.distance(transform.translation) < BOMB_SAFE_RADIUS {
                 continue 'bomb_spawning_loop;
             }
         }
@@ -154,7 +151,7 @@ fn listen_for_bombs_done_growing(
                                 format!("{:?}", bomb.full_duration),
                                 TextStyle {
                                     font_size: BOMB_TIME_LEFT_FONT_SIZE,
-                                    color: BombState::PreHeld.to_color().text,
+                                    color: BombState::PreHeld.to_colors().unwrap().text,
                                     ..default()
                                 },
                             ),
