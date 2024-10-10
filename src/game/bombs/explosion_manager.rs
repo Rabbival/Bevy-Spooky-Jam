@@ -8,7 +8,8 @@ impl Plugin for ExplosionManagerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (listen_for_done_bombs, explode_bombs_colliding_with_monsters),
+            (listen_for_done_bombs, explode_bombs_colliding_with_monsters)
+                .in_set(TickingSystemSet::PostTicking),
         );
     }
 }
