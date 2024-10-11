@@ -1,6 +1,7 @@
-use bevy::math::NormedVectorSpace;
-
+use crate::game::player_management::consts::PLAYER_SCORE_POINTS_ON_MONSTER_KILLED;
+use crate::game::scores::score_event_channel::UpdatePlayerScoreEvent;
 use crate::prelude::*;
+use bevy::math::NormedVectorSpace;
 
 pub struct ExplosionManagerPlugin;
 
@@ -8,31 +9,37 @@ impl Plugin for ExplosionManagerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (listen_for_done_bombs, explode_bombs_colliding_with_monsters)
+            (listen_for_done_bombs, explode_bombs_on_direct_collision)
                 .in_set(TickingSystemSet::PostTicking),
         );
     }
 }
 
-fn explode_bombs_colliding_with_monsters(
+fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
-    monster_query: Query<&Transform, With<Monster>>,
+    explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&Bomb>)>,
     bomb_query: Query<(&Transform, &Bomb)>,
     transform_query: Query<
         (&Transform, Entity, Option<&AffectingTimerCalculators>),
         With<WorldBoundsWrapped>,
     >,
     mut commands: Commands,
+    mut update_player_score_event_writer: EventWriter<UpdatePlayerScoreEvent>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
-        if let BombState::PostHeld = bomb.bomb_state {
-            for monster_transform in &monster_query {
-                if bomb_transform
-                    .translation
-                    .distance(monster_transform.translation)
-                    <= BOMB_SIZE
+        if let BombState::PostHeld = bomb.state {
+            for (transform, maybe_monster, maybe_bomb) in &explode_in_contact_query {
+                if bomb_transform == transform || (maybe_monster.is_none() && maybe_bomb.is_none())
                 {
+                    continue;
+                }
+                if let Some(bomb) = maybe_bomb {
+                    if let BombState::PreHeld | BombState::Held = bomb.state {
+                        continue;
+                    }
+                }
+                if bomb_transform.translation.distance(transform.translation) <= BOMB_SIZE {
                     unslow_time_if_was_held(&mut time_multiplier_request_writer, bomb);
                     explode_bomb(
                         bomb_transform,
@@ -41,6 +48,11 @@ fn explode_bombs_colliding_with_monsters(
                         &mut timer_fire_request_writer,
                         &mut commands,
                     );
+                    if let Some(_monster) = maybe_monster {
+                        update_player_score_event_writer.send(UpdatePlayerScoreEvent {
+                            points: PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
+                        });
+                    }
                 }
             }
         }
@@ -87,7 +99,7 @@ fn unslow_time_if_was_held(
     time_multiplier_request_writer: &mut EventWriter<SetTimeMultiplier>,
     bomb: &Bomb,
 ) {
-    if let BombState::Held = bomb.bomb_state {
+    if let BombState::Held = bomb.state {
         time_multiplier_request_writer.send(SetTimeMultiplier {
             multiplier_id: TimeMultiplierId::GameTimeMultiplier,
             new_multiplier: 1.0,
