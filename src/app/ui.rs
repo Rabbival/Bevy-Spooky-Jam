@@ -12,7 +12,7 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_ui);
 
-        if FunctionalityOverride::DontUpdateUI.enabled() {
+        if FunctionalityOverride::DontUpdateUI.disabled() {
             app.add_systems(
                 Update,
                 (
