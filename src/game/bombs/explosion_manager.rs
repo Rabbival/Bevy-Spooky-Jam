@@ -1,5 +1,5 @@
 use bevy::math::NormedVectorSpace;
-
+use crate::game::scores::score_event_channel::UpdatePlayerScoreEvent;
 use crate::prelude::*;
 
 pub struct ExplosionManagerPlugin;
@@ -24,6 +24,7 @@ fn explode_bombs_on_direct_collision(
         With<WorldBoundsWrapped>,
     >,
     mut commands: Commands,
+    mut update_player_score_event_writer: EventWriter<UpdatePlayerScoreEvent>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
         if let BombState::PostHeld = bomb.state {
@@ -46,6 +47,10 @@ fn explode_bombs_on_direct_collision(
                         &mut timer_fire_request_writer,
                         &mut commands,
                     );
+                    if let Some(monster) = maybe_monster {
+                        update_player_score_event_writer.send(UpdatePlayerScoreEvent { points: 25 });
+                        info!("monster killed");
+                    }
                 }
             }
         }
