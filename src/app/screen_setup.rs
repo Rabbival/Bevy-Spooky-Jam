@@ -13,7 +13,7 @@ impl Plugin for ScreenSetupPlugin {
                     primary_window: Some(Window {
                         resolution: WindowResolution::new(
                             WINDOW_SIZE_IN_PIXELS,
-                            WINDOW_SIZE_IN_PIXELS,
+                            WINDOW_SIZE_IN_PIXELS + TOP_UI_HEADER_BAR_HEIGHT,
                         ),
                         resizable: false,
                         ..default()

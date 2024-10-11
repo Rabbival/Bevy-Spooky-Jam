@@ -28,16 +28,13 @@ pub fn main() {
             AssetsLoaderPlugin,
             TimePlugin,
             LateDespawnerPlugin,
+            UiPlugin,
         ))
         //generic plugins (type registration, for generic events for example)
         .add_plugins(GenericPlugins);
 
     if !LOG_CATEGORYS_TO_APPEND_TO_SESSION_LOG.is_empty() {
         app.add_plugins(GameSessionLogPlugin);
-    }
-
-    if FunctionalityOverride::DontSpawnUI.disabled() {
-        app.add_plugins(UiPlugin);
     }
 
     app.run();
