@@ -167,7 +167,7 @@ fn listen_for_bombs_done_growing(
                             text: Text::from_section(
                                 format!("{:?}", bomb.full_duration),
                                 TextStyle {
-                                    font: text_fonts_resource.kenny_blocks_handle.clone(),
+                                    font: text_fonts_resource.kenny_pixel_handle.clone(),
                                     font_size: BOMB_TIME_LEFT_FONT_SIZE,
                                     color: BombState::PreHeld.to_colors().unwrap().text,
                                 },
