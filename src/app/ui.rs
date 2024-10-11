@@ -65,7 +65,7 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Score: 1.000.000",
+                "Score: 0000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
@@ -94,7 +94,7 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Hi  Score: 1000000",
+                "Hi  Score: 0000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
