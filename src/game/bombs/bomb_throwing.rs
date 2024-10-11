@@ -15,14 +15,15 @@ fn listen_for_bomb_throwing_requests(
     mut player_request_listener: EventReader<PlayerRequest>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
-    mut player_query: Query<(&mut Player, &Transform, &FacingDirection), Without<Bomb>>,
+    mut player_query: Query<(&mut Player, &Transform), Without<Bomb>>,
     mut bomb_query: Query<(&mut Bomb, &mut Transform), Without<Player>>,
+    cursor_world_position: Res<CursorWorldPosition>,
     mut commands: Commands,
 ) {
     for _bomb_throw_request in
         read_no_field_variant!(player_request_listener, PlayerRequest::ThrowBomb)
     {
-        for (mut player, player_transform, player_facing_direction) in &mut player_query {
+        for (mut player, player_transform) in &mut player_query {
             if let Some(bomb_entity) = player.held_bomb.take() {
                 if let Ok((mut bomb, mut bomb_transform)) = bomb_query.get_mut(bomb_entity) {
                     disconnect_bomb_from_player(
@@ -37,8 +38,7 @@ fn listen_for_bomb_throwing_requests(
                         &mut time_multiplier_request_writer,
                         bomb_entity,
                         &bomb_transform,
-                        player_transform.translation
-                            + player_facing_direction.0 * BOMB_THROWING_DISTANCE,
+                        cursor_world_position.0,
                         &mut commands,
                     );
                 }
@@ -64,10 +64,10 @@ fn fire_bomb_and_unslow_time(
     time_multiplier_request_writer: &mut EventWriter<SetTimeMultiplier>,
     bomb_entity: Entity,
     bomb_transform: &Transform,
-    bomb_destination: Vec3,
+    cursor_position: Vec2,
     commands: &mut Commands,
 ) {
-    let throw_value_calculator = bomb_throw_calculator(bomb_transform, bomb_destination, commands);
+    let throw_value_calculator = bomb_throw_calculator(bomb_transform, cursor_position, commands);
 
     timer_fire_request_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
@@ -76,7 +76,10 @@ fn fire_bomb_and_unslow_time(
                 value_calculator_entity: Some(throw_value_calculator),
             }],
             vec![TimeMultiplierId::GameTimeMultiplier],
-            BOMB_THROWING_TIME,
+            bomb_transform
+                .translation
+                .distance(cursor_position.extend(Z_LAYER_BOMB))
+                / BOMB_THROWING_SPEED,
             TimerDoneEventType::Nothing,
         ),
         parent_sequence: None,
@@ -91,7 +94,7 @@ fn fire_bomb_and_unslow_time(
 
 fn bomb_throw_calculator(
     bomb_transform: &Transform,
-    bomb_destination: Vec3,
+    cursor_position: Vec2,
     commands: &mut Commands,
 ) -> Entity {
     commands
@@ -99,7 +102,7 @@ fn bomb_throw_calculator(
             TimerCalculatorSetPolicy::AppendToTimersOfType,
             ValueByInterpolation::from_goal_and_current(
                 bomb_transform.translation,
-                bomb_destination.with_z(Z_LAYER_BOMB),
+                cursor_position.extend(Z_LAYER_BOMB),
                 Interpolator::default(),
             ),
             TimerGoingEventType::Move(MovementType::InDirectLine),
