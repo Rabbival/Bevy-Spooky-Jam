@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
-use rand::thread_rng;
 use super::assets_loader::{SpritesAtlas, TextFonts};
 
 pub struct UiPlugin;

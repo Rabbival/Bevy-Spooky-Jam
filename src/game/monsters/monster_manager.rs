@@ -49,7 +49,7 @@ fn update_monster_hearing_rings(
             }
         }
         match bomb_that_is_closest_to_explosion {
-            Some(closest_to_explosion_bomb) => {
+            Some(_closest_to_explosion_bomb) => {
                 monster.state = MonsterState::Fleeing;
                 //TODO: Run in opposite direcion
             }
