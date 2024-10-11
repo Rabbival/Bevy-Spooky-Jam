@@ -9,24 +9,29 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_ui).add_systems(
-            Update,
-            (update_player_game_stopwatch, update_player_scoring),
-        );
+        app.add_systems(Startup, spawn_ui);
+
+        if FunctionalityOverride::DontUpdateUI.disabled() {
+            app.add_systems(
+                Update,
+                (update_player_game_stopwatch, update_player_scoring),
+            );
+        }
     }
 }
 
 fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
+    let text_color = Color::srgba(0.9, 0.9, 0.9, 1.0);
     commands.spawn(SpriteBundle {
         sprite: Sprite {
-            color: Color::srgba(1.0, 1.0, 1.0, 0.55),
-            custom_size: Some(TOP_UI_HEADER_BAR_SIZE),
+            color: Color::srgba(0.3, 0.3, 0.3, 1.0),
+            custom_size: Some(Vec2::new(WINDOW_SIZE_IN_PIXELS, TOP_UI_HEADER_BAR_HEIGHT)),
             ..default()
         },
         transform: Transform::from_translation(
             Vec2::new(
                 0.0,
-                (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
             )
             .extend(100.0),
         ),
@@ -39,17 +44,17 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
                 TextStyle {
                     font: text_fonts_resource.kenny_blocks_handle.clone(),
                     font_size: 60.0,
-                    color: Color::BLACK,
+                    color: text_color,
                 },
             )
             .with_justify(JustifyText::Left),
             text_2d_bounds: Text2dBounds {
-                size: TOP_UI_HEADER_BAR_SIZE,
+                size: Vec2::new(WINDOW_SIZE_IN_PIXELS, TOP_UI_HEADER_BAR_HEIGHT),
             },
             transform: Transform::from_translation(
                 Vec2::new(
                     0.0,
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 )
                 .extend(101.0),
             ),
@@ -64,7 +69,7 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
-                    color: Color::BLACK,
+                    color: text_color,
                     ..default()
                 },
             )
@@ -72,13 +77,13 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
             text_2d_bounds: Text2dBounds {
                 size: Vec2::new(
                     WINDOW_SIZE_IN_PIXELS / 3.0,
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
                     (-WINDOW_SIZE_IN_PIXELS / 2.0) + 100.0,
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 )
                 .extend(101.0),
             ),
@@ -93,20 +98,20 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
-                    color: Color::BLACK,
+                    color: text_color,
                 },
             )
             .with_justify(JustifyText::Left),
             text_2d_bounds: Text2dBounds {
                 size: Vec2::new(
                     WINDOW_SIZE_IN_PIXELS / 3.0,
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
                     (WINDOW_SIZE_IN_PIXELS / 2.0) - 110.0,
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - (TOP_UI_HEADER_BAR_SIZE.y / 2.0),
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 )
                 .extend(101.0),
             ),
