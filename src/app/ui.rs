@@ -1,5 +1,5 @@
-use std::time::Duration;
 use crate::prelude::*;
+use std::time::Duration;
 
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
@@ -15,7 +15,11 @@ impl Plugin for UiPlugin {
         if FunctionalityOverride::DontUpdateUI.disabled() {
             app.add_systems(
                 Update,
-                (update_player_game_stopwatch, update_player_scoring, update_high_score),
+                (
+                    update_player_game_stopwatch,
+                    update_player_scoring,
+                    update_high_score,
+                ),
             );
         }
     }
@@ -156,10 +160,14 @@ fn update_high_score(
     world_championship_leaderboard_scoring_query: Query<&WorldChampionshipLeaderboardScoring>,
     mut high_score_text_query: Query<&mut Text, With<LeaderboardScoreTextUi>>,
 ) {
-    for world_championship_leaderboard_scoring in world_championship_leaderboard_scoring_query.iter() {
+    for world_championship_leaderboard_scoring in
+        world_championship_leaderboard_scoring_query.iter()
+    {
         for mut high_score_text in high_score_text_query.iter_mut() {
-            high_score_text.sections[0].value =
-                format!("Hi  Score: {:0>7}", world_championship_leaderboard_scoring.hi_score.to_string());
+            high_score_text.sections[0].value = format!(
+                "Hi  Score: {:0>7}",
+                world_championship_leaderboard_scoring.hi_score.to_string()
+            );
         }
     }
 }
