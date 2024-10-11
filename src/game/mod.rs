@@ -2,7 +2,6 @@ use crate::prelude::*;
 
 pub mod bombs;
 pub mod consts;
-pub mod facing_direction;
 pub mod monsters;
 pub mod player_management;
 pub mod tags;
