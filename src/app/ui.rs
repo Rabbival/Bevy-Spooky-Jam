@@ -3,8 +3,8 @@ use std::time::Duration;
 
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
-
-use super::assets_loader::TextFonts;
+use rand::thread_rng;
+use super::assets_loader::{SpritesAtlas, TextFonts};
 
 pub struct UiPlugin;
 
@@ -12,7 +12,7 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_ui);
 
-        if FunctionalityOverride::DontUpdateUI.disabled() {
+        if FunctionalityOverride::DontUpdateUI.enabled() {
             app.add_systems(
                 Update,
                 (
@@ -25,7 +25,17 @@ impl Plugin for UiPlugin {
     }
 }
 
-fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
+fn spawn_ui(
+    image_fonts_resource: ResMut<SpritesAtlas>,
+    text_fonts_resource: ResMut<TextFonts>,
+    mut commands: Commands,
+) {
+    commands.spawn((
+        SpriteBundle {
+            texture: image_fonts_resource.floor_image_handle.clone(),
+            ..default()
+        },
+    ));
     let text_color = Color::srgba(0.9, 0.9, 0.9, 1.0);
     commands.spawn(SpriteBundle {
         sprite: Sprite {
