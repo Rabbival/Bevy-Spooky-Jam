@@ -5,7 +5,7 @@ use rand::Rng;
 pub struct Bomb {
     pub full_duration: usize,
     pub time_until_explosion: f32,
-    pub bomb_state: BombState,
+    pub state: BombState,
     pub explosion_radius: f32,
 }
 
@@ -26,7 +26,7 @@ impl Bomb {
         Bomb {
             full_duration,
             time_until_explosion: full_duration as f32,
-            bomb_state: BombState::PreHeld,
+            state: BombState::PreHeld,
             explosion_radius,
         }
     }

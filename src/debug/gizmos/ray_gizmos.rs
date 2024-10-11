@@ -16,7 +16,7 @@ fn draw_held_bomb_path_preview(
     cursor: Res<CursorWorldPosition>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
-        if let BombState::Held = bomb.bomb_state {
+        if let BombState::Held = bomb.state {
             gizmos.line_2d(
                 bomb_transform.translation().truncate(),
                 cursor.0,

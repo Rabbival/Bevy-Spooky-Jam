@@ -111,9 +111,9 @@ fn make_player_hold_bomb(
     commands: &mut Commands,
 ) {
     let (mut bomb, mut bomb_transform, material, _) = bomb_query.get_mut(bomb_entity).unwrap();
-    bomb.bomb_state = BombState::Held;
+    bomb.state = BombState::Held;
     if let Some(material) = materials.get_mut(material.id()) {
-        if let Some(bomb_state_colors) = bomb.bomb_state.to_colors() {
+        if let Some(bomb_state_colors) = bomb.state.to_colors() {
             material.color = bomb_state_colors.bomb;
         }
     }

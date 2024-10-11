@@ -54,7 +54,7 @@ fn disconnect_bomb_from_player(
     bomb: &mut Bomb,
     commands: &mut Commands,
 ) {
-    bomb.bomb_state = BombState::PostHeld;
+    bomb.state = BombState::PostHeld;
     commands.entity(bomb_entity).remove::<Parent>();
     bomb_transform.translation += player_transform.translation; //now its transform is no longer relative to the player
 }
