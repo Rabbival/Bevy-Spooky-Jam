@@ -13,7 +13,7 @@ pub const BOMB_MIN_TIME: usize = 4;
 pub const BOMB_THROWING_TIME: f32 = 0.2;
 pub const BOMB_THROWING_DISTANCE: f32 = 400.0;
 
-pub const BOMB_TIME_LEFT_FONT_SIZE: f32 = 56.0;
+pub const BOMB_TIME_LEFT_FONT_SIZE: f32 = 26.0;
 
 pub const BOMB_EXPLOSION_RADIUS: f32 = 180.0;
 pub const BOMB_BLAST_FACTOR: f32 = 50000.0;
