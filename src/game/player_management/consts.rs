@@ -1,3 +1,3 @@
 pub const PLAYER_MOVEMENT_DELTA: f32 = 4.0;
-pub const PLAYER_BOMB_PICKING_RANGE: f32 = 24.0;
+pub const PLAYER_BOMB_PICKING_RANGE: f32 = 42.0;
 pub const Z_LAYER_PLAYER: f32 = 10.0;

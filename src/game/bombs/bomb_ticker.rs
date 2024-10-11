@@ -23,18 +23,16 @@ fn listen_for_bomb_tick_update(
                         BombError::AskedToTickAPreHeldBomb,
                         vec![LogCategory::RequestNotFulfilled],
                     );
-                } else {
-                    if let Err(_parse_error) = tick_bomb_and_update_text(
-                        &mut bomb,
-                        timer_going_event.value_delta,
-                        timer_going_event.entity,
-                        &mut text_query,
-                    ) {
-                        print_error(
-                            BombError::CouldntParseTimerIntoInteger,
-                            vec![LogCategory::RequestNotFulfilled],
-                        );
-                    }
+                } else if let Err(_parse_error) = tick_bomb_and_update_text(
+                    &mut bomb,
+                    timer_going_event.value_delta,
+                    timer_going_event.entity,
+                    &mut text_query,
+                ) {
+                    print_error(
+                        BombError::CouldntParseTimerIntoInteger,
+                        vec![LogCategory::RequestNotFulfilled],
+                    );
                 }
             } else {
                 print_error(

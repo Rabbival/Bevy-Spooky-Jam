@@ -26,9 +26,9 @@ pub fn main() {
             CustomAnimationPlugin,
             GamePlugin,
             AssetsLoaderPlugin,
-            UiPlugin,
             TimePlugin,
             LateDespawnerPlugin,
+            UiPlugin,
         ))
         //generic plugins (type registration, for generic events for example)
         .add_plugins(GenericPlugins);

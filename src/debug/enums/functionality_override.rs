@@ -6,6 +6,7 @@ pub enum FunctionalityOverride {
     PlayerMayCarryInfiniteBombs,
     AllBombsExplodeAfterOneSecond,
     EnemiesDontMove,
+    DontUpdateUI,
 }
 
 impl FunctionalityOverride {
