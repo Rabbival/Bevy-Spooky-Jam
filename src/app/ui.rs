@@ -1,3 +1,4 @@
+use std::time::Duration;
 use crate::prelude::*;
 
 use bevy::text::Text2dBounds;
@@ -118,6 +119,11 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
             ..default()
         },
         LeaderboardScoreTextUi,
+        // TODO add globally persisted values
+        WorldChampionshipLeaderboardScoring {
+            elapsed: Duration::from_secs(0),
+            hi_score: 0,
+        },
     ));
 }
 
