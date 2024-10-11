@@ -48,7 +48,7 @@ fn explode_bombs_on_direct_collision(
                         &mut timer_fire_request_writer,
                         &mut commands,
                     );
-                    if let Some(monster) = maybe_monster {
+                    if let Some(_monster) = maybe_monster {
                         update_player_score_event_writer.send(UpdatePlayerScoreEvent { points: PLAYER_SCORE_POINTS_ON_MONSTER_KILLED });
                     }
                 }
