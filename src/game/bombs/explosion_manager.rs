@@ -1,4 +1,5 @@
 use bevy::math::NormedVectorSpace;
+use crate::game::player_management::consts::PLAYER_SCORE_POINTS_ON_MONSTER_KILLED;
 use crate::game::scores::score_event_channel::UpdatePlayerScoreEvent;
 use crate::prelude::*;
 
@@ -48,8 +49,7 @@ fn explode_bombs_on_direct_collision(
                         &mut commands,
                     );
                     if let Some(monster) = maybe_monster {
-                        update_player_score_event_writer.send(UpdatePlayerScoreEvent { points: 25 });
-                        info!("monster killed");
+                        update_player_score_event_writer.send(UpdatePlayerScoreEvent { points: PLAYER_SCORE_POINTS_ON_MONSTER_KILLED });
                     }
                 }
             }
