@@ -11,17 +11,17 @@ impl Plugin for MusicPlayerPlugin {
     }
 }
 
-fn load_and_play_music(asset_server: Res<AssetServer>, mut commands: Commands) {
+fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Commands) {
     commands.spawn((
         AudioBundle {
-            source: asset_server.load("music/music_calm_layer.ogg"),
+            source: music_assets_resource.calm_layer_handle.clone(),
             settings: PlaybackSettings::LOOP.with_volume(Volume::new(1.0)),
         },
         MusicLayer(1),
     ));
     commands.spawn((
         AudioBundle {
-            source: asset_server.load("music/music_intense_layer.ogg"),
+            source: music_assets_resource.intense_layer_handle.clone(),
             settings: PlaybackSettings::LOOP.with_volume(Volume::ZERO),
         },
         MusicLayer(2),

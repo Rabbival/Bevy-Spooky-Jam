@@ -19,6 +19,7 @@ fn listen_for_bomb_throwing_requests(
     mut bomb_query: Query<(&mut Bomb, &mut Transform), Without<Player>>,
     cursor_world_position: Res<CursorWorldPosition>,
     mut commands: Commands,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
 ) {
     for _bomb_throw_request in
         read_no_field_variant!(player_request_listener, PlayerRequest::ThrowBomb)
@@ -41,6 +42,9 @@ fn listen_for_bomb_throwing_requests(
                         cursor_world_position.0,
                         &mut commands,
                     );
+                    sounds_event_writer.send(SoundEvent {
+                        event: SoundEventEnum::BombThrowEvent,
+                    });
                 }
             }
         }
