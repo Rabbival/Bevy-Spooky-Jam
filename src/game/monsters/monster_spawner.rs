@@ -6,8 +6,30 @@ pub struct MonsterSpawnerPlugin;
 
 impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_initial_monsters)
-            .add_systems(Update, listen_for_monster_spawning_requests);
+        app.add_systems(Startup, spawn_initial_monster);
+        if FunctionalityOverride::SpawnOnlyOneEnemy.disabled() {
+            app.add_systems(Update, listen_for_monster_spawning_requests);
+        }
+    }
+}
+
+fn spawn_initial_monster(
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    mut event_writer: EventWriter<TimerFireRequest>,
+    mut commands: Commands,
+) {
+    if let Err(monster_error) = try_spawning_a_monster(
+        &transforms_not_to_spawn_next_to,
+        &mut meshes,
+        &mut materials,
+        &mut sprites_atlas_resource,
+        &mut event_writer,
+        &mut commands,
+    ) {
+        print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
     }
 }
 
@@ -16,6 +38,7 @@ fn listen_for_monster_spawning_requests(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
@@ -25,6 +48,7 @@ fn listen_for_monster_spawning_requests(
                 &transforms_not_to_spawn_next_to,
                 &mut meshes,
                 &mut materials,
+                &mut sprites_atlas_resource,
                 &mut event_writer,
                 &mut commands,
             ) {
@@ -38,6 +62,7 @@ fn try_spawning_a_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     event_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
 ) -> Result<(), MonsterError> {
@@ -47,28 +72,69 @@ fn try_spawning_a_monster(
     let monster_entity = commands
         .spawn((
             MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
-                material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
+                mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
+                material: materials.add(ColorMaterial {
+                    color: Color::srgba(1.0, 1.0, 1.0, MONSTER_FADED_ALPHA),
+                    texture: Some(sprites_atlas_resource.bato_san_image_handle.clone()),
+                    ..default()
+                }),
                 transform: Transform::from_translation(place_to_spawn_in),
                 ..default()
             },
             AffectingTimerCalculators::default(),
-            Monster {
-                hearing_ring_distance: rng
-                    .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
-                ..default()
-            },
             WorldBoundsWrapped,
         ))
         .id();
-    initiate_movement_along_path(
-        event_writer,
-        monster_entity,
-        rng.gen_range(1.0..3.0),
-        generate_initial_path_to_follow(),
-        commands,
-    );
+    if FunctionalityOverride::EnemiesDontMove.disabled() {
+        let sequence_id = spawn_path_timer_sequence(
+            monster_entity,
+            rng.gen_range(1.0..3.0),
+            generate_initial_path_to_follow(),
+            commands,
+        )?;
+        commands.entity(monster_entity).insert(Monster {
+            hearing_ring_distance: rng
+                .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+            state: MonsterState::Spawning,
+            path_timer_sequence: sequence_id,
+        });
+    }
+    spawn_grace_period_timer(monster_entity, event_writer, commands);
     Ok(())
+}
+
+fn spawn_grace_period_timer(
+    newborn_monster: Entity,
+    event_writer: &mut EventWriter<TimerFireRequest>,
+    commands: &mut Commands,
+) {
+    let alpha_change_calculator = spawn_alpha_change_calculator(commands);
+    event_writer.send(TimerFireRequest {
+        timer: EmittingTimer::new(
+            vec![TimerAffectedEntity {
+                affected_entity: newborn_monster,
+                value_calculator_entity: Some(alpha_change_calculator),
+            }],
+            vec![TimeMultiplierId::GameTimeMultiplier],
+            TIME_IT_TAKES_MONSTERS_TO_SPAWN,
+            TimerDoneEventType::DeclareSpawnDone,
+        ),
+        parent_sequence: None,
+    });
+}
+
+fn spawn_alpha_change_calculator(commands: &mut Commands) -> Entity {
+    commands
+        .spawn(GoingEventValueCalculator::new(
+            TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
+            ValueByInterpolation::from_goal_and_current(
+                0.0,
+                MONSTER_FADED_ALPHA,
+                Interpolator::default(),
+            ),
+            TimerGoingEventType::SetAlpha,
+        ))
+        .id()
 }
 
 fn try_finding_place_for_monster(
@@ -90,55 +156,6 @@ fn try_finding_place_for_monster(
         return Ok(vector);
     }
     Err(MonsterError::CouldntFindAPlaceToSpawnMonsterIn)
-}
-
-pub fn spawn_initial_monsters(
-    mut event_writer: EventWriter<TimerFireRequest>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut commands: Commands,
-) {
-    let half_window_size = WINDOW_SIZE_IN_PIXELS / 2.0;
-    let third_window_size = WINDOW_SIZE_IN_PIXELS / 3.0;
-    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
-    let mut rng = rand::thread_rng();
-    for i in 0..INITIAL_MONSTERS_AMOUNT {
-        let second_range_factor: f32 = i as f32 * third_window_size;
-        let monster_entity = commands
-            .spawn((
-                MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
-                    material: materials.add(Color::srgb(0.9, 0.3, 0.3)),
-                    transform: Transform::from_xyz(
-                        rng.gen_range(
-                            -half_window_size - second_range_factor
-                                ..half_window_size + second_range_factor,
-                        ),
-                        rng.gen_range(
-                            -half_window_size - second_range_factor
-                                ..half_window_size + second_range_factor,
-                        ),
-                        Z_LAYER_MONSTER,
-                    ),
-                    ..default()
-                },
-                AffectingTimerCalculators::default(),
-                Monster {
-                    hearing_ring_distance: rng
-                        .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
-                    ..default()
-                },
-                WorldBoundsWrapped,
-            ))
-            .id();
-        initiate_movement_along_path(
-            &mut event_writer,
-            monster_entity,
-            rng.gen_range(1.0..3.0),
-            generate_initial_path_to_follow(),
-            &mut commands,
-        );
-    }
 }
 
 fn generate_initial_path_to_follow() -> Vec<Vec3> {
@@ -170,16 +187,12 @@ fn generate_initial_path_to_follow() -> Vec<Vec3> {
     all_path_vertices
 }
 
-fn initiate_movement_along_path(
-    event_writer: &mut EventWriter<TimerFireRequest>,
+fn spawn_path_timer_sequence(
     monster_entity: Entity,
     timers_duration: f32,
     all_path_vertices: Vec<Vec3>,
     commands: &mut Commands,
-) {
-    if FunctionalityOverride::EnemiesDontMove.enabled() {
-        return;
-    }
+) -> Result<Entity, TimerSequenceError> {
     let going_event_value_calculators =
         configure_value_calculators_for_patroller(all_path_vertices, 2.0);
     let mut emitting_timers = vec![];
@@ -192,15 +205,12 @@ fn initiate_movement_along_path(
             commands,
         );
     }
-    if let Err(timer_sequence_error) = TimerSequence::spawn_looping_sequence_and_fire_first_timer(
-        event_writer,
-        &emitting_timers,
-        commands,
-    ) {
-        print_error(
-            timer_sequence_error,
-            vec![LogCategory::Time, LogCategory::RequestNotFulfilled],
-        );
+    if emitting_timers.is_empty() {
+        Err(TimerSequenceError::TriedToFireATimerSequenceWithNoTimers)
+    } else {
+        Ok(commands
+            .spawn(TimerSequence::looping_sequence(&emitting_timers))
+            .id())
     }
 }
 
