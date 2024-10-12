@@ -39,7 +39,12 @@ impl Plugin for AssetsLoaderPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PreStartup,
-            (sprites_atlas_setup, text_font_setup, music_setup, sound_fx_setup),
+            (
+                sprites_atlas_setup,
+                text_font_setup,
+                music_setup,
+                sound_fx_setup,
+            ),
         );
     }
 }

@@ -1,5 +1,5 @@
-use bevy::audio::PlaybackMode;
 use crate::prelude::*;
+use bevy::audio::PlaybackMode;
 
 pub struct SoundPlayerPlugin;
 
@@ -15,15 +15,13 @@ fn bomb_explode(
     mut commands: Commands,
 ) {
     for _event in events_reader.read() {
-        commands.spawn(
-            AudioBundle {
-                source: sound_assets_resource.bomb_explode.clone(),
-                settings: PlaybackSettings {
-                    mode: PlaybackMode::Despawn,
-                    ..default()
-                },
+        commands.spawn(AudioBundle {
+            source: sound_assets_resource.bomb_explode.clone(),
+            settings: PlaybackSettings {
+                mode: PlaybackMode::Despawn,
                 ..default()
             },
-        );
+            ..default()
+        });
     }
 }
