@@ -20,7 +20,8 @@ extern crate lazy_static;
 pub mod prelude {
     pub use crate::animation::{scale_change::*, translation_change::*, CustomAnimationPlugin};
     pub use crate::app::{
-        consts::*, assets_loader::*, generic_plugins::*, main, main_camera::*, screen_setup::*, tags::*, ui::*,
+        assets_loader::*, consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*,
+        tags::*, ui::*,
     };
     pub use crate::common_logic::{
         argument_validation::*,
@@ -63,11 +64,10 @@ pub mod prelude {
             monster_spawning_sequence_manager::*, monster_state::*, MonstersPlugin,
         },
         player_management::{
-            consts::*, player::*, player_event_channel::*, player_movement::*, player_spawner::*, PlayerPlugin,
+            consts::*, tags::*, player_event_channel::*, player_movement::*, player_spawner::*,
+            PlayerPlugin,
         },
-        scores::{
-            score_manager::*, score_event_channel::*, ScorePlugin
-        },
+        scores::{score_event_channel::*, score_manager::*, ScorePlugin},
         tags::*,
         GamePlugin,
     };
