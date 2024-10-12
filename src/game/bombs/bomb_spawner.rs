@@ -1,4 +1,6 @@
+use bevy::color::palettes::css::DARK_GRAY;
 use bevy::sprite::*;
+use bevy_light_2d::prelude::{PointLight2d, PointLight2dBundle};
 use rand::Rng;
 
 use crate::prelude::*;
@@ -12,6 +14,7 @@ impl Plugin for BombSpawnerPlugin {
             (
                 listen_for_bomb_spawning_requests,
                 listen_for_bombs_done_growing,
+                candle_light_bomb_effect,
             ),
         );
     }
@@ -173,8 +176,28 @@ fn listen_for_bombs_done_growing(
                             ..default()
                         })
                         .set_parent(affected_entity);
+                    commands
+                        .spawn(
+                            PointLight2dBundle {
+                                point_light: PointLight2d {
+                                    color: Color::from(DARK_GRAY),
+                                    radius: BOMB_EXPLOSION_RADIUS,
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                        )
+                        .set_parent(affected_entity);
                 }
             }
         }
+    }
+}
+
+fn candle_light_bomb_effect(mut bomb_point_light_query: Query<&mut PointLight2d>) {
+    let mut rng = rand::thread_rng();
+    for mut bomb in bomb_point_light_query.iter_mut() {
+        bomb.intensity = rng.gen_range(0.0..3.0);
+        bomb.falloff = rng.gen_range(0.0..1.0);
     }
 }
