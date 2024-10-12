@@ -5,28 +5,40 @@ pub struct SoundPlayerPlugin;
 
 impl Plugin for SoundPlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, bomb_explode);
+        app.add_systems(Update, bomb_sounds_event_listener);
     }
 }
 
-fn bomb_explode(
+fn bomb_sounds_event_listener(
     sound_assets_resource: Res<SoundAssets>,
-    mut events_reader: EventReader<SoundEvent>,
+    mut sound_events_reader: EventReader<SoundEvent>,
     mut commands: Commands,
 ) {
-    for _event in events_reader.read() {
-        match _event.event {
+    for sound in sound_events_reader.read() {
+        let source;
+        match sound.event {
             SoundEventEnum::BombExplodeSoundEvent => {
-                commands.spawn(AudioBundle {
-                    source: sound_assets_resource.bomb_explode.clone(),
-                    settings: PlaybackSettings {
-                        mode: PlaybackMode::Despawn,
-                        ..default()
-                    },
-                    ..default()
-                });
+                source = sound_assets_resource.bomb_explode.clone();
             }
-            _ => {}
+            SoundEventEnum::BombPickUpEvent => {
+                source = sound_assets_resource.bomb_tick.clone();
+            }
+            SoundEventEnum::BombThrowEvent => {
+                source = sound_assets_resource.bomb_throw.clone();
+            }
+            SoundEventEnum::BombTickEvent => {
+                source = sound_assets_resource.bomb_tick.clone();
+            }
+        }
+        if Some(&source).is_some() {
+            commands.spawn(AudioBundle {
+                source,
+                settings: PlaybackSettings {
+                    mode: PlaybackMode::Despawn,
+                    ..default()
+                },
+                ..default()
+            });
         }
     }
 }

@@ -48,7 +48,9 @@ fn explode_bombs_on_direct_collision(
                         &mut commands,
                     );
                     if maybe_monster.is_some() {
-                        sounds_event_writer.send(SoundEvent { event: SoundEventEnum::BombExplodeSoundEvent });
+                        sounds_event_writer.send(SoundEvent {
+                            event: SoundEventEnum::BombExplodeSoundEvent,
+                        });
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
                         ));
