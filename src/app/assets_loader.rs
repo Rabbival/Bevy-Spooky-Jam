@@ -30,7 +30,7 @@ fn sprites_atlas_setup(
     mut commands: Commands,
 ) {
     let image_handle = asset_server.load("images/sprites_sheet.png");
-    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(40, 40), 6, 1, None, None);
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(180, 107), 3, 3, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
     commands.insert_resource(SpritesAtlas {
         atlas_handle: texture_atlas_handle,
