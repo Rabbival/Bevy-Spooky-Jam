@@ -1,4 +1,5 @@
-use bevy::color::{palettes::css::WHITE, Color, Srgba};
+use bevy::color::{Color, Srgba};
+use bevy::color::palettes::css::{DARK_ORANGE, WHITE};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum BombState {
@@ -20,7 +21,7 @@ impl BombState {
                 text: Color::from(Srgba::new(0.0, 0.0, 0.0, 1.0)),
             }),
             Self::Held => Some(BombAndTextColors {
-                bomb: Color::from(WHITE),
+                bomb: Color::from(DARK_ORANGE),
                 text: Color::srgba(0.0, 0.0, 0.0, 1.0),
             }),
             Self::PostHeld => None,
