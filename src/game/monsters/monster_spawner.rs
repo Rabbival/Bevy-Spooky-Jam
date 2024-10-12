@@ -70,24 +70,24 @@ fn try_spawning_a_monster(
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
     let monster_entity = commands
-.spawn((
-    MaterialMesh2dBundle {
-        mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
-        material: materials.add(ColorMaterial {
-            color: Color::srgba(1.0, 1.0, 1.0, 0.0),
-            texture: Some(sprites_atlas_resource.bato_san_image_handle.clone()),
-            ..default()
-        }),
-        transform: Transform::from_translation(place_to_spawn_in),
-        ..default()
-    },
-    /*TextureAtlas {
-        layout: sprites_atlas_resource.atlas_handle.clone(),
-        index: 0,
-    },*/
-    AffectingTimerCalculators::default(),
-    WorldBoundsWrapped,
-))
+        .spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
+                material: materials.add(ColorMaterial {
+                    color: Color::srgba(1.0, 1.0, 1.0, 0.0),
+                    texture: Some(sprites_atlas_resource.bato_san_image_handle.clone()),
+                    ..default()
+                }),
+                transform: Transform::from_translation(place_to_spawn_in),
+                ..default()
+            },
+            /*TextureAtlas {
+                layout: sprites_atlas_resource.atlas_handle.clone(),
+                index: 0,
+            },*/
+            AffectingTimerCalculators::default(),
+            WorldBoundsWrapped,
+        ))
         .id();
     if FunctionalityOverride::EnemiesDontMove.disabled() {
         let sequence_id = spawn_path_timer_sequence(

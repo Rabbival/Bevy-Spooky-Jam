@@ -11,10 +11,7 @@ impl Plugin for MusicPlayerPlugin {
     }
 }
 
-fn load_and_play_music(
-    music_assets_resource: Res<MusicAssets>,
-    mut commands: Commands
-) {
+fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Commands) {
     commands.spawn((
         AudioBundle {
             source: music_assets_resource.calm_layer_handle.clone(),

@@ -1,5 +1,5 @@
-use bevy::color::{Color, Srgba};
 use bevy::color::palettes::css::{DARK_ORANGE, WHITE};
+use bevy::color::{Color, Srgba};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum BombState {

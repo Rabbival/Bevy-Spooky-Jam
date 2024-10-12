@@ -1,4 +1,3 @@
-use bevy::audio::Source;
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
@@ -24,11 +23,24 @@ pub struct MusicAssets {
     pub intense_layer_handle: Handle<AudioSource>,
 }
 
+#[derive(Resource, Default)]
+pub struct SoundAssets {
+    pub bomb_explode: Handle<AudioSource>,
+    pub bomb_pick_up: Handle<AudioSource>,
+    pub bomb_throw: Handle<AudioSource>,
+    pub bomb_tick: Handle<AudioSource>,
+    pub monster_battle_cry: Handle<AudioSource>,
+    pub monster_death_cry: Handle<AudioSource>,
+}
+
 pub struct AssetsLoaderPlugin;
 
 impl Plugin for AssetsLoaderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, (sprites_atlas_setup, text_font_setup, music_setup));
+        app.add_systems(
+            PreStartup,
+            (sprites_atlas_setup, text_font_setup, music_setup, sound_fx_setup),
+        );
     }
 }
 
@@ -61,5 +73,16 @@ fn music_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(MusicAssets {
         calm_layer_handle: asset_server.load("music/music_calm_layer.ogg"),
         intense_layer_handle: asset_server.load("music/music_intense_layer.ogg"),
+    });
+}
+
+fn sound_fx_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(SoundAssets {
+        bomb_explode: asset_server.load("sound_fx/bomb_explode.ogg"),
+        bomb_pick_up: asset_server.load("sound_fx/bomb_pick_up.ogg"),
+        bomb_throw: asset_server.load("sound_fx/bomb_throw.ogg"),
+        bomb_tick: asset_server.load("sound_fx/bomb_tick.ogg"),
+        monster_battle_cry: asset_server.load("sound_fx/monster_battle_cry.ogg"),
+        monster_death_cry: asset_server.load("sound_fx/monster_death_cry.ogg"),
     });
 }

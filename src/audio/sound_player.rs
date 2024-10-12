@@ -7,7 +7,7 @@ pub struct SoundPlayerPlugin;
 impl Plugin for SoundPlayerPlugin {
     fn build(&self, app: &mut App) {
         /*app.add_systems(Startup, load_and_play_music)
-            .add_systems(Update, temp_test_system);*/
+        .add_systems(Update, temp_test_system);*/
     }
 }
 
