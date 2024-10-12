@@ -71,6 +71,7 @@ fn listen_for_done_bombs(
         With<WorldBoundsWrapped>,
     >,
     mut sounds_event_writer: EventWriter<SoundEvent>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
     for done_timer in timer_done_reader.read() {
@@ -88,6 +89,13 @@ fn listen_for_done_bombs(
                     sounds_event_writer.send(SoundEvent {
                         event: SoundEventEnum::BombExplodeSoundEvent,
                     });
+                    commands.spawn(
+                        SpriteBundle {
+                            texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                            transform: Transform::from_xyz(bomb_transform.translation.x, bomb_transform.translation.y, Z_LAYER_FLOOR_HOLE),
+                            ..default()
+                        }
+                    );
                 } else {
                     print_error(
                         EntityError::EntityNotInQuery(
