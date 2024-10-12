@@ -1,4 +1,3 @@
-use crate::game::scores::score_event_channel::UpdatePlayerScoreEvent;
 use crate::prelude::*;
 
 pub struct ScoreManagerPlugin;
