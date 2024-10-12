@@ -11,7 +11,7 @@ strum_macros = "0.26.4"
 rand = "0.8.5"
 lazy_static = "1.4.0"
 serde = { version = "1.0.197", features = ["derive"] }
-leafwing-input-manager = "0.15.0"
+leafwing-input-manager = "0.14.0"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
@@ -22,3 +22,6 @@ debug = 1     # less precise locations
 [profile.dev.package."*"]
 debug = false # no debug symbols for deps
 opt-level = 2 # makes their code smaller too
+
+[target.wasm32-unknown-unknown]
+runner = "wasm-server-runner"
