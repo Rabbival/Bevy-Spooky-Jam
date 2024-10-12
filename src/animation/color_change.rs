@@ -20,6 +20,9 @@ fn listen_for_color_update_requests(
         if let TimerGoingEventType::SetAlpha = event_from_timer.event_type {
             match color_handles.get(event_from_timer.entity) {
                 Ok(handle) => {
+                    //DEBUG
+                    info!("setting alpha");
+
                     if let Some(material) = materials.get_mut(handle.id()) {
                         let current_alpha = material.color.alpha();
                         material

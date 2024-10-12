@@ -74,7 +74,7 @@ fn try_spawning_a_monster(
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
                 material: materials.add(ColorMaterial {
-                    color: Color::srgba(1.0, 1.0, 1.0, MONSTER_FADED_ALPHA),
+                    color: Color::srgba(1.0, 1.0, 1.0, 0.0),
                     texture: Some(sprites_atlas_resource.bato_san_image_handle.clone()),
                     ..default()
                 }),
