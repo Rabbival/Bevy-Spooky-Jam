@@ -7,7 +7,7 @@ pub struct BombSpawnerPlugin;
 
 impl Plugin for BombSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_inital_bombs).add_systems(
+        app.add_systems(Startup, spawn_initial_bombs).add_systems(
             Update,
             (
                 listen_for_bomb_spawning_requests,
@@ -17,7 +17,7 @@ impl Plugin for BombSpawnerPlugin {
     }
 }
 
-fn spawn_inital_bombs(
+fn spawn_initial_bombs(
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
