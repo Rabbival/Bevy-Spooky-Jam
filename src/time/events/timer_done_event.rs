@@ -16,6 +16,7 @@ pub enum TimerDoneEventType {
     Spawn(SpawnRequestType),
     SpawnChildForAffectedEntities(SpawnRequestType),
     ExplodeInRadius(f32),
+    DeclareSpawnDone,
 }
 
 pub struct TimerDoneEventPlugin;
