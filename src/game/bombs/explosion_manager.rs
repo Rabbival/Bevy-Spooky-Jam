@@ -23,6 +23,7 @@ fn explode_bombs_on_direct_collision(
         With<WorldBoundsWrapped>,
     >,
     mut commands: Commands,
+    mut bomb_explode_sound_event_writer: EventWriter<BombExplodeSoundEvent>,
     mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
@@ -47,6 +48,7 @@ fn explode_bombs_on_direct_collision(
                         &mut commands,
                     );
                     if maybe_monster.is_some() {
+                        bomb_explode_sound_event_writer.send(BombExplodeSoundEvent);
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
                         ));
