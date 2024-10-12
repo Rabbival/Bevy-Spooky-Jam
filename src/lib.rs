@@ -64,7 +64,7 @@ pub mod prelude {
             monster_spawning_sequence_manager::*, monster_state::*, MonstersPlugin,
         },
         player_management::{
-            consts::*, tags::*, player_event_channel::*, player_movement::*, player_spawner::*,
+            consts::*, player_event_channel::*, player_movement::*, player_spawner::*, tags::*,
             PlayerPlugin,
         },
         scores::{score_event_channel::*, score_manager::*, ScorePlugin},
