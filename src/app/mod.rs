@@ -33,6 +33,7 @@ pub fn main() {
             TimePlugin,
             LateDespawnerPlugin,
             UiPlugin,
+            GameAudioPlugin,
         ))
         //generic plugins (type registration, for generic events for example)
         .add_plugins(GenericPlugins);
