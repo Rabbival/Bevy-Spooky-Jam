@@ -84,10 +84,6 @@ fn try_spawning_a_bomb(
                     .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
             },
-            TextureAtlas {
-                layout: sprites_atlas_resource.atlas_handle.clone(),
-                index: 0,
-            },
             AffectingTimerCalculators::default(),
             Bomb::default(),
             WorldBoundsWrapped,
@@ -169,7 +165,7 @@ fn listen_for_bombs_done_growing(
                                     color: BombState::PreHeld.to_colors().unwrap().text,
                                 },
                             ),
-                            transform: Transform::from_translation(Vec3::Z),
+                            transform: Transform::from_translation(Vec3::new(0.0, BOMB_TIME_LEFT_FONT_SIZE + 10.0, 1.0)),
                             ..default()
                         })
                         .set_parent(affected_entity);
