@@ -1,6 +1,5 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use crate::app::assets_loader::AssetsLoaderPlugin;
 use crate::app::ui::UiPlugin;
 use crate::prelude::*;
 
