@@ -13,19 +13,15 @@ impl Plugin for RayGizmosPlugin {
 fn draw_held_bomb_path_preview(
     mut gizmos: Gizmos,
     bomb_query: Query<(&GlobalTransform, &Bomb)>,
-    player_query: Query<(&Transform, &FacingDirection), With<Player>>,
+    cursor: Res<CursorWorldPosition>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
-        if let BombState::Held = bomb.bomb_state {
-            for (player_transform, facing_direction) in &player_query {
-                let bomb_destination =
-                    player_transform.translation + facing_direction.0 * BOMB_THROWING_DISTANCE;
-                gizmos.line_2d(
-                    bomb_transform.translation().truncate(),
-                    bomb_destination.truncate(),
-                    Color::from(YELLOW),
-                );
-            }
+        if let BombState::Held = bomb.state {
+            gizmos.line_2d(
+                bomb_transform.translation().truncate(),
+                cursor.0,
+                Color::from(YELLOW),
+            );
         }
     }
 }

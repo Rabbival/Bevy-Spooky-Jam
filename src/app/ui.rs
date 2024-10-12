@@ -1,9 +1,8 @@
 use crate::prelude::*;
+use std::time::Duration;
 
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
-
-use super::assets_loader::TextFonts;
 
 pub struct UiPlugin;
 
@@ -14,13 +13,25 @@ impl Plugin for UiPlugin {
         if FunctionalityOverride::DontUpdateUI.disabled() {
             app.add_systems(
                 Update,
-                (update_player_game_stopwatch, update_player_scoring),
+                (
+                    update_player_game_stopwatch,
+                    update_player_scoring,
+                    update_high_score,
+                ),
             );
         }
     }
 }
 
-fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
+fn spawn_ui(
+    image_fonts_resource: ResMut<SpritesAtlas>,
+    text_fonts_resource: ResMut<TextFonts>,
+    mut commands: Commands,
+) {
+    commands.spawn((SpriteBundle {
+        texture: image_fonts_resource.floor_image_handle.clone(),
+        ..default()
+    },));
     let text_color = Color::srgba(0.9, 0.9, 0.9, 1.0);
     commands.spawn(SpriteBundle {
         sprite: Sprite {
@@ -65,7 +76,7 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Score: 1.000.000",
+                "Score: 0000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
@@ -94,7 +105,7 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Hi  Score: 1000000",
+                "Hi  Score: 0000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
@@ -118,6 +129,11 @@ fn spawn_ui(text_fonts_resource: ResMut<TextFonts>, mut commands: Commands) {
             ..default()
         },
         LeaderboardScoreTextUi,
+        // TODO add globally persisted values
+        WorldChampionshipLeaderboardScoring {
+            elapsed: Duration::from_secs(0),
+            hi_score: 0,
+        },
     ));
 }
 
@@ -142,6 +158,22 @@ fn update_player_scoring(
         for mut player_scoring_text in player_scoring_text_query.iter_mut() {
             player_scoring_text.sections[0].value =
                 format!("Score: {:0>7}", player.score.to_string());
+        }
+    }
+}
+
+fn update_high_score(
+    world_championship_leaderboard_scoring_query: Query<&WorldChampionshipLeaderboardScoring>,
+    mut high_score_text_query: Query<&mut Text, With<LeaderboardScoreTextUi>>,
+) {
+    for world_championship_leaderboard_scoring in
+        world_championship_leaderboard_scoring_query.iter()
+    {
+        for mut high_score_text in high_score_text_query.iter_mut() {
+            high_score_text.sections[0].value = format!(
+                "Hi  Score: {:0>7}",
+                world_championship_leaderboard_scoring.hi_score.to_string()
+            );
         }
     }
 }

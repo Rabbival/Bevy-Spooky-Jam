@@ -1,4 +1,3 @@
-use crate::game::player_management::consts::Z_LAYER_PLAYER;
 use crate::prelude::*;
 
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
@@ -35,7 +34,6 @@ fn spawn_player(
             score: 0,
             ..default()
         },
-        FacingDirection::new(Z_LAYER_PLAYER),
         WorldBoundsWrapped,
     ));
 }

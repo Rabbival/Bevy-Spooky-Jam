@@ -18,7 +18,7 @@ fn listen_for_bomb_tick_update(
     for timer_going_event in timer_going_event_reader.read() {
         if let TimerGoingEventType::BombCountdown = timer_going_event.event_type {
             if let Ok(mut bomb) = bomb_query.get_mut(timer_going_event.entity) {
-                if let BombState::PreHeld = bomb.bomb_state {
+                if let BombState::PreHeld = bomb.state {
                     print_error(
                         BombError::AskedToTickAPreHeldBomb,
                         vec![LogCategory::RequestNotFulfilled],

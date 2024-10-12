@@ -1,4 +1,3 @@
-use crate::game::player_management::consts::PLAYER_BOMB_PICKING_RANGE;
 use crate::prelude::*;
 use bevy::color::palettes::css::{ORANGE, YELLOW};
 
@@ -53,7 +52,7 @@ fn draw_bomb_explosion_radius(
     bomb_query: Query<(&Transform, &Bomb), With<Bomb>>,
 ) {
     for (transform, bomb) in &bomb_query {
-        if let BombState::PostHeld = bomb.bomb_state {
+        if let BombState::PostHeld = bomb.state {
             gizmos.circle_2d(
                 Vec2::new(transform.translation.x, transform.translation.y),
                 BOMB_EXPLOSION_RADIUS,
