@@ -65,6 +65,9 @@ pub mod prelude {
         player_management::{
             player::*, player_event_channel::*, player_movement::*, player_spawner::*, PlayerPlugin,
         },
+        scores::{
+            score_manager::*, score_event_channel::*, ScorePlugin
+        },
         tags::*,
         GamePlugin,
     };

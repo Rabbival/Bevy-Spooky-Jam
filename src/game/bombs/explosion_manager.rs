@@ -1,5 +1,4 @@
 use crate::game::player_management::consts::PLAYER_SCORE_POINTS_ON_MONSTER_KILLED;
-use crate::game::scores::score_event_channel::UpdatePlayerScoreEvent;
 use crate::prelude::*;
 use bevy::math::NormedVectorSpace;
 
