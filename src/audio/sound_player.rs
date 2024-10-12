@@ -11,17 +11,22 @@ impl Plugin for SoundPlayerPlugin {
 
 fn bomb_explode(
     sound_assets_resource: Res<SoundAssets>,
-    mut events_reader: EventReader<BombExplodeSoundEvent>,
+    mut events_reader: EventReader<SoundEvent>,
     mut commands: Commands,
 ) {
     for _event in events_reader.read() {
-        commands.spawn(AudioBundle {
-            source: sound_assets_resource.bomb_explode.clone(),
-            settings: PlaybackSettings {
-                mode: PlaybackMode::Despawn,
-                ..default()
-            },
-            ..default()
-        });
+        match _event.event {
+            SoundEventEnum::BombExplodeSoundEvent => {
+                commands.spawn(AudioBundle {
+                    source: sound_assets_resource.bomb_explode.clone(),
+                    settings: PlaybackSettings {
+                        mode: PlaybackMode::Despawn,
+                        ..default()
+                    },
+                    ..default()
+                });
+            }
+            _ => {}
+        }
     }
 }
