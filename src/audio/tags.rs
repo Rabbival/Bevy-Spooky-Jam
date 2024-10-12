@@ -15,4 +15,6 @@ pub enum SoundEventEnum {
     BombPickUpEvent,
     BombThrowEvent,
     BombTickEvent,
+    MonsterBattleCry,
+    MonsterDeathCry,
 }

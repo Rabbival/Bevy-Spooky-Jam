@@ -29,6 +29,12 @@ fn bomb_sounds_event_listener(
             SoundEventEnum::BombTickEvent => {
                 source = sound_assets_resource.bomb_tick.clone();
             }
+            SoundEventEnum::MonsterBattleCry => {
+                source = sound_assets_resource.monster_battle_cry.clone();
+            }
+            SoundEventEnum::MonsterDeathCry => {
+                source = sound_assets_resource.monster_death_cry.clone();
+            }
         }
         if Some(&source).is_some() {
             commands.spawn(AudioBundle {
