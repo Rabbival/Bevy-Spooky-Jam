@@ -25,6 +25,7 @@ fn explode_bombs_on_direct_collision(
     mut commands: Commands,
     mut sounds_event_writer: EventWriter<SoundEvent>,
     mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
+    sprites_atlas_resource: ResMut<SpritesAtlas>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
         if let BombState::PostHeld = bomb.state {
@@ -51,6 +52,13 @@ fn explode_bombs_on_direct_collision(
                         sounds_event_writer.send(SoundEvent {
                             event: SoundEventEnum::BombExplodeSoundEvent,
                         });
+                        commands.spawn(
+                            SpriteBundle {
+                                texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                                transform: Transform::from_xyz(bomb_transform.translation.x, bomb_transform.translation.y, Z_LAYER_FLOOR_HOLE),
+                                ..default()
+                            }
+                        );
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
                         ));
@@ -71,8 +79,8 @@ fn listen_for_done_bombs(
         With<WorldBoundsWrapped>,
     >,
     mut sounds_event_writer: EventWriter<SoundEvent>,
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
+    sprites_atlas_resource: ResMut<SpritesAtlas>,
 ) {
     for done_timer in timer_done_reader.read() {
         if let TimerDoneEventType::ExplodeInRadius(explosion_radius) = done_timer.event_type {
