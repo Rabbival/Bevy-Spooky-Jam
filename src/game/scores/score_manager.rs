@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use crate::single_mut_else_return;
 
 pub struct ScoreManagerPlugin;
 
@@ -13,16 +14,13 @@ fn update_player_scoring(
     mut world_championship_leaderboard_scoring_query: Query<
         &mut WorldChampionshipLeaderboardScoring,
     >,
-    mut events_reader: EventReader<UpdatePlayerScoreEvent>,
+    mut events_reader: EventReader<AppendToPlayerScoreEvent>,
 ) {
-    let Ok(mut world_championship_leaderboard_scoring) =
-        world_championship_leaderboard_scoring_query.get_single_mut()
-    else {
-        return;
-    };
-    for mut player in players_query.iter_mut() {
-        for event in events_reader.read() {
-            player.score += event.points;
+    for event in events_reader.read() {
+        let mut world_championship_leaderboard_scoring =
+            single_mut_else_return!(world_championship_leaderboard_scoring_query);
+        for mut player in &mut players_query {
+            player.score += event.0;
             if world_championship_leaderboard_scoring.hi_score < player.score {
                 world_championship_leaderboard_scoring.hi_score = player.score;
             }
