@@ -17,6 +17,7 @@ fn spawn_initial_monster(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
@@ -24,6 +25,7 @@ fn spawn_initial_monster(
         &transforms_not_to_spawn_next_to,
         &mut meshes,
         &mut materials,
+        &mut sprites_atlas_resource,
         &mut event_writer,
         &mut commands,
     ) {
@@ -36,6 +38,7 @@ fn listen_for_monster_spawning_requests(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
@@ -45,6 +48,7 @@ fn listen_for_monster_spawning_requests(
                 &transforms_not_to_spawn_next_to,
                 &mut meshes,
                 &mut materials,
+                &mut sprites_atlas_resource,
                 &mut event_writer,
                 &mut commands,
             ) {
@@ -58,6 +62,7 @@ fn try_spawning_a_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     event_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
 ) -> Result<(), MonsterError> {
@@ -67,8 +72,12 @@ fn try_spawning_a_monster(
     let monster_entity = commands
         .spawn((
             MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
-                material: materials.add(Color::srgba(0.9, 0.3, 0.3, MONSTER_FADED_ALPHA)),
+                mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
+                material: materials.add(ColorMaterial {
+                    color: Color::srgba(1.0, 1.0, 1.0, MONSTER_FADED_ALPHA),
+                    texture: Some(sprites_atlas_resource.bato_san_image_handle.clone()),
+                    ..default()
+                }),
                 transform: Transform::from_translation(place_to_spawn_in),
                 ..default()
             },
