@@ -11,7 +11,7 @@ impl TimerSequence {
         timer_fire_event_writer: &mut EventWriter<TimerFireRequest>,
         timers_in_order: &[EmittingTimer],
         commands: &mut Commands,
-    ) -> Result<(), TimerSequenceError> {
+    ) -> Result<Entity, TimerSequenceError> {
         TimerSequence::spawn_sequence_and_fire_first_timer(
             timer_fire_event_writer,
             timers_in_order,
@@ -24,7 +24,7 @@ impl TimerSequence {
         timer_fire_event_writer: &mut EventWriter<TimerFireRequest>,
         timers_in_order: &[EmittingTimer],
         commands: &mut Commands,
-    ) -> Result<(), TimerSequenceError> {
+    ) -> Result<Entity, TimerSequenceError> {
         TimerSequence::spawn_sequence_and_fire_first_timer(
             timer_fire_event_writer,
             timers_in_order,
@@ -38,22 +38,42 @@ impl TimerSequence {
         timers_in_order: &[EmittingTimer],
         loop_back_to_start: bool,
         commands: &mut Commands,
-    ) -> Result<(), TimerSequenceError> {
-        match timers_in_order.first() {
-            Some(timer) => {
-                let newborn_sequence = Self::new(timers_in_order, loop_back_to_start);
-                let newborn_sequence_id = commands.spawn(newborn_sequence).id();
-                timer_fire_event_writer.send(TimerFireRequest {
-                    timer: *timer,
-                    parent_sequence: Some(TimerParentSequence {
-                        parent_sequence: newborn_sequence_id,
-                        index_in_sequence: 0,
-                    }),
-                });
-                Ok(())
-            }
-            None => Err(TimerSequenceError::TriedToFireATimerSequenceWithNoTimers),
+    ) -> Result<Entity, TimerSequenceError> {
+        if timers_in_order.first().is_some() {
+            let newborn_sequence = Self::new(timers_in_order, loop_back_to_start);
+            let newborn_sequence_id = commands.spawn(newborn_sequence).id();
+            newborn_sequence.fire_first_timer(newborn_sequence_id, timer_fire_event_writer)?;
+            Ok(newborn_sequence_id)
+        } else {
+            Err(TimerSequenceError::TriedToFireATimerSequenceWithNoTimers)
         }
+    }
+
+    pub fn fire_first_timer(
+        &self,
+        sequence: Entity,
+        timer_fire_event_writer: &mut EventWriter<TimerFireRequest>,
+    ) -> Result<(), TimerSequenceError> {
+        if self.timers_in_order.is_empty() {
+            Err(TimerSequenceError::TriedToFireATimerSequenceWithNoTimers)
+        } else {
+            timer_fire_event_writer.send(TimerFireRequest {
+                timer: self.timers_in_order.array[0].unwrap(),
+                parent_sequence: Some(TimerParentSequence {
+                    parent_sequence: sequence,
+                    index_in_sequence: 0,
+                }),
+            });
+            Ok(())
+        }
+    }
+
+    pub fn looping_sequence(timers_in_order: &[EmittingTimer]) -> TimerSequence {
+        TimerSequence::new(timers_in_order, true)
+    }
+
+    pub fn non_looping_sequence(timers_in_order: &[EmittingTimer]) -> TimerSequence {
+        TimerSequence::new(timers_in_order, false)
     }
 
     fn new(timers_in_order: &[EmittingTimer], loop_back_to_start: bool) -> TimerSequence {

@@ -109,8 +109,15 @@ fn explode_bomb(
     for (transform, entity, maybe_affecting_timer_calculators) in transform_query {
         let distance_from_bomb = bomb_transform.translation.distance(transform.translation);
         if distance_from_bomb <= explosion_radius {
-            let blast_move_calculator =
-                move_due_to_blast_calculator(bomb_transform, transform, commands);
+            let blast_move_calculator: Option<Entity> = if transform == bomb_transform {
+                None
+            } else {
+                Some(move_due_to_blast_calculator(
+                    bomb_transform,
+                    transform,
+                    commands,
+                ))
+            };
             let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
                 DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences
             } else {
@@ -120,7 +127,7 @@ fn explode_bomb(
                 timer: EmittingTimer::new(
                     vec![TimerAffectedEntity {
                         affected_entity: entity,
-                        value_calculator_entity: Some(blast_move_calculator),
+                        value_calculator_entity: blast_move_calculator,
                     }],
                     vec![TimeMultiplierId::GameTimeMultiplier],
                     POST_BOMB_HIT_DESPAWN_TIME,
