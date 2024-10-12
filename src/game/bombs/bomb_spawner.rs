@@ -1,10 +1,7 @@
 use bevy::sprite::*;
 use rand::Rng;
 
-use crate::{
-    app::assets_loader::{SpritesAtlas, TextFonts},
-    prelude::*,
-};
+use crate::prelude::*;
 
 pub struct BombSpawnerPlugin;
 
