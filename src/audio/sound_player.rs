@@ -1,4 +1,4 @@
-use bevy::audio::Volume;
+use bevy::audio::{PlaybackMode, Volume};
 
 use crate::prelude::*;
 
@@ -6,55 +6,25 @@ pub struct SoundPlayerPlugin;
 
 impl Plugin for SoundPlayerPlugin {
     fn build(&self, app: &mut App) {
-        /*app.add_systems(Startup, load_and_play_music)
-        .add_systems(Update, temp_test_system);*/
+        app.add_systems(Update, bomb_explode);
     }
 }
 
-/*fn load_and_play_music(asset_server: Res<AssetServer>, mut commands: Commands) {
-    commands.spawn((
-        AudioBundle {
-            source: asset_server.load("music/music_calm_layer.ogg"),
-            settings: PlaybackSettings::LOOP.with_volume(Volume::new(1.0)),
-        },
-        MusicLayer(1),
-    ));
-    commands.spawn((
-        AudioBundle {
-            source: asset_server.load("music/music_intense_layer.ogg"),
-            settings: PlaybackSettings::LOOP.with_volume(Volume::ZERO),
-        },
-        MusicLayer(2),
-    ));
-}
-
-fn temp_test_system(
-    mut monster_state_set_listener: EventReader<MonsterStateSetRequest>,
-    monsters: Query<(Entity, &Monster)>,
-    query: Query<(&MusicLayer, &AudioSink)>,
+fn bomb_explode(
+    sound_assets_resource: Res<SoundAssets>,
+    mut events_reader: EventReader<AppendToPlayerScoreEvent>,
+    mut commands: Commands,
 ) {
-    'request_loop: for set_request in monster_state_set_listener.read() {
-        if let MonsterState::Chasing(_) = set_request.next_state {
-            for (music_layer, audio) in &query {
-                if music_layer.0 == 2 {
-                    audio.set_volume(1.0); //use timers of course to make it happen gradually, I'd use TakeNewTimer policy
-                }
-            }
-        } else {
-            for (entity, monster) in &monsters {
-                if entity != set_request.monster {
-                    if let MonsterState::Chasing(_) = monster.state {
-                        continue 'request_loop;
-                    }
-                }
-            }
-            //if we got here that means no monster is chasing the player
-            for (music_layer, audio) in &query {
-                if music_layer.0 == 2 {
-                    audio.set_volume(0.0);
-                }
-            }
-        }
+    for _event in events_reader.read() {
+        commands.spawn(
+            AudioBundle {
+                source: sound_assets_resource.bomb_explode.clone(),
+                settings: PlaybackSettings {
+                    mode: PlaybackMode::Despawn,
+                    ..default()
+                },
+                ..default()
+            },
+        );
     }
 }
-*/
