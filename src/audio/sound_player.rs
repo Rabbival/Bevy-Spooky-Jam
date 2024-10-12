@@ -1,5 +1,4 @@
-use bevy::audio::{PlaybackMode, Volume};
-
+use bevy::audio::PlaybackMode;
 use crate::prelude::*;
 
 pub struct SoundPlayerPlugin;
@@ -12,7 +11,7 @@ impl Plugin for SoundPlayerPlugin {
 
 fn bomb_explode(
     sound_assets_resource: Res<SoundAssets>,
-    mut events_reader: EventReader<AppendToPlayerScoreEvent>,
+    mut events_reader: EventReader<BombExplodeSoundEvent>,
     mut commands: Commands,
 ) {
     for _event in events_reader.read() {

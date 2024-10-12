@@ -26,7 +26,7 @@ pub mod prelude {
         assets_loader::*, consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*,
         tags::*, ui::*,
     };
-    pub use crate::audio::{music_player::*, sound_player::*, tags::*, GameAudioPlugin};
+    pub use crate::audio::{music_player::*, sound_event_channel::*, sound_player::*, tags::*, GameAudioPlugin};
     pub use crate::common_logic::{
         argument_validation::*,
         beyond_screen_border::*,
