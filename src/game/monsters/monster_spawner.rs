@@ -81,6 +81,10 @@ fn try_spawning_a_monster(
                 transform: Transform::from_translation(place_to_spawn_in),
                 ..default()
             },
+            /*TextureAtlas {
+                layout: sprites_atlas_resource.atlas_handle.clone(),
+                index: 0,
+            },*/
             AffectingTimerCalculators::default(),
             WorldBoundsWrapped,
         ))
