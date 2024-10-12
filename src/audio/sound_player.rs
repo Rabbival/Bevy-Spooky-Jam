@@ -21,7 +21,7 @@ fn bomb_sounds_event_listener(
                 source = sound_assets_resource.bomb_explode.clone();
             }
             SoundEventEnum::BombPickUpEvent => {
-                source = sound_assets_resource.bomb_tick.clone();
+                source = sound_assets_resource.bomb_pick_up.clone();
             }
             SoundEventEnum::BombThrowEvent => {
                 source = sound_assets_resource.bomb_throw.clone();
