@@ -1,10 +1,7 @@
 use bevy::sprite::*;
 use rand::Rng;
 
-use crate::{
-    app::assets_loader::{SpritesAtlas, TextFonts},
-    prelude::*,
-};
+use crate::prelude::*;
 
 pub struct BombSpawnerPlugin;
 
@@ -116,8 +113,8 @@ fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
         .spawn(GoingEventValueCalculator::new(
             TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
             ValueByInterpolation::from_goal_and_current(
-                BOMB_SPAWN_SCALE,
-                1.0,
+                Vec3::ONE * BOMB_SPAWN_SCALE,
+                Vec3::ONE,
                 Interpolator::default(),
             ),
             TimerGoingEventType::Scale,

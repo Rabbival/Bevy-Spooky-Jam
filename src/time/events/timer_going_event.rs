@@ -13,6 +13,7 @@ pub enum TimerGoingEventType {
     Move(MovementType),
     Scale,
     BombCountdown,
+    SetAlpha,
 }
 
 plugin_for_implementors_of_trait!(TimerGoingEventPlugin, Numeric);

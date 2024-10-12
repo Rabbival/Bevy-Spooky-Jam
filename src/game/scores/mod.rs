@@ -1,5 +1,3 @@
-use crate::game::scores::score_event_channel::ScoreEventPlugin;
-use crate::game::scores::score_manager::ScoreManagerPlugin;
 use crate::prelude::*;
 
 pub mod score_event_channel;

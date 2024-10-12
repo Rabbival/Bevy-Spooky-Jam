@@ -1,5 +1,3 @@
-use crate::game::player_management::consts::PLAYER_SCORE_POINTS_ON_MONSTER_KILLED;
-use crate::game::scores::score_event_channel::UpdatePlayerScoreEvent;
 use crate::prelude::*;
 use bevy::math::NormedVectorSpace;
 
@@ -25,7 +23,7 @@ fn explode_bombs_on_direct_collision(
         With<WorldBoundsWrapped>,
     >,
     mut commands: Commands,
-    mut update_player_score_event_writer: EventWriter<UpdatePlayerScoreEvent>,
+    mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
         if let BombState::PostHeld = bomb.state {
@@ -48,10 +46,8 @@ fn explode_bombs_on_direct_collision(
                         &mut timer_fire_request_writer,
                         &mut commands,
                     );
-                    if let Some(_monster) = maybe_monster {
-                        update_player_score_event_writer.send(UpdatePlayerScoreEvent {
-                            points: PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
-                        });
+                    if maybe_monster.is_some() {
+                        update_player_score_event_writer.send(AppendToPlayerScoreEvent(PLAYER_SCORE_POINTS_ON_MONSTER_KILLED));
                     }
                 }
             }
@@ -121,8 +117,15 @@ fn explode_bomb(
     for (transform, entity, maybe_affecting_timer_calculators) in transform_query {
         let distance_from_bomb = bomb_transform.translation.distance(transform.translation);
         if distance_from_bomb <= explosion_radius {
-            let blast_move_calculator =
-                move_due_to_blast_calculator(bomb_transform, transform, commands);
+            let blast_move_calculator: Option<Entity> = if transform == bomb_transform {
+                None
+            } else {
+                Some(move_due_to_blast_calculator(
+                    bomb_transform,
+                    transform,
+                    commands,
+                ))
+            };
             let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
                 DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences
             } else {
@@ -132,7 +135,7 @@ fn explode_bomb(
                 timer: EmittingTimer::new(
                     vec![TimerAffectedEntity {
                         affected_entity: entity,
-                        value_calculator_entity: Some(blast_move_calculator),
+                        value_calculator_entity: blast_move_calculator,
                     }],
                     vec![TimeMultiplierId::GameTimeMultiplier],
                     POST_BOMB_HIT_DESPAWN_TIME,

@@ -12,7 +12,7 @@ impl Plugin for ScaleChangePlugin {
 }
 
 fn listen_for_scale_update_requests(
-    mut event_reader: EventReader<TimerGoingEvent<f32>>,
+    mut event_reader: EventReader<TimerGoingEvent<Vec3>>,
     mut transforms: Query<&mut Transform>,
 ) {
     for event_from_timer in event_reader.read() {

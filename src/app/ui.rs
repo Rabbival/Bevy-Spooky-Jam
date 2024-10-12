@@ -1,7 +1,6 @@
 use crate::prelude::*;
 use std::time::Duration;
 
-use super::assets_loader::{SpritesAtlas, TextFonts};
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
 
@@ -11,7 +10,7 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_ui);
 
-        if FunctionalityOverride::DontUpdateUI.enabled() {
+        if FunctionalityOverride::DontUpdateUI.disabled() {
             app.add_systems(
                 Update,
                 (

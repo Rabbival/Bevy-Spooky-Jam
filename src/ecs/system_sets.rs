@@ -26,6 +26,14 @@ pub enum EndOfFrameSystemSet {
     PostLateDespawn,
 }
 
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum MonsterSystemSet {
+    EnvironmentChecking,
+    ChasingUpdating,
+    FleeingUpdating,
+    StateChanging,
+}
+
 pub struct SystemSetsPlugin;
 
 impl Plugin for SystemSetsPlugin {
@@ -39,6 +47,17 @@ impl Plugin for SystemSetsPlugin {
                     InputSystemSet::Handling,
                 )
                     .chain(),
+                (
+                    MonsterSystemSet::EnvironmentChecking,
+                    (
+                        MonsterSystemSet::ChasingUpdating,
+                        MonsterSystemSet::FleeingUpdating,
+                    ),
+                    MonsterSystemSet::StateChanging,
+                )
+                    .chain()
+                    .after(InputSystemSet::Handling)
+                    .before(TickingSystemSet::PreTickingEarlyPreperations),
                 (
                     TickingSystemSet::PreTickingEarlyPreperations,
                     TickingSystemSet::PreTickingPreperations,

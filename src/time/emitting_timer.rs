@@ -4,7 +4,7 @@ use crate::prelude::*;
 pub struct EmittingTimer {
     pub affected_entities: VecBasedArray<TimerAffectedEntity, TIMER_MAX_ASSIGNED_ENTITIES>,
     pub time_multipliers: VecBasedArray<TimeMultiplierId, TIMER_MAX_ASSIGNED_MULTIPLIERS>,
-    duration: f32,
+    pub duration: f32,
     pub send_once_done: TimerDoneEventType,
     elapsed_time: f32,
     normalized_progress: f32,
@@ -37,6 +37,11 @@ impl EmittingTimer {
 
     pub fn calculator_entities_iter(&self) -> impl Iterator<Item = Entity> + '_ {
         self.affected_entities.calculator_entities_iter()
+    }
+
+    pub fn reset(&mut self) {
+        self.elapsed_time = 0.0;
+        self.normalized_progress = 0.0;
     }
 
     pub fn finished(&self) -> bool {
