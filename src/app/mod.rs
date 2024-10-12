@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use std::env;
 use crate::prelude::*;
+use std::env;
 
 pub mod assets_loader;
 pub mod consts;

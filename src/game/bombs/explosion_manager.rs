@@ -47,7 +47,9 @@ fn explode_bombs_on_direct_collision(
                         &mut commands,
                     );
                     if maybe_monster.is_some() {
-                        update_player_score_event_writer.send(AppendToPlayerScoreEvent(PLAYER_SCORE_POINTS_ON_MONSTER_KILLED));
+                        update_player_score_event_writer.send(AppendToPlayerScoreEvent(
+                            PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
+                        ));
                     }
                 }
             }
