@@ -7,7 +7,7 @@ pub struct BombSpawnerPlugin;
 
 impl Plugin for BombSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_inital_bombs).add_systems(
+        app.add_systems(Startup, spawn_initial_bombs).add_systems(
             Update,
             (
                 listen_for_bomb_spawning_requests,
@@ -17,20 +17,20 @@ impl Plugin for BombSpawnerPlugin {
     }
 }
 
-fn spawn_inital_bombs(
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+fn spawn_initial_bombs(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
     if let Err(bomb_error) = try_spawning_a_bomb(
-        &mut sprites_atlas_resource,
         &mut timer_fire_request_writer,
         &transforms_not_to_spawn_next_to,
         &mut meshes,
         &mut materials,
+        &mut sprites_atlas_resource,
         &mut commands,
     ) {
         print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
@@ -38,22 +38,22 @@ fn spawn_inital_bombs(
 }
 
 fn listen_for_bomb_spawning_requests(
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
     for done_event in timer_done_event_reader.read() {
         if let TimerDoneEventType::Spawn(SpawnRequestType::Bomb) = done_event.event_type {
             if let Err(bomb_error) = try_spawning_a_bomb(
-                &mut sprites_atlas_resource,
                 &mut timer_fire_request_writer,
                 &transforms_not_to_spawn_next_to,
                 &mut meshes,
                 &mut materials,
+                &mut sprites_atlas_resource,
                 &mut commands,
             ) {
                 print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
@@ -63,11 +63,11 @@ fn listen_for_bomb_spawning_requests(
 }
 
 fn try_spawning_a_bomb(
-    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     commands: &mut Commands,
 ) -> Result<(), BombError> {
     let place_to_spawn_in = try_finding_place_for_bomb(transforms_not_to_spawn_next_to)?;
