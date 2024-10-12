@@ -72,7 +72,8 @@ pub mod prelude {
             monster_state::*,
             monster_state_set_request::*,
             state_initiation::{
-                chase_state_initiation::*, idle_state_initiation::*, MonsterStateInitiationPlugin,
+                chase_state_initiation::*, flee_state_initiation::*, idle_state_initiation::*,
+                MonsterStateInitiationPlugin,
             },
             MonstersPlugin,
         },

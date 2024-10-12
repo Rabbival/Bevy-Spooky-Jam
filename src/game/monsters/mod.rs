@@ -26,7 +26,7 @@ impl Plugin for MonstersPlugin {
     }
 }
 
-fn spawn_monster_chase_move_calculator(
+fn spawn_monster_move_calculator(
     current_location: Vec3,
     location_to_chase: Vec3,
     commands: &mut Commands,

@@ -1,4 +1,6 @@
-use crate::{game::monsters::spawn_monster_chase_move_calculator, prelude::*};
+use crate::prelude::*;
+
+use super::replace_monster_path;
 
 pub struct MonsterChaseStateInitiationPlugin;
 
@@ -38,7 +40,7 @@ fn listen_for_change_to_chasing_requests(
                 )) => {
                     monster.state = request.next_state;
                     if let Ok(transform_chasing) = transform_query.get(entity_chasing) {
-                        if replace_path_with_chasing_path(
+                        if replace_monster_path(
                             &mut timer_fire_request_writer,
                             &monster,
                             monster_entity,
@@ -75,69 +77,6 @@ fn listen_for_change_to_chasing_requests(
             }
         }
     }
-}
-
-fn replace_path_with_chasing_path(
-    timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
-    monster: &Monster,
-    monster_entity: Entity,
-    monster_location: Vec3,
-    location_to_chase: Vec3,
-    affecting_timer_calculators: &AffectingTimerCalculators,
-    emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
-    commands: &mut Commands,
-) -> Option<TimerParentSequence> {
-    let maybe_path_timer_parent_sequence = destroy_current_path_timer_and_calculator(
-        monster,
-        affecting_timer_calculators,
-        emitting_timer_parent_sequence_query,
-        commands,
-    );
-    if let Some(path_timer_parent_sequence) = maybe_path_timer_parent_sequence {
-        let distance_to_goal = monster_location.distance(location_to_chase);
-        let move_calculator =
-            spawn_monster_chase_move_calculator(monster_location, location_to_chase, commands);
-        timer_fire_request_writer.send(TimerFireRequest {
-            timer: EmittingTimer::new(
-                vec![TimerAffectedEntity {
-                    affected_entity: monster_entity,
-                    value_calculator_entity: Some(move_calculator),
-                }],
-                vec![TimeMultiplierId::GameTimeMultiplier],
-                distance_to_goal / MONSTER_SPEED_WHEN_CHASING,
-                TimerDoneEventType::Nothing,
-            ),
-            parent_sequence: Some(path_timer_parent_sequence),
-        });
-    }
-    maybe_path_timer_parent_sequence
-}
-
-fn destroy_current_path_timer_and_calculator(
-    monster: &Monster,
-    affecting_timer_calculators: &AffectingTimerCalculators,
-    emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
-    commands: &mut Commands,
-) -> Option<TimerParentSequence> {
-    if let Some(direct_line_movers) =
-        affecting_timer_calculators.get(&TimerGoingEventType::Move(MovementType::InDirectLine))
-    {
-        for timer_and_calculator in direct_line_movers {
-            if let Ok(parent_sequence) =
-                emitting_timer_parent_sequence_query.get(timer_and_calculator.timer)
-            {
-                if monster.path_timer_sequence == parent_sequence.parent_sequence {
-                    despawn_recursive_notify_on_fail(
-                        timer_and_calculator.timer,
-                        "timer when changing monster state",
-                        commands,
-                    );
-                    return Some(*parent_sequence);
-                }
-            }
-        }
-    }
-    None
 }
 
 fn visualize_chase_initiation(

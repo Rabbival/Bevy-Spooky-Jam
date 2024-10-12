@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+use super::visualize_calm_down;
+
 pub struct MonsterIdleStateInitiationPlugin;
 
 impl Plugin for MonsterIdleStateInitiationPlugin {
@@ -52,13 +54,15 @@ fn listen_for_change_to_idle_requests(
                         );
                     }
                     if let Some(monster_color) = assets.get(monster_color_handle.id()) {
-                        visualize_init_initiation(
-                            &mut timer_fire_request_writer,
-                            monster_entity,
-                            monster_transform.scale,
-                            monster_color.color.alpha(),
-                            &mut commands,
-                        );
+                        if let MonsterState::Chasing(_) = request.previous_state {
+                            visualize_calm_down(
+                                &mut timer_fire_request_writer,
+                                monster_entity,
+                                monster_transform.scale,
+                                monster_color.color.alpha(),
+                                &mut commands,
+                            );
+                        }
                     }
                 }
                 Err(_) => {
@@ -122,67 +126,4 @@ fn despawn_stray_path_timer_and_get_done_event(
         }
     }
     None
-}
-
-fn visualize_init_initiation(
-    timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
-    monster_entity: Entity,
-    monster_scale: Vec3,
-    monster_alpha: f32,
-    commands: &mut Commands,
-) {
-    let alpha_calculator = spawn_monster_calm_down_alpha_set_calculator(monster_alpha, commands);
-    let scale_calculator = spawn_monster_calm_down_scale_change_calculator(monster_scale, commands);
-    timer_fire_request_writer.send(TimerFireRequest {
-        timer: EmittingTimer::new(
-            vec![
-                TimerAffectedEntity {
-                    affected_entity: monster_entity,
-                    value_calculator_entity: Some(alpha_calculator),
-                },
-                TimerAffectedEntity {
-                    affected_entity: monster_entity,
-                    value_calculator_entity: Some(scale_calculator),
-                },
-            ],
-            vec![TimeMultiplierId::GameTimeMultiplier],
-            MONSTER_CHASE_START_VISUAL_CHANGE_DURATION,
-            TimerDoneEventType::Nothing,
-        ),
-        parent_sequence: None,
-    });
-}
-
-fn spawn_monster_calm_down_alpha_set_calculator(
-    monster_current_alpha: f32,
-    commands: &mut Commands,
-) -> Entity {
-    commands
-        .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::KeepNewTimer,
-            ValueByInterpolation::from_goal_and_current(
-                monster_current_alpha,
-                MONSTER_FADED_ALPHA,
-                Interpolator::new(2.0),
-            ),
-            TimerGoingEventType::SetAlpha,
-        ))
-        .id()
-}
-
-fn spawn_monster_calm_down_scale_change_calculator(
-    monster_current_size: Vec3,
-    commands: &mut Commands,
-) -> Entity {
-    commands
-        .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::KeepNewTimer,
-            ValueByInterpolation::from_goal_and_current(
-                monster_current_size,
-                Vec3::ONE,
-                Interpolator::new(2.0),
-            ),
-            TimerGoingEventType::Scale,
-        ))
-        .id()
 }

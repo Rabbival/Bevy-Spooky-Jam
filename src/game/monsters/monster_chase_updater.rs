@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use super::spawn_monster_chase_move_calculator;
+use super::spawn_monster_move_calculator;
 
 pub struct MonsterChaseUpdaterPlugin;
 
@@ -23,7 +23,7 @@ fn update_chasing_monsters(
     {
         if let MonsterState::Chasing(entity_chasing) = monster.state {
             if let Ok(transform) = just_changed_transforms.get(entity_chasing) {
-                let new_chase_path_calculator = spawn_monster_chase_move_calculator(
+                let new_chase_path_calculator = spawn_monster_move_calculator(
                     monster_transform.translation,
                     transform.translation,
                     &mut commands,
