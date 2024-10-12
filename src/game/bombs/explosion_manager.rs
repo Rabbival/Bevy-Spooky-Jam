@@ -52,13 +52,15 @@ fn explode_bombs_on_direct_collision(
                         sounds_event_writer.send(SoundEvent {
                             event: SoundEventEnum::BombExplodeSoundEvent,
                         });
-                        commands.spawn(
-                            SpriteBundle {
-                                texture: sprites_atlas_resource.floor_hole_handle.clone(),
-                                transform: Transform::from_xyz(bomb_transform.translation.x, bomb_transform.translation.y, Z_LAYER_FLOOR_HOLE),
-                                ..default()
-                            }
-                        );
+                        commands.spawn(SpriteBundle {
+                            texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                            transform: Transform::from_xyz(
+                                bomb_transform.translation.x,
+                                bomb_transform.translation.y,
+                                Z_LAYER_FLOOR_HOLE,
+                            ),
+                            ..default()
+                        });
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
                         ));
@@ -97,13 +99,15 @@ fn listen_for_done_bombs(
                     sounds_event_writer.send(SoundEvent {
                         event: SoundEventEnum::BombExplodeSoundEvent,
                     });
-                    commands.spawn(
-                        SpriteBundle {
-                            texture: sprites_atlas_resource.floor_hole_handle.clone(),
-                            transform: Transform::from_xyz(bomb_transform.translation.x, bomb_transform.translation.y, Z_LAYER_FLOOR_HOLE),
-                            ..default()
-                        }
-                    );
+                    commands.spawn(SpriteBundle {
+                        texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                        transform: Transform::from_xyz(
+                            bomb_transform.translation.x,
+                            bomb_transform.translation.y,
+                            Z_LAYER_FLOOR_HOLE,
+                        ),
+                        ..default()
+                    });
                 } else {
                     print_error(
                         EntityError::EntityNotInQuery(

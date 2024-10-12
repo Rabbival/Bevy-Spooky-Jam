@@ -165,7 +165,11 @@ fn listen_for_bombs_done_growing(
                                     color: BombState::PreHeld.to_colors().unwrap().text,
                                 },
                             ),
-                            transform: Transform::from_translation(Vec3::new(0.0, BOMB_TIME_LEFT_FONT_SIZE + 10.0, 1.0)),
+                            transform: Transform::from_translation(Vec3::new(
+                                0.0,
+                                BOMB_TIME_LEFT_FONT_SIZE + 10.0,
+                                1.0,
+                            )),
                             ..default()
                         })
                         .set_parent(affected_entity);
