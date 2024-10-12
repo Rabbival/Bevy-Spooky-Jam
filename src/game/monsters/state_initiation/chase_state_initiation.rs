@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{game::monsters::spawn_monster_chase_move_calculator, prelude::*};
 
 pub struct MonsterChaseStateInitiationPlugin;
 
@@ -95,11 +95,8 @@ fn replace_path_with_chasing_path(
     );
     if let Some(path_timer_parent_sequence) = maybe_path_timer_parent_sequence {
         let distance_to_goal = monster_location.distance(location_to_chase);
-        let move_calculator = spawn_monster_chase_start_move_calculator(
-            monster_location,
-            location_to_chase,
-            commands,
-        );
+        let move_calculator =
+            spawn_monster_chase_move_calculator(monster_location, location_to_chase, commands);
         timer_fire_request_writer.send(TimerFireRequest {
             timer: EmittingTimer::new(
                 vec![TimerAffectedEntity {
@@ -141,24 +138,6 @@ fn destroy_current_path_timer_and_calculator(
         }
     }
     None
-}
-
-fn spawn_monster_chase_start_move_calculator(
-    current_location: Vec3,
-    location_to_chase: Vec3,
-    commands: &mut Commands,
-) -> Entity {
-    commands
-        .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::AppendToTimersOfType,
-            ValueByInterpolation::from_goal_and_current(
-                current_location,
-                location_to_chase,
-                Interpolator::new(1.0),
-            ),
-            TimerGoingEventType::Move(MovementType::InDirectLine),
-        ))
-        .id()
 }
 
 fn visualize_chase_initiation(

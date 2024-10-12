@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Component, Clone, Copy, PartialEq)]
+#[derive(Component, Clone, Copy, PartialEq, Debug)]
 pub struct Monster {
     pub hearing_ring_distance: f32,
     pub state: MonsterState,

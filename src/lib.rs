@@ -64,15 +64,13 @@ pub mod prelude {
         monsters::{
             consts::*,
             monster::*,
+            monster_chase_updater::*,
             monster_error::*,
             monster_listening::*,
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
             monster_state::*,
             monster_state_set_request::*,
-            state_behaviors::{
-                chase_state_behavior::*, flee_state_behavior::*, MonsterStateBehaviorsPlugin,
-            },
             state_initiation::{
                 chase_state_initiation::*, idle_state_initiation::*, MonsterStateInitiationPlugin,
             },

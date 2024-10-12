@@ -6,7 +6,6 @@ lazy_static! {
     pub static ref LOG_CATEGORYS_TO_PRINT: Vec<LogCategory> = vec![
         LogCategory::Crucial,
         LogCategory::RequestNotFulfilled,
-        LogCategory::Monster,
     ];
     pub static ref LOG_CATEGORYS_TO_APPEND_TO_SESSION_LOG: Vec<LogCategory> =
         vec![LogCategory::Crucial];

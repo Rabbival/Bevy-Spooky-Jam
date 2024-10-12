@@ -101,7 +101,7 @@ fn determine_most_danger_posing_bomb_location(
 ) -> Option<Vec3> {
     let mut most_dangerous_bomb_details: Option<(&Transform, &Bomb)> = None;
     for (bomb_transform, bomb) in bomb_query {
-        if let BombState::PreHeld = bomb.bomb_state {
+        if let BombState::PreHeld = bomb.state {
             continue;
         }
         if bomb_transform
