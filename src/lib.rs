@@ -20,7 +20,7 @@ extern crate lazy_static;
 pub mod prelude {
     pub use crate::animation::{scale_change::*, translation_change::*, CustomAnimationPlugin};
     pub use crate::app::{
-        consts::*, assets_loader::*, generic_plugins::*, main, main_camera::*, screen_setup::*, tags::*,
+        consts::*, assets_loader::*, generic_plugins::*, main, main_camera::*, screen_setup::*, tags::*, ui::*,
     };
     pub use crate::common_logic::{
         argument_validation::*,
