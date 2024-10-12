@@ -70,6 +70,7 @@ fn listen_for_done_bombs(
         (&Transform, Entity, Option<&AffectingTimerCalculators>),
         With<WorldBoundsWrapped>,
     >,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
     mut commands: Commands,
 ) {
     for done_timer in timer_done_reader.read() {
@@ -84,6 +85,9 @@ fn listen_for_done_bombs(
                         &mut timer_fire_request_writer,
                         &mut commands,
                     );
+                    sounds_event_writer.send(SoundEvent {
+                        event: SoundEventEnum::BombExplodeSoundEvent,
+                    });
                 } else {
                     print_error(
                         EntityError::EntityNotInQuery(
