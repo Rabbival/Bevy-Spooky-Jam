@@ -1,3 +1,4 @@
+use bevy::audio::Source;
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
@@ -17,11 +18,17 @@ pub struct TextFonts {
     pub kenny_pixel_handle: Handle<Font>,
 }
 
+#[derive(Resource, Default)]
+pub struct MusicAssets {
+    pub calm_layer_handle: Handle<AudioSource>,
+    pub intense_layer_handle: Handle<AudioSource>,
+}
+
 pub struct AssetsLoaderPlugin;
 
 impl Plugin for AssetsLoaderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, (sprites_atlas_setup, text_font_setup));
+        app.add_systems(PreStartup, (sprites_atlas_setup, text_font_setup, music_setup));
     }
 }
 
@@ -47,5 +54,12 @@ fn text_font_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         kenny_blocks_handle: asset_server.load("fonts/kenney_blocks.ttf"),
         kenny_high_square_handle: asset_server.load("fonts/kenney_high_square.ttf"),
         kenny_pixel_handle: asset_server.load("fonts/kenney_pixel.ttf"),
+    });
+}
+
+fn music_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(MusicAssets {
+        calm_layer_handle: asset_server.load("music/music_calm_layer.ogg"),
+        intense_layer_handle: asset_server.load("music/music_intense_layer.ogg"),
     });
 }
