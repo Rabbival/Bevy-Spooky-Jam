@@ -14,6 +14,7 @@ fn listen_for_bomb_tick_update(
     mut timer_going_event_reader: EventReader<TimerGoingEvent<f32>>,
     mut bomb_query: Query<&mut Bomb>,
     mut text_query: Query<(&mut Text, &Parent)>,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
 ) {
     for timer_going_event in timer_going_event_reader.read() {
         if let TimerGoingEventType::BombCountdown = timer_going_event.event_type {
@@ -28,6 +29,7 @@ fn listen_for_bomb_tick_update(
                     timer_going_event.value_delta,
                     timer_going_event.entity,
                     &mut text_query,
+                    &mut sounds_event_writer,
                 ) {
                     print_error(
                         BombError::CouldntParseTimerIntoInteger,
@@ -49,6 +51,7 @@ fn tick_bomb_and_update_text(
     time_delta: f32,
     bomb_entity: Entity,
     text_query: &mut Query<(&mut Text, &Parent)>,
+    sounds_event_writer: &mut EventWriter<SoundEvent>,
 ) -> Result<(), ParseIntError> {
     bomb.time_until_explosion += time_delta;
     for (mut text, text_parent) in text_query {
@@ -57,6 +60,11 @@ fn tick_bomb_and_update_text(
             let ceiled_time_until_explosion = bomb.time_until_explosion.ceil() as usize;
             if text_value >= ceiled_time_until_explosion {
                 text.sections[0].value = ceiled_time_until_explosion.to_string();
+            }
+            if ceiled_time_until_explosion < text_value && 0 < ceiled_time_until_explosion {
+                sounds_event_writer.send(SoundEvent::BombTickEvent(
+                    1.0 - (ceiled_time_until_explosion as f32 * 0.08),
+                ));
             }
         }
     }

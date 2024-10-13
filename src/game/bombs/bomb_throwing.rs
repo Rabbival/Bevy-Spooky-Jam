@@ -42,9 +42,7 @@ fn listen_for_bomb_throwing_requests(
                         cursor_world_position.0,
                         &mut commands,
                     );
-                    sounds_event_writer.send(SoundEvent {
-                        event: SoundEventEnum::BombThrowEvent,
-                    });
+                    sounds_event_writer.send(SoundEvent::BombThrowEvent);
                 }
             }
         }

@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::audio::PlaybackMode;
+use bevy::audio::{PlaybackMode, Volume};
 
 pub struct SoundPlayerPlugin;
 
@@ -16,29 +16,41 @@ fn bomb_sounds_event_listener(
 ) {
     for sound in sound_events_reader.read() {
         let source;
-        match sound.event {
-            SoundEventEnum::BombExplodeSoundEvent => {
+        let mut volume_override = None;
+        match sound {
+            SoundEvent::BombExplodeSoundEvent => {
                 source = sound_assets_resource.bomb_explode.clone();
+                volume_override = Some(0.85);
             }
-            SoundEventEnum::BombPickUpEvent => {
-                source = sound_assets_resource.bomb_tick.clone();
+            SoundEvent::BombPickUpEvent => {
+                source = sound_assets_resource.bomb_pick_up.clone();
             }
-            SoundEventEnum::BombThrowEvent => {
+            SoundEvent::BombThrowEvent => {
                 source = sound_assets_resource.bomb_throw.clone();
+                volume_override = Some(0.5);
             }
-            SoundEventEnum::BombTickEvent => {
+            SoundEvent::BombTickEvent(volume) => {
                 source = sound_assets_resource.bomb_tick.clone();
+                volume_override = Some(*volume);
+            }
+            SoundEvent::MonsterBattleCry => {
+                source = sound_assets_resource.monster_battle_cry.clone();
+            }
+            SoundEvent::MonsterDeathCry => {
+                source = sound_assets_resource.monster_death_cry.clone();
             }
         }
-        if Some(&source).is_some() {
-            commands.spawn(AudioBundle {
+        commands.spawn((
+            AudioBundle {
                 source,
                 settings: PlaybackSettings {
                     mode: PlaybackMode::Despawn,
+                    volume: Volume::new(volume_override.unwrap_or(1.0)),
                     ..default()
                 },
                 ..default()
-            });
-        }
+            },
+            AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
+        ));
     }
 }

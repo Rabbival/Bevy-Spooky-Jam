@@ -58,9 +58,7 @@ fn listen_for_bomb_picking_attempts(
                     &mut time_multiplier_request_writer,
                     &mut commands,
                 );
-                sounds_event_writer.send(SoundEvent {
-                    event: SoundEventEnum::BombPickUpEvent,
-                });
+                sounds_event_writer.send(SoundEvent::BombPickUpEvent);
 
                 print_info(
                     format!("player picked up bomb entity: {:?}", bomb_entity),

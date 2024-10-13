@@ -18,6 +18,7 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
             settings: PlaybackSettings::LOOP.with_volume(Volume::new(1.0)),
         },
         MusicLayer(1),
+        AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
     ));
     commands.spawn((
         AudioBundle {
@@ -25,11 +26,12 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
             settings: PlaybackSettings::LOOP.with_volume(Volume::ZERO),
         },
         MusicLayer(2),
+        AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
     ));
 }
 
 fn temp_test_system(
-    mut monster_state_set_listener: EventReader<MonsterStateSetRequest>,
+    mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     monsters: Query<(Entity, &Monster)>,
     query: Query<(&MusicLayer, &AudioSink)>,
 ) {

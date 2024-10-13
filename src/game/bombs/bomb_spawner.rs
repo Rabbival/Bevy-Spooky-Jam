@@ -1,7 +1,9 @@
+use bevy::color::palettes::css::DARK_GRAY;
 use bevy::sprite::*;
+use bevy_light_2d::prelude::{PointLight2d, PointLight2dBundle};
 use rand::Rng;
 
-use crate::prelude::*;
+use crate::{prelude::*, read_no_field_variant};
 
 pub struct BombSpawnerPlugin;
 
@@ -10,10 +12,37 @@ impl Plugin for BombSpawnerPlugin {
         app.add_systems(Startup, spawn_initial_bombs).add_systems(
             Update,
             (
-                listen_for_bomb_spawning_requests,
-                listen_for_bombs_done_growing,
+                (
+                    listen_for_bomb_spawning_requests,
+                    listen_for_bombs_done_growing,
+                    candle_light_bomb_effect,
+                )
+                    .in_set(TickingSystemSet::PostTicking),
+                respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Respawning),
             ),
         );
+    }
+}
+
+fn respawn_initial_bomb_on_game_restart(
+    mut event_reader: EventReader<GameEvent>,
+    timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: ResMut<SpritesAtlas>,
+    commands: Commands,
+) {
+    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+        spawn_initial_bombs(
+            timer_fire_request_writer,
+            transforms_not_to_spawn_next_to,
+            meshes,
+            materials,
+            sprites_atlas_resource,
+            commands,
+        );
+        break;
     }
 }
 
@@ -83,10 +112,6 @@ fn try_spawning_a_bomb(
                 transform: Transform::from_translation(place_to_spawn_in)
                     .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
-            },
-            TextureAtlas {
-                layout: sprites_atlas_resource.atlas_handle.clone(),
-                index: 0,
             },
             AffectingTimerCalculators::default(),
             Bomb::default(),
@@ -169,12 +194,34 @@ fn listen_for_bombs_done_growing(
                                     color: BombState::PreHeld.to_colors().unwrap().text,
                                 },
                             ),
-                            transform: Transform::from_translation(Vec3::Z),
+                            transform: Transform::from_translation(Vec3::new(
+                                0.0,
+                                BOMB_TIME_LEFT_FONT_SIZE + 10.0,
+                                1.0,
+                            )),
+                            ..default()
+                        })
+                        .set_parent(affected_entity);
+                    commands
+                        .spawn(PointLight2dBundle {
+                            point_light: PointLight2d {
+                                color: Color::from(DARK_GRAY),
+                                radius: BOMB_EXPLOSION_RADIUS,
+                                ..default()
+                            },
                             ..default()
                         })
                         .set_parent(affected_entity);
                 }
             }
         }
+    }
+}
+
+fn candle_light_bomb_effect(mut bomb_point_light_query: Query<&mut PointLight2d>) {
+    let mut rng = rand::thread_rng();
+    for mut bomb in bomb_point_light_query.iter_mut() {
+        bomb.intensity = rng.gen_range(0.0..3.0);
+        bomb.falloff = rng.gen_range(0.0..1.0);
     }
 }

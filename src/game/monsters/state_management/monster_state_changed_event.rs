@@ -1,16 +1,16 @@
 use crate::prelude::*;
 
 #[derive(Event, Debug, Clone, Copy, PartialEq)]
-pub struct MonsterStateSetRequest {
+pub struct MonsterStateChanged {
     pub monster: Entity,
     pub next_state: MonsterState,
     pub previous_state: MonsterState,
 }
 
-pub struct MonsterStateSetRequestPlugin;
+pub struct MonsterStateChangedEventPlugin;
 
-impl Plugin for MonsterStateSetRequestPlugin {
+impl Plugin for MonsterStateChangedEventPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MonsterStateSetRequest>();
+        app.add_event::<MonsterStateChanged>();
     }
 }

@@ -6,6 +6,7 @@ pub struct SpritesAtlas {
     pub image_handle: Handle<Image>,
     pub pumpkin_image_handle: Handle<Image>,
     pub floor_image_handle: Handle<Image>,
+    pub floor_hole_handle: Handle<Image>,
     pub bato_san_image_handle: Handle<Image>,
 }
 
@@ -62,6 +63,7 @@ fn sprites_atlas_setup(
         image_handle,
         pumpkin_image_handle: asset_server.load("images/pumpkin.png"),
         floor_image_handle: asset_server.load("images/full_floor.png"),
+        floor_hole_handle: asset_server.load("images/floor_hole.png"),
         bato_san_image_handle: asset_server.load("images/bato_san.png"),
     });
 }
