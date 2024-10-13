@@ -36,13 +36,16 @@ fn bomb_sounds_event_listener(
                 source = sound_assets_resource.monster_death_cry.clone();
             }
         }
-        commands.spawn(AudioBundle {
-            source,
-            settings: PlaybackSettings {
-                mode: PlaybackMode::Despawn,
+        commands.spawn((
+            AudioBundle {
+                source,
+                settings: PlaybackSettings {
+                    mode: PlaybackMode::Despawn,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        });
+            AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
+        ));
     }
 }
