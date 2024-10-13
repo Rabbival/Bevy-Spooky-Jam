@@ -1,25 +1,16 @@
 use crate::prelude::*;
 
-#[derive(Component, Debug)]
-pub struct PlayerMonsterCollider {
-    pub radius: f32,
-    pub colliding_monsters: Vec<Entity>,
-}
-
-impl PlayerMonsterCollider {
-    pub fn new(radius: f32) -> Self {
-        Self {
-            radius,
-            colliding_monsters: vec![],
-        }
-    }
-}
-
 pub struct PlayerMonsterCollisionDetectionPlugin;
 
 impl Plugin for PlayerMonsterCollisionDetectionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, player_monster_collision_detection_system);
+        app.add_systems(
+            Update,
+            (
+                player_monster_collision_detection_system,
+                handle_player_monster_collisions,
+            ),
+        );
     }
 }
 
@@ -50,6 +41,22 @@ fn player_monster_collision_detection_system(
             collider
                 .colliding_monsters
                 .extend(collisions.iter().copied());
+        }
+    }
+}
+
+fn handle_player_monster_collisions(
+    mut commands: Commands,
+    query: Query<(Entity, &PlayerMonsterCollider), With<Monster>>,
+) {
+    for (entity, collider) in query.iter() {
+        for &collided_entity in collider.colliding_monsters.iter() {
+            // monster with another monster
+            if query.get(collided_entity).is_ok() {
+                continue;
+            }
+            // monster with player
+            info!("monster with player collision");
         }
     }
 }
