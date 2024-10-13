@@ -50,15 +50,18 @@ fn explode_bombs_on_direct_collision(
                     );
                     if maybe_monster.is_some() {
                         sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
-                        commands.spawn(SpriteBundle {
-                            texture: sprites_atlas_resource.floor_hole_handle.clone(),
-                            transform: Transform::from_xyz(
-                                bomb_transform.translation.x,
-                                bomb_transform.translation.y,
-                                Z_LAYER_FLOOR_HOLE,
-                            ),
-                            ..default()
-                        });
+                        commands.spawn((
+                            SpriteBundle {
+                                texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                                transform: Transform::from_xyz(
+                                    bomb_transform.translation.x,
+                                    bomb_transform.translation.y,
+                                    Z_LAYER_FLOOR_HOLE,
+                                ),
+                                ..default()
+                            },
+                            WorldBoundsWrapped,
+                        ));
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
                         ));
@@ -181,7 +184,7 @@ fn move_due_to_blast_calculator(
     let location_delta_from_bomb =
         object_in_blast_transform.translation - bomb_transform.translation;
     let blast_strength =
-        BOMB_BLAST_FACTOR / clamp_and_notify(location_delta_from_bomb.norm_squared(), 4.0, 2500.0);
+        BOMB_BLAST_FACTOR / clamp_and_notify(location_delta_from_bomb.norm_squared(), 16.0, 2500.0);
     let delta_due_to_blast = location_delta_from_bomb.normalize() * blast_strength;
     commands
         .spawn(GoingEventValueCalculator::new(

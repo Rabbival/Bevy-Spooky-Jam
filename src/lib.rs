@@ -65,18 +65,20 @@ pub mod prelude {
             consts::*, explosion_manager::*, BombsPlugin,
         },
         consts::*,
+        event_channels::*,
+        game_event_handler::*,
         monsters::{
             consts::*,
             monster::*,
-            monster_chase_updater::*,
             monster_error::*,
-            monster_listening::*,
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
-            monster_state::*,
-            monster_state_set_request::*,
-            state_initiation::{
-                chase_state_initiation::*, idle_state_initiation::*, MonsterStateInitiationPlugin,
+            path_updating::{
+                stray_path_ender::*, stray_path_updater::*, MonsterPathUpdatingPlugin,
+            },
+            state_management::{
+                monster_state::*, monster_state_changed_event::*, monster_state_changer::*,
+                state_change_visualizer::*, MonsterStateManagementPlugin,
             },
             MonstersPlugin,
         },

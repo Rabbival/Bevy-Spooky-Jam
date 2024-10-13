@@ -61,9 +61,9 @@ fn tick_bomb_and_update_text(
             if text_value >= ceiled_time_until_explosion {
                 text.sections[0].value = ceiled_time_until_explosion.to_string();
             }
-            if ceiled_time_until_explosion < text_value && ceiled_time_until_explosion < 3 {
+            if ceiled_time_until_explosion < text_value && 0 < ceiled_time_until_explosion {
                 sounds_event_writer.send(SoundEvent::BombTickEvent(
-                    1.0 - (ceiled_time_until_explosion as f32 * 0.125),
+                    1.0 - (ceiled_time_until_explosion as f32 * 0.08),
                 ));
             }
         }
