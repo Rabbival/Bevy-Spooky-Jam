@@ -5,7 +5,26 @@ pub struct SoundPlayerPlugin;
 
 impl Plugin for SoundPlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, bomb_sounds_event_listener);
+        app.add_systems(
+            Update,
+            (bomb_sounds_event_listener, update_sound_resource_speed),
+        );
+    }
+}
+
+fn update_sound_resource_speed(
+    mut multiplier_change_reader: EventReader<TimerGoingEvent<f32>>,
+    mut sound_assets_resource: ResMut<SoundAssets>,
+    time_multipliers: Query<&TimeMultiplier>,
+) {
+    for event in multiplier_change_reader.read() {
+        if let TimerGoingEventType::ChangeTimeMultiplierSpeed = event.event_type {
+            if let Ok(multiplier) = time_multipliers.get(event.entity) {
+                if let SOUND_TIME_MULTIPLIER_ID = multiplier.id() {
+                    sound_assets_resource.sound_speed += event.value_delta;
+                }
+            }
+        }
     }
 }
 
@@ -46,11 +65,12 @@ fn bomb_sounds_event_listener(
                 settings: PlaybackSettings {
                     mode: PlaybackMode::Despawn,
                     volume: Volume::new(volume_override.unwrap_or(1.0)),
+                    speed: sound_assets_resource.sound_speed,
                     ..default()
                 },
                 ..default()
             },
-            AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
+            AffectingTimeMultiplier(SOUND_TIME_MULTIPLIER_ID),
         ));
     }
 }

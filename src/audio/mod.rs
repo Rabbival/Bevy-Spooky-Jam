@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+pub mod consts;
 pub mod music_player;
 pub mod sound_event_channel;
 pub mod sound_player;
