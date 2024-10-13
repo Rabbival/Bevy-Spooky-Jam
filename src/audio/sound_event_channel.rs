@@ -5,7 +5,7 @@ pub enum SoundEvent {
     BombExplodeSoundEvent,
     BombPickUpEvent,
     BombThrowEvent,
-    BombTickEvent,
+    BombTickEvent(f32),
     MonsterBattleCry,
     MonsterDeathCry,
 }
