@@ -8,6 +8,4 @@ impl Plugin for PlayerMonsterCollisionDetectionPlugin {
     }
 }
 
-fn dummy_system() {
-
-}
+fn dummy_system() {}

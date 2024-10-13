@@ -1,8 +1,8 @@
 use crate::prelude::*;
 
 pub mod consts;
-pub mod player_monster_collision_detection;
 pub mod player_event_channel;
+pub mod player_monster_collision_detection;
 pub mod player_movement;
 pub mod player_spawner;
 pub mod tags;

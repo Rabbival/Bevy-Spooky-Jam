@@ -84,8 +84,8 @@ pub mod prelude {
             MonstersPlugin,
         },
         player_management::{
-            consts::*, player_event_channel::*, player_monster_collision_detection::*, player_movement::*, player_spawner::*, tags::*,
-            PlayerPlugin,
+            consts::*, player_event_channel::*, player_monster_collision_detection::*,
+            player_movement::*, player_spawner::*, tags::*, PlayerPlugin,
         },
         scores::{score_event_channel::*, score_manager::*, ScorePlugin},
         tags::*,
