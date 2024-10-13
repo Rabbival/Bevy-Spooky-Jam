@@ -32,6 +32,7 @@ pub struct SoundAssets {
     pub bomb_tick: Handle<AudioSource>,
     pub monster_battle_cry: Handle<AudioSource>,
     pub monster_death_cry: Handle<AudioSource>,
+    pub sound_speed: f32,
 }
 
 pub struct AssetsLoaderPlugin;
@@ -91,5 +92,6 @@ fn sound_fx_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         bomb_tick: asset_server.load("sound_fx/bomb_tick.ogg"),
         monster_battle_cry: asset_server.load("sound_fx/monster_battle_cry.ogg"),
         monster_death_cry: asset_server.load("sound_fx/monster_death_cry.ogg"),
+        sound_speed: 1.0,
     });
 }

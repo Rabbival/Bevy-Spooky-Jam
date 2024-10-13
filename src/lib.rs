@@ -27,7 +27,8 @@ pub mod prelude {
         tags::*, ui::*,
     };
     pub use crate::audio::{
-        music_player::*, sound_event_channel::*, sound_player::*, tags::*, GameAudioPlugin,
+        consts::*, music_player::*, sound_event_channel::*, sound_player::*, tags::*,
+        GameAudioPlugin,
     };
     pub use crate::common_logic::{
         argument_validation::*,
