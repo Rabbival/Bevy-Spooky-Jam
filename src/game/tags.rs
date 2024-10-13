@@ -22,3 +22,6 @@ pub struct WorldChampionshipLeaderboardScoring {
     pub elapsed: Duration,
     pub hi_score: u32,
 }
+
+#[derive(Component, Default)]
+pub struct BombHole;

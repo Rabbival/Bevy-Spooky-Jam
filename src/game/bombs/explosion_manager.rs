@@ -51,6 +51,7 @@ fn explode_bombs_on_direct_collision(
                     if maybe_monster.is_some() {
                         sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
                         commands.spawn((
+                            BombHole,
                             SpriteBundle {
                                 texture: sprites_atlas_resource.floor_hole_handle.clone(),
                                 transform: Transform::from_xyz(
@@ -60,7 +61,6 @@ fn explode_bombs_on_direct_collision(
                                 ),
                                 ..default()
                             },
-                            WorldBoundsWrapped,
                         ));
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,

@@ -16,9 +16,17 @@ fn despawn_all_upon_restart(
     border_crossers_query: Query<Entity, With<WorldBoundsWrapped>>,
     timer_query: Query<(Entity, &EmittingTimer)>,
     timer_sequence_query: Query<Entity, With<TimerSequence>>,
+    bomb_holes_query: Query<Entity, With<BombHole>>,
     mut commands: Commands,
 ) {
     for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+        for bomb_hole in &bomb_holes_query {
+            despawn_recursive_notify_on_fail(
+                bomb_hole,
+                "bomb hole when pending restart",
+                &mut commands,
+            );
+        }
         for border_crosser in &border_crossers_query {
             despawn_recursive_notify_on_fail(
                 border_crosser,
