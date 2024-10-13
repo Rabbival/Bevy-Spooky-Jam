@@ -1,7 +1,8 @@
 pub const BOMB_SPAWNING_ATTEMPTS: usize = 42;
 pub const BOMB_SAFE_RADIUS: f32 = 20.0;
 pub const BOMB_SPAWN_INTERVAL: f32 = 8.0;
-pub const Z_LAYER_BOMB: f32 = 11.0;
+pub const Z_LAYER_BOMB: f32 = 9.0;
+pub const Z_LAYER_FLOOR_HOLE: f32 = 8.0;
 
 pub const TIME_IT_TAKES_BOMB_TO_GROW: f32 = 0.3;
 pub const BOMB_SIZE: f32 = 24.0;

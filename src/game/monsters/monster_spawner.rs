@@ -74,13 +74,17 @@ fn try_spawning_a_monster(
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
                 material: materials.add(ColorMaterial {
-                    color: Color::srgba(1.0, 1.0, 1.0, MONSTER_FADED_ALPHA),
+                    color: Color::srgba(1.0, 1.0, 1.0, 0.0),
                     texture: Some(sprites_atlas_resource.bato_san_image_handle.clone()),
                     ..default()
                 }),
                 transform: Transform::from_translation(place_to_spawn_in),
                 ..default()
             },
+            /*TextureAtlas {
+                layout: sprites_atlas_resource.atlas_handle.clone(),
+                index: 0,
+            },*/
             AffectingTimerCalculators::default(),
             WorldBoundsWrapped,
         ))

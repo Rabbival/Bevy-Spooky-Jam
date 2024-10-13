@@ -1,6 +1,7 @@
 #![allow(clippy::type_complexity)]
 pub mod animation;
 mod app;
+mod audio;
 mod common_logic;
 mod data_structures;
 mod debug;
@@ -24,6 +25,9 @@ pub mod prelude {
     pub use crate::app::{
         assets_loader::*, consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*,
         tags::*, ui::*,
+    };
+    pub use crate::audio::{
+        music_player::*, sound_event_channel::*, sound_player::*, tags::*, GameAudioPlugin,
     };
     pub use crate::common_logic::{
         argument_validation::*,

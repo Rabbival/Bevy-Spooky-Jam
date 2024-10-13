@@ -32,6 +32,7 @@ fn listen_for_bomb_picking_attempts(
     >,
     mut player_query: Query<(&mut Player, &Transform, Entity), Without<Bomb>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
     mut commands: Commands,
 ) {
     for _bomb_pickup_request in
@@ -57,6 +58,7 @@ fn listen_for_bomb_picking_attempts(
                     &mut time_multiplier_request_writer,
                     &mut commands,
                 );
+                sounds_event_writer.send(SoundEvent::BombPickUpEvent);
 
                 print_info(
                     format!("player picked up bomb entity: {:?}", bomb_entity),

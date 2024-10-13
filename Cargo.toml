@@ -12,6 +12,7 @@ rand = "0.8.5"
 lazy_static = "1.4.0"
 serde = { version = "1.0.197", features = ["derive"] }
 leafwing-input-manager = "0.15.1"
+bevy_light_2d = "0.4.0"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
