@@ -177,16 +177,14 @@ fn listen_for_bombs_done_growing(
                         })
                         .set_parent(affected_entity);
                     commands
-                        .spawn(
-                            PointLight2dBundle {
-                                point_light: PointLight2d {
-                                    color: Color::from(DARK_GRAY),
-                                    radius: BOMB_EXPLOSION_RADIUS,
-                                    ..default()
-                                },
+                        .spawn(PointLight2dBundle {
+                            point_light: PointLight2d {
+                                color: Color::from(DARK_GRAY),
+                                radius: BOMB_EXPLOSION_RADIUS,
                                 ..default()
                             },
-                        )
+                            ..default()
+                        })
                         .set_parent(affected_entity);
                 }
             }

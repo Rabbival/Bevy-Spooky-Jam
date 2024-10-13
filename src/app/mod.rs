@@ -1,8 +1,8 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 use crate::prelude::*;
-use std::env;
 use bevy_light_2d::prelude::*;
+use std::env;
 
 pub mod assets_loader;
 pub mod consts;
