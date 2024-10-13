@@ -1,11 +1,11 @@
 use crate::prelude::*;
 
-#[derive(Event, Debug, PartialEq, Clone, Copy)]
+#[derive(Event, Debug, Clone, Copy, PartialEq)]
 pub enum SoundEvent {
     BombExplodeSoundEvent,
     BombPickUpEvent,
     BombThrowEvent,
-    BombTickEvent,
+    BombTickEvent(f32),
     MonsterBattleCry,
     MonsterDeathCry,
 }
