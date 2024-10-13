@@ -16,35 +16,33 @@ fn bomb_sounds_event_listener(
 ) {
     for sound in sound_events_reader.read() {
         let source;
-        match sound.event {
-            SoundEventEnum::BombExplodeSoundEvent => {
+        match sound {
+            SoundEvent::BombExplodeSoundEvent => {
                 source = sound_assets_resource.bomb_explode.clone();
             }
-            SoundEventEnum::BombPickUpEvent => {
+            SoundEvent::BombPickUpEvent => {
                 source = sound_assets_resource.bomb_pick_up.clone();
             }
-            SoundEventEnum::BombThrowEvent => {
+            SoundEvent::BombThrowEvent => {
                 source = sound_assets_resource.bomb_throw.clone();
             }
-            SoundEventEnum::BombTickEvent => {
+            SoundEvent::BombTickEvent => {
                 source = sound_assets_resource.bomb_tick.clone();
             }
-            SoundEventEnum::MonsterBattleCry => {
+            SoundEvent::MonsterBattleCry => {
                 source = sound_assets_resource.monster_battle_cry.clone();
             }
-            SoundEventEnum::MonsterDeathCry => {
+            SoundEvent::MonsterDeathCry => {
                 source = sound_assets_resource.monster_death_cry.clone();
             }
         }
-        if Some(&source).is_some() {
-            commands.spawn(AudioBundle {
-                source,
-                settings: PlaybackSettings {
-                    mode: PlaybackMode::Despawn,
-                    ..default()
-                },
+        commands.spawn(AudioBundle {
+            source,
+            settings: PlaybackSettings {
+                mode: PlaybackMode::Despawn,
                 ..default()
-            });
-        }
+            },
+            ..default()
+        });
     }
 }
