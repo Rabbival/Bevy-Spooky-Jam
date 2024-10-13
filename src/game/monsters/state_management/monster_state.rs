@@ -11,7 +11,7 @@ pub enum MonsterState {
     #[default]
     Idle,
     Chasing(Entity),
-    Fleeing(Vec3),
+    Fleeing(Entity),
 }
 
 impl MonsterState {

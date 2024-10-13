@@ -1,44 +1,27 @@
 use crate::prelude::*;
 
-use super::visualize_calm_down;
+pub struct MonsterStrayPathEnderPlugin;
 
-pub struct MonsterIdleStateInitiationPlugin;
-
-impl Plugin for MonsterIdleStateInitiationPlugin {
+impl Plugin for MonsterStrayPathEnderPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            listen_for_change_to_idle_requests.in_set(MonsterSystemSet::StateChanging),
+            end_stray_path_when_back_to_idle.in_set(MonsterSystemSet::PathUpdating),
         );
     }
 }
 
-fn listen_for_change_to_idle_requests(
-    mut monster_state_set_listener: EventReader<MonsterStateSetRequest>,
+fn end_stray_path_when_back_to_idle(
+    mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut timer_done_event_writer: EventWriter<TimerDoneEvent>,
-    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
-    mut monsters_query: Query<(
-        &mut Monster,
-        &Transform,
-        &Handle<ColorMaterial>,
-        Entity,
-        &AffectingTimerCalculators,
-    )>,
+    monsters_query: Query<(&Monster, &AffectingTimerCalculators)>,
     emitting_timer_with_parent_sequence_query: Query<(&EmittingTimer, &TimerParentSequence)>,
-    assets: Res<Assets<ColorMaterial>>,
     mut commands: Commands,
 ) {
-    for request in monster_state_set_listener.read() {
-        if let MonsterState::Idle = request.next_state {
-            match monsters_query.get_mut(request.monster) {
-                Ok((
-                    mut monster,
-                    monster_transform,
-                    monster_color_handle,
-                    monster_entity,
-                    affecting_timer_calculators,
-                )) => {
-                    monster.state = request.next_state;
+    for event in monster_state_set_listener.read() {
+        if let MonsterState::Idle = event.next_state {
+            match monsters_query.get(event.monster) {
+                Ok((monster, affecting_timer_calculators)) => {
                     if cancel_stray_path_timer_and_begin_next_path_one(
                         &mut timer_done_event_writer,
                         &monster,
@@ -49,20 +32,9 @@ fn listen_for_change_to_idle_requests(
                     .is_none()
                     {
                         print_error(
-                            MonsterError::NoPathSequenceFoundOnStateChange(request.next_state),
+                            MonsterError::NoPathSequenceFoundOnStateChange(event.next_state),
                             vec![LogCategory::RequestNotFulfilled, LogCategory::Monster],
                         );
-                    }
-                    if let Some(monster_color) = assets.get(monster_color_handle.id()) {
-                        if let MonsterState::Chasing(_) = request.previous_state {
-                            visualize_calm_down(
-                                &mut timer_fire_request_writer,
-                                monster_entity,
-                                monster_transform.scale,
-                                monster_color.color.alpha(),
-                                &mut commands,
-                            );
-                        }
                     }
                 }
                 Err(_) => {
