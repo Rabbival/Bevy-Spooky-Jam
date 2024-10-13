@@ -20,16 +20,18 @@ fn bomb_sounds_event_listener(
         match sound {
             SoundEvent::BombExplodeSoundEvent => {
                 source = sound_assets_resource.bomb_explode.clone();
+                volume_override = Some(0.85);
             }
             SoundEvent::BombPickUpEvent => {
                 source = sound_assets_resource.bomb_pick_up.clone();
             }
             SoundEvent::BombThrowEvent => {
                 source = sound_assets_resource.bomb_throw.clone();
+                volume_override = Some(0.5);
             }
             SoundEvent::BombTickEvent(volume) => {
                 source = sound_assets_resource.bomb_tick.clone();
-                volume_override = Some(volume);
+                volume_override = Some(*volume);
             }
             SoundEvent::MonsterBattleCry => {
                 source = sound_assets_resource.monster_battle_cry.clone();
@@ -43,7 +45,7 @@ fn bomb_sounds_event_listener(
                 source,
                 settings: PlaybackSettings {
                     mode: PlaybackMode::Despawn,
-                    volume: Volume::new(*(volume_override.unwrap_or(&1.0))),
+                    volume: Volume::new(volume_override.unwrap_or(1.0)),
                     ..default()
                 },
                 ..default()
