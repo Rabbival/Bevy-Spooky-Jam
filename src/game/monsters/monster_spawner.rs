@@ -117,13 +117,13 @@ fn try_spawning_a_monster(
     if FunctionalityOverride::EnemiesDontMove.disabled() {
         let sequence_id = spawn_path_timer_sequence(
             monster_entity,
-            rng.gen_range(1.0..3.0),
+            rng.gen_range(3.0..4.5),
             generate_initial_path_to_follow(),
             commands,
         )?;
         commands.entity(monster_entity).insert(Monster {
             hearing_ring_distance: rng
-                .gen_range(fraction_window_size - 35.0..fraction_window_size + 75.0),
+                .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
             state: MonsterState::Spawning,
             path_timer_sequence: sequence_id,
         });
