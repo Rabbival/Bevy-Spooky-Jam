@@ -112,6 +112,7 @@ fn try_spawning_a_monster(
             },*/
             AffectingTimerCalculators::default(),
             WorldBoundsWrapped,
+            PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS),
         ))
         .id();
     if FunctionalityOverride::EnemiesDontMove.disabled() {

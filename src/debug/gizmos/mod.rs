@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+pub mod player_monster_collision_gizmos;
 pub mod range_gizmos;
 pub mod ray_gizmos;
 
@@ -7,8 +8,12 @@ pub struct GizmosPlugin;
 
 impl Plugin for GizmosPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((RangeGizmosPlugin, RayGizmosPlugin))
-            .add_systems(Startup, config_line_width);
+        app.add_plugins((
+            PlayerMonsterCollisionGizmosPlugin,
+            RangeGizmosPlugin,
+            RayGizmosPlugin,
+        ))
+        .add_systems(Startup, config_line_width);
     }
 }
 

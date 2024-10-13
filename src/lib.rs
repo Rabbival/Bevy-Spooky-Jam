@@ -47,7 +47,9 @@ pub mod prelude {
         consts::*,
         enums::{bevy_log_level::*, functionality_override::*, log_category::*, os_access_log::*},
         game_session_log::*,
-        gizmos::{range_gizmos::*, ray_gizmos::*, GizmosPlugin},
+        gizmos::{
+            player_monster_collision_gizmos::*, range_gizmos::*, ray_gizmos::*, GizmosPlugin,
+        },
         print_config_struct::*,
         print_log::*,
         print_vec::*,
