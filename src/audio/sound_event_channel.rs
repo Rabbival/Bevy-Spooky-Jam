@@ -1,5 +1,15 @@
 use crate::prelude::*;
 
+#[derive(Event, Debug, PartialEq, Clone, Copy)]
+pub enum SoundEvent {
+    BombExplodeSoundEvent,
+    BombPickUpEvent,
+    BombThrowEvent,
+    BombTickEvent,
+    MonsterBattleCry,
+    MonsterDeathCry,
+}
+
 pub struct SoundEventPlugin;
 
 impl Plugin for SoundEventPlugin {

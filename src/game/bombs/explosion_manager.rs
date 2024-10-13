@@ -49,9 +49,7 @@ fn explode_bombs_on_direct_collision(
                         &mut commands,
                     );
                     if maybe_monster.is_some() {
-                        sounds_event_writer.send(SoundEvent {
-                            event: SoundEventEnum::BombExplodeSoundEvent,
-                        });
+                        sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
                         commands.spawn(SpriteBundle {
                             texture: sprites_atlas_resource.floor_hole_handle.clone(),
                             transform: Transform::from_xyz(
@@ -96,9 +94,7 @@ fn listen_for_done_bombs(
                         &mut timer_fire_request_writer,
                         &mut commands,
                     );
-                    sounds_event_writer.send(SoundEvent {
-                        event: SoundEventEnum::BombExplodeSoundEvent,
-                    });
+                    sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
                     commands.spawn(SpriteBundle {
                         texture: sprites_atlas_resource.floor_hole_handle.clone(),
                         transform: Transform::from_xyz(
