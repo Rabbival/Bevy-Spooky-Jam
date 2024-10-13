@@ -46,10 +46,10 @@ fn player_monster_collision_detection_system(
 }
 
 fn handle_player_monster_collisions(
-    mut commands: Commands,
+    //mut commands: Commands,
     query: Query<(Entity, &PlayerMonsterCollider), With<Monster>>,
 ) {
-    for (entity, collider) in query.iter() {
+    for (_entity, collider) in query.iter() {
         for &collided_entity in collider.colliding_monsters.iter() {
             // monster with another monster
             if query.get(collided_entity).is_ok() {
@@ -57,6 +57,9 @@ fn handle_player_monster_collisions(
             }
             // monster with player
             info!("monster with player collision");
+            // TODO spawn GAME OVER text
+            // TODO stop stopwatch
+            // TODO stop monsters & threw bombs
         }
     }
 }
