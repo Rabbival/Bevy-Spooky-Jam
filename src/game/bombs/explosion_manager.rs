@@ -50,15 +50,18 @@ fn explode_bombs_on_direct_collision(
                     );
                     if maybe_monster.is_some() {
                         sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
-                        commands.spawn(SpriteBundle {
-                            texture: sprites_atlas_resource.floor_hole_handle.clone(),
-                            transform: Transform::from_xyz(
-                                bomb_transform.translation.x,
-                                bomb_transform.translation.y,
-                                Z_LAYER_FLOOR_HOLE,
-                            ),
-                            ..default()
-                        });
+                        commands.spawn((
+                            SpriteBundle {
+                                texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                                transform: Transform::from_xyz(
+                                    bomb_transform.translation.x,
+                                    bomb_transform.translation.y,
+                                    Z_LAYER_FLOOR_HOLE,
+                                ),
+                                ..default()
+                            },
+                            WorldBoundsWrapped,
+                        ));
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
                         ));

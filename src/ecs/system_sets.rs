@@ -33,6 +33,12 @@ pub enum MonsterSystemSet {
     PathUpdating,
 }
 
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum GameRestartSystemSet {
+    Despawning,
+    Respawning,
+}
+
 pub struct SystemSetsPlugin;
 
 impl Plugin for SystemSetsPlugin {
@@ -46,6 +52,12 @@ impl Plugin for SystemSetsPlugin {
                     InputSystemSet::Handling,
                 )
                     .chain(),
+                (
+                    GameRestartSystemSet::Despawning,
+                    GameRestartSystemSet::Respawning,
+                )
+                    .chain()
+                    .after(InputSystemSet::Handling),
                 (
                     MonsterSystemSet::EnvironmentChecking,
                     MonsterSystemSet::StateChanging,

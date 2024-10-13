@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, read_no_field_variant};
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
 
@@ -6,10 +6,35 @@ pub struct MonsterSpawnerPlugin;
 
 impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_initial_monster);
+        app.add_systems(Startup, spawn_initial_monster).add_systems(
+            Update,
+            respawn_monsters_on_game_restart.in_set(GameRestartSystemSet::Respawning),
+        );
         if FunctionalityOverride::SpawnOnlyOneEnemy.disabled() {
             app.add_systems(Update, listen_for_monster_spawning_requests);
         }
+    }
+}
+
+fn respawn_monsters_on_game_restart(
+    mut event_reader: EventReader<GameEvent>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: ResMut<SpritesAtlas>,
+    event_writer: EventWriter<TimerFireRequest>,
+    commands: Commands,
+) {
+    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+        spawn_initial_monster(
+            transforms_not_to_spawn_next_to,
+            meshes,
+            materials,
+            sprites_atlas_resource,
+            event_writer,
+            commands,
+        );
+        break;
     }
 }
 

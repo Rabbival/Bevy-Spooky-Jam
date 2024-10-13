@@ -65,6 +65,8 @@ pub mod prelude {
             consts::*, explosion_manager::*, BombsPlugin,
         },
         consts::*,
+        event_channels::*,
+        game_event_handler::*,
         monsters::{
             consts::*,
             monster::*,
