@@ -6,7 +6,10 @@ pub struct BombTickerPlugin;
 
 impl Plugin for BombTickerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, listen_for_bomb_tick_update);
+        app.add_systems(
+            Update,
+            listen_for_bomb_tick_update.in_set(TickingSystemSet::PostTicking),
+        );
     }
 }
 
@@ -61,8 +64,10 @@ fn tick_bomb_and_update_text(
             if text_value >= ceiled_time_until_explosion {
                 text.sections[0].value = ceiled_time_until_explosion.to_string();
             }
-            if ceiled_time_until_explosion < text_value && ceiled_time_until_explosion < 3 {
-                sounds_event_writer.send(SoundEvent::BombTickEvent);
+            if ceiled_time_until_explosion < text_value && 0 < ceiled_time_until_explosion {
+                sounds_event_writer.send(SoundEvent::BombTickEvent(
+                    1.0 - (ceiled_time_until_explosion as f32 * 0.08),
+                ));
             }
         }
     }

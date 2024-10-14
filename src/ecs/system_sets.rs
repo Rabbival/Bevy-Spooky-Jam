@@ -28,10 +28,14 @@ pub enum EndOfFrameSystemSet {
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum MonsterSystemSet {
-    EnvironmentChecking,
-    ChasingUpdating,
-    FleeingUpdating,
     StateChanging,
+    PathAndVisualUpdating,
+}
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum GameRestartSystemSet {
+    Despawning,
+    Respawning,
 }
 
 pub struct SystemSetsPlugin;
@@ -48,12 +52,14 @@ impl Plugin for SystemSetsPlugin {
                 )
                     .chain(),
                 (
-                    MonsterSystemSet::EnvironmentChecking,
-                    (
-                        MonsterSystemSet::ChasingUpdating,
-                        MonsterSystemSet::FleeingUpdating,
-                    ),
+                    GameRestartSystemSet::Despawning,
+                    GameRestartSystemSet::Respawning,
+                )
+                    .chain()
+                    .after(InputSystemSet::Handling),
+                (
                     MonsterSystemSet::StateChanging,
+                    MonsterSystemSet::PathAndVisualUpdating,
                 )
                     .chain()
                     .after(InputSystemSet::Handling)

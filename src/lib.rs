@@ -27,7 +27,8 @@ pub mod prelude {
         tags::*, ui::*,
     };
     pub use crate::audio::{
-        music_player::*, sound_event_channel::*, sound_player::*, tags::*, GameAudioPlugin,
+        consts::*, music_player::*, sound_event_channel::*, sound_player::*, tags::*,
+        GameAudioPlugin,
     };
     pub use crate::common_logic::{
         argument_validation::*,
@@ -46,10 +47,13 @@ pub mod prelude {
         consts::*,
         enums::{bevy_log_level::*, functionality_override::*, log_category::*, os_access_log::*},
         game_session_log::*,
-        gizmos::{range_gizmos::*, ray_gizmos::*, GizmosPlugin},
+        gizmos::{
+            player_monster_collision_gizmos::*, range_gizmos::*, ray_gizmos::*, GizmosPlugin,
+        },
         print_config_struct::*,
         print_log::*,
         print_vec::*,
+        DebugPlugin,
     };
     pub use crate::ecs::{
         component_utilities::*,
@@ -65,24 +69,28 @@ pub mod prelude {
             consts::*, explosion_manager::*, BombsPlugin,
         },
         consts::*,
+        event_channels::*,
+        game_event_handler::*,
         monsters::{
             consts::*,
             monster::*,
-            monster_chase_updater::*,
             monster_error::*,
-            monster_listening::*,
+            monster_path::{
+                main_path_initiation::*, stray_path_ender::*, stray_path_updater::*,
+                MonsterPathUpdatingPlugin,
+            },
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
-            monster_state::*,
-            monster_state_set_request::*,
-            state_initiation::{
-                chase_state_initiation::*, idle_state_initiation::*, MonsterStateInitiationPlugin,
+            state_management::{
+                monster_state::*, monster_state_changed_event::*, monster_state_changer::*,
+                MonsterStateManagementPlugin,
             },
+            visuals::{animation_starter::*, state_change_visualizer::*, MonsterVisualsPlugin},
             MonstersPlugin,
         },
         player_management::{
-            consts::*, player_event_channel::*, player_movement::*, player_spawner::*, tags::*,
-            PlayerPlugin,
+            consts::*, player_event_channel::*, player_monster_collision_detection::*,
+            player_movement::*, player_spawner::*, tags::*, PlayerPlugin,
         },
         scores::{score_event_channel::*, score_manager::*, ScorePlugin},
         tags::*,

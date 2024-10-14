@@ -31,7 +31,7 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
 }
 
 fn temp_test_system(
-    mut monster_state_set_listener: EventReader<MonsterStateSetRequest>,
+    mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     monsters: Query<(Entity, &Monster)>,
     query: Query<(&MusicLayer, &AudioSink)>,
 ) {

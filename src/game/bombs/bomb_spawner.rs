@@ -3,7 +3,7 @@ use bevy::sprite::*;
 use bevy_light_2d::prelude::{PointLight2d, PointLight2dBundle};
 use rand::Rng;
 
-use crate::prelude::*;
+use crate::{prelude::*, read_no_field_variant};
 
 pub struct BombSpawnerPlugin;
 
@@ -12,11 +12,37 @@ impl Plugin for BombSpawnerPlugin {
         app.add_systems(Startup, spawn_initial_bombs).add_systems(
             Update,
             (
-                listen_for_bomb_spawning_requests,
-                listen_for_bombs_done_growing,
-                candle_light_bomb_effect,
+                (
+                    listen_for_bomb_spawning_requests,
+                    listen_for_bombs_done_growing,
+                    candle_light_bomb_effect,
+                )
+                    .in_set(TickingSystemSet::PostTicking),
+                respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Respawning),
             ),
         );
+    }
+}
+
+fn respawn_initial_bomb_on_game_restart(
+    mut event_reader: EventReader<GameEvent>,
+    timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: ResMut<SpritesAtlas>,
+    commands: Commands,
+) {
+    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+        spawn_initial_bombs(
+            timer_fire_request_writer,
+            transforms_not_to_spawn_next_to,
+            meshes,
+            materials,
+            sprites_atlas_resource,
+            commands,
+        );
+        break;
     }
 }
 

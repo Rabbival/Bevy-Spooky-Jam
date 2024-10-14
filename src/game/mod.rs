@@ -2,6 +2,8 @@ use crate::prelude::*;
 
 pub mod bombs;
 pub mod consts;
+pub mod event_channels;
+pub mod game_event_handler;
 pub mod monsters;
 pub mod player_management;
 pub mod scores;
@@ -17,6 +19,8 @@ impl Plugin for GamePlugin {
             GizmosPlugin,
             BombsPlugin,
             ScorePlugin,
+            GameEventPlugin,
+            GameEventHandlerPlugin,
         ));
     }
 }
