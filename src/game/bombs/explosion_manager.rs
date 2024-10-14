@@ -16,16 +16,16 @@ impl Plugin for ExplosionManagerPlugin {
 fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
+    mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
     explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&Bomb>)>,
     bomb_query: Query<(&Transform, &Bomb)>,
     transform_query: Query<
         (&Transform, Entity, Option<&AffectingTimerCalculators>),
         With<WorldBoundsWrapped>,
     >,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
-    mut sounds_event_writer: EventWriter<SoundEvent>,
-    mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
-    sprites_atlas_resource: ResMut<SpritesAtlas>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
         if let BombState::PostHeld = bomb.state {
@@ -46,22 +46,11 @@ fn explode_bombs_on_direct_collision(
                         bomb.explosion_radius,
                         &transform_query,
                         &mut timer_fire_request_writer,
+                        &mut sounds_event_writer,
+                        &mut sprites_atlas_resource,
                         &mut commands,
                     );
                     if maybe_monster.is_some() {
-                        sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
-                        commands.spawn((
-                            SpriteBundle {
-                                texture: sprites_atlas_resource.floor_hole_handle.clone(),
-                                transform: Transform::from_xyz(
-                                    bomb_transform.translation.x,
-                                    bomb_transform.translation.y,
-                                    Z_LAYER_FLOOR_HOLE,
-                                ),
-                                ..default()
-                            },
-                            WorldBoundsWrapped,
-                        ));
                         update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                             PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
                         ));
@@ -76,14 +65,14 @@ fn listen_for_done_bombs(
     mut timer_done_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
     bomb_query: Query<(&Transform, &Bomb)>,
     transform_query: Query<
         (&Transform, Entity, Option<&AffectingTimerCalculators>),
         With<WorldBoundsWrapped>,
     >,
-    mut sounds_event_writer: EventWriter<SoundEvent>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
-    sprites_atlas_resource: ResMut<SpritesAtlas>,
 ) {
     for done_timer in timer_done_reader.read() {
         if let TimerDoneEventType::ExplodeInRadius(explosion_radius) = done_timer.event_type {
@@ -95,18 +84,10 @@ fn listen_for_done_bombs(
                         explosion_radius,
                         &transform_query,
                         &mut timer_fire_request_writer,
+                        &mut sounds_event_writer,
+                        &mut sprites_atlas_resource,
                         &mut commands,
                     );
-                    sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
-                    commands.spawn(SpriteBundle {
-                        texture: sprites_atlas_resource.floor_hole_handle.clone(),
-                        transform: Transform::from_xyz(
-                            bomb_transform.translation.x,
-                            bomb_transform.translation.y,
-                            Z_LAYER_FLOOR_HOLE,
-                        ),
-                        ..default()
-                    });
                 } else {
                     print_error(
                         EntityError::EntityNotInQuery(
@@ -141,39 +122,76 @@ fn explode_bomb(
         With<WorldBoundsWrapped>,
     >,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    sounds_event_writer: &mut EventWriter<SoundEvent>,
+    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     commands: &mut Commands,
 ) {
-    for (transform, entity, maybe_affecting_timer_calculators) in transform_query {
-        let distance_from_bomb = bomb_transform.translation.distance(transform.translation);
+    for (transform_in_radius, entity_in_radius, maybe_affecting_timer_calculators) in
+        transform_query
+    {
+        let distance_from_bomb = bomb_transform
+            .translation
+            .distance(transform_in_radius.translation);
         if distance_from_bomb <= explosion_radius {
-            let blast_move_calculator: Option<Entity> = if transform == bomb_transform {
-                None
-            } else {
-                Some(move_due_to_blast_calculator(
-                    bomb_transform,
-                    transform,
-                    commands,
-                ))
-            };
-            let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
-                DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences
-            } else {
-                DespawnPolicy::DespawnSelf
-            };
-            timer_fire_request_writer.send(TimerFireRequest {
-                timer: EmittingTimer::new(
-                    vec![TimerAffectedEntity {
-                        affected_entity: entity,
-                        value_calculator_entity: blast_move_calculator,
-                    }],
-                    vec![TimeMultiplierId::GameTimeMultiplier],
-                    POST_BOMB_HIT_DESPAWN_TIME,
-                    TimerDoneEventType::DespawnAffectedEntities(despawn_policy),
-                ),
-                parent_sequence: None,
-            });
+            knock_back_and_destroy(
+                timer_fire_request_writer,
+                bomb_transform,
+                transform_in_radius,
+                entity_in_radius,
+                maybe_affecting_timer_calculators,
+                commands,
+            );
+            sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
+            commands.spawn((
+                SpriteBundle {
+                    texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                    transform: Transform::from_xyz(
+                        bomb_transform.translation.x,
+                        bomb_transform.translation.y,
+                        Z_LAYER_FLOOR_HOLE,
+                    ),
+                    ..default()
+                },
+                WorldBoundsWrapped,
+            ));
         }
     }
+}
+
+fn knock_back_and_destroy(
+    timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    bomb_transform: &Transform,
+    transform_in_radius: &Transform,
+    entity_in_radius: Entity,
+    maybe_affecting_timer_calculators: Option<&AffectingTimerCalculators>,
+    commands: &mut Commands,
+) {
+    let blast_move_calculator: Option<Entity> = if transform_in_radius == bomb_transform {
+        None
+    } else {
+        Some(move_due_to_blast_calculator(
+            bomb_transform,
+            transform_in_radius,
+            commands,
+        ))
+    };
+    let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
+        DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences
+    } else {
+        DespawnPolicy::DespawnSelf
+    };
+    timer_fire_request_writer.send(TimerFireRequest {
+        timer: EmittingTimer::new(
+            vec![TimerAffectedEntity {
+                affected_entity: entity_in_radius,
+                value_calculator_entity: blast_move_calculator,
+            }],
+            vec![TimeMultiplierId::GameTimeMultiplier],
+            POST_BOMB_HIT_DESPAWN_TIME,
+            TimerDoneEventType::DespawnAffectedEntities(despawn_policy),
+        ),
+        parent_sequence: None,
+    });
 }
 
 fn move_due_to_blast_calculator(
@@ -184,7 +202,7 @@ fn move_due_to_blast_calculator(
     let location_delta_from_bomb =
         object_in_blast_transform.translation - bomb_transform.translation;
     let blast_strength =
-        BOMB_BLAST_FACTOR / clamp_and_notify(location_delta_from_bomb.norm_squared(), 16.0, 2500.0);
+        BOMB_BLAST_FACTOR / location_delta_from_bomb.norm_squared().clamp(16.0, 2500.0);
     let delta_due_to_blast = location_delta_from_bomb.normalize() * blast_strength;
     commands
         .spawn(GoingEventValueCalculator::new(

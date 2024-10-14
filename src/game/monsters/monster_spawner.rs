@@ -96,6 +96,12 @@ fn try_spawning_a_monster(
     let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
     let monster_entity = commands
         .spawn((
+            Monster {
+                hearing_ring_distance: rng
+                    .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
+                state: MonsterState::Spawning,
+                ..default()
+            },
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
                 material: materials.add(ColorMaterial {
@@ -115,20 +121,6 @@ fn try_spawning_a_monster(
             PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS),
         ))
         .id();
-    if FunctionalityOverride::EnemiesDontMove.disabled() {
-        let sequence_id = spawn_path_timer_sequence(
-            monster_entity,
-            rng.gen_range(3.0..4.5),
-            generate_initial_path_to_follow(),
-            commands,
-        )?;
-        commands.entity(monster_entity).insert(Monster {
-            hearing_ring_distance: rng
-                .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
-            state: MonsterState::Spawning,
-            path_timer_sequence: sequence_id,
-        });
-    }
     spawn_grace_period_timer(monster_entity, event_writer, commands);
     Ok(())
 }
@@ -186,104 +178,4 @@ fn try_finding_place_for_monster(
         return Ok(vector);
     }
     Err(MonsterError::CouldntFindAPlaceToSpawnMonsterIn)
-}
-
-fn generate_initial_path_to_follow() -> Vec<Vec3> {
-    let mut all_path_vertices: Vec<Vec3>;
-    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
-    let mut rng = rand::thread_rng();
-    let is_cursed_pentagon = rng.gen::<bool>();
-    if is_cursed_pentagon {
-        all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(0.0, 150.0, 0.0),
-            Vec3::new(100.0, -150.0, 0.0),
-            Vec3::new(-150.0, 50.0, 0.0),
-            Vec3::new(150.0, 50.0, 0.0),
-            Vec3::new(-100.0, -150.0, 0.0),
-        ]);
-    } else {
-        let delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
-        all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(delta, delta, 0.0),
-            Vec3::new(delta, -delta, 0.0),
-            Vec3::new(-delta, -delta, 0.0),
-            Vec3::new(-delta, delta, 0.0),
-        ]);
-    }
-    let is_reversed = rng.gen::<bool>();
-    if is_reversed {
-        all_path_vertices.reverse();
-    }
-    all_path_vertices
-}
-
-fn spawn_path_timer_sequence(
-    monster_entity: Entity,
-    timers_duration: f32,
-    all_path_vertices: Vec<Vec3>,
-    commands: &mut Commands,
-) -> Result<Entity, TimerSequenceError> {
-    let going_event_value_calculators =
-        configure_value_calculators_for_patroller(all_path_vertices, 2.0);
-    let mut emitting_timers = vec![];
-    for value_calculator in going_event_value_calculators {
-        spawn_calculator_and_push_timer(
-            monster_entity,
-            value_calculator,
-            timers_duration,
-            &mut emitting_timers,
-            commands,
-        );
-    }
-    if emitting_timers.is_empty() {
-        Err(TimerSequenceError::TriedToFireATimerSequenceWithNoTimers)
-    } else {
-        Ok(commands
-            .spawn(TimerSequence::looping_sequence(&emitting_timers))
-            .id())
-    }
-}
-
-fn configure_value_calculators_for_patroller(
-    all_path_vertices: Vec<Vec3>,
-    interpolator_power: f32,
-) -> Vec<GoingEventValueCalculator<Vec3>> {
-    let mut value_calculators = vec![];
-    let vertice_count = all_path_vertices.iter().len();
-    for (index, vertice) in all_path_vertices.iter().enumerate() {
-        if index == vertice_count - 1 {
-            break;
-        }
-        value_calculators.push(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::AppendToTimersOfType,
-            ValueByInterpolation::from_goal_and_current(
-                *vertice,
-                *all_path_vertices
-                    .get(index + 1)
-                    .unwrap_or(all_path_vertices.first().unwrap()), //if it's empty we wouldn't get in the for loop
-                Interpolator::new(interpolator_power),
-            ),
-            TimerGoingEventType::Move(MovementType::InDirectLine),
-        ));
-    }
-    value_calculators
-}
-
-fn spawn_calculator_and_push_timer(
-    monster_entity: Entity,
-    value_calculator: GoingEventValueCalculator<Vec3>,
-    timer_duration: f32,
-    emitting_timers: &mut Vec<EmittingTimer>,
-    commands: &mut Commands,
-) {
-    let value_calculator_id = commands.spawn(value_calculator).id();
-    emitting_timers.push(EmittingTimer::new(
-        vec![TimerAffectedEntity {
-            affected_entity: monster_entity,
-            value_calculator_entity: Some(value_calculator_id),
-        }],
-        vec![TimeMultiplierId::GameTimeMultiplier],
-        timer_duration,
-        TimerDoneEventType::Nothing,
-    ));
 }

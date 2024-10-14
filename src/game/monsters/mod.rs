@@ -3,10 +3,11 @@ use crate::prelude::*;
 pub mod consts;
 pub mod monster;
 pub mod monster_error;
+pub mod monster_path;
 pub mod monster_spawner;
 pub mod monster_spawning_sequence_manager;
-pub mod path_updating;
 pub mod state_management;
+pub mod visuals;
 
 pub struct MonstersPlugin;
 
@@ -16,7 +17,8 @@ impl Plugin for MonstersPlugin {
             MonsterSpawnerPlugin,
             MonsterSpawningSequenceManagerPlugin,
             MonsterStateManagementPlugin,
-            MonsterStrayPathUpdaterPlugin,
+            MonsterVisualsPlugin,
+            MonsterPathUpdatingPlugin,
         ));
     }
 }
