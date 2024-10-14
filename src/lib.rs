@@ -75,15 +75,17 @@ pub mod prelude {
             consts::*,
             monster::*,
             monster_error::*,
+            monster_path::{
+                main_path_initiation::*, stray_path_ender::*, stray_path_updater::*,
+                MonsterPathUpdatingPlugin,
+            },
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
-            path_updating::{
-                stray_path_ender::*, stray_path_updater::*, MonsterPathUpdatingPlugin,
-            },
             state_management::{
                 monster_state::*, monster_state_changed_event::*, monster_state_changer::*,
-                state_change_visualizer::*, MonsterStateManagementPlugin,
+                MonsterStateManagementPlugin,
             },
+            visuals::{animation_starter::*, state_change_visualizer::*, MonsterVisualsPlugin},
             MonstersPlugin,
         },
         player_management::{

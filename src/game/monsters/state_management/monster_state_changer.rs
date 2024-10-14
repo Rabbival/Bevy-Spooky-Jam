@@ -11,38 +11,26 @@ impl Plugin for MonsterStateChangerPlugin {
                 listen_for_monsters_done_spawning,
             )
                 .chain()
-                .in_set(MonsterSystemSet::EnvironmentChecking),
+                .in_set(MonsterSystemSet::StateChanging),
         );
     }
 }
 
 fn listen_for_monsters_done_spawning(
     mut done_timers_listener: EventReader<TimerDoneEvent>,
-    mut timer_fire_writer: EventWriter<TimerFireRequest>,
+    mut monster_state_set_writer: EventWriter<MonsterStateChanged>,
     mut monsters_query: Query<&mut Monster>,
-    timer_sequence_query: Query<&TimerSequence>,
 ) {
     for done_timer in done_timers_listener.read() {
         if let TimerDoneEventType::DeclareSpawnDone = done_timer.event_type {
             for entity in done_timer.affected_entities.affected_entities_iter() {
                 if let Ok(mut monster) = monsters_query.get_mut(entity) {
+                    monster_state_set_writer.send(MonsterStateChanged {
+                        monster: entity,
+                        next_state: MonsterState::default(),
+                        previous_state: monster.state,
+                    });
                     monster.state = MonsterState::default();
-                    if let Ok(timer_sequence) =
-                        timer_sequence_query.get(monster.path_timer_sequence)
-                    {
-                        if let Err(sequence_error) = timer_sequence
-                            .fire_first_timer(monster.path_timer_sequence, &mut timer_fire_writer)
-                        {
-                            print_error(sequence_error, vec![LogCategory::RequestNotFulfilled]);
-                        }
-                    } else {
-                        print_error(
-                            EntityError::EntityNotInQuery(
-                                "monster path sequence when monster done spawning",
-                            ),
-                            vec![LogCategory::Monster, LogCategory::RequestNotFulfilled],
-                        );
-                    }
                 }
             }
         }

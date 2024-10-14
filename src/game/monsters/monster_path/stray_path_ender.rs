@@ -6,7 +6,7 @@ impl Plugin for MonsterStrayPathEnderPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            end_stray_path_when_back_to_idle.in_set(MonsterSystemSet::PathUpdating),
+            end_stray_path_when_back_to_idle.in_set(MonsterSystemSet::PathAndVisualUpdating),
         );
     }
 }
@@ -19,6 +19,9 @@ fn end_stray_path_when_back_to_idle(
     mut commands: Commands,
 ) {
     for event in monster_state_set_listener.read() {
+        if let MonsterState::Spawning = event.previous_state {
+            continue;
+        }
         if let MonsterState::Idle = event.next_state {
             match monsters_query.get(event.monster) {
                 Ok((monster, affecting_timer_calculators)) => {
@@ -81,18 +84,20 @@ fn despawn_stray_path_timer_and_get_done_event(
             if let Ok((timer, parent_sequence)) =
                 emitting_timer_with_parent_sequence_query.get(timer_and_calculator.timer)
             {
-                if monster.path_timer_sequence == parent_sequence.parent_sequence {
-                    despawn_recursive_notify_on_fail(
-                        timer_and_calculator.timer,
-                        "timer when changing monster state",
-                        commands,
-                    );
-                    return Some(TimerDoneEvent {
-                        event_type: timer.send_once_done,
-                        affected_entities: timer.affected_entities,
-                        timer_entity,
-                        timer_parent_sequence: Some(*parent_sequence),
-                    });
+                if let Some(timer_sequence) = monster.path_timer_sequence {
+                    if timer_sequence == parent_sequence.parent_sequence {
+                        despawn_recursive_notify_on_fail(
+                            timer_and_calculator.timer,
+                            "timer when changing monster state",
+                            commands,
+                        );
+                        return Some(TimerDoneEvent {
+                            event_type: timer.send_once_done,
+                            affected_entities: timer.affected_entities,
+                            timer_entity,
+                            timer_parent_sequence: Some(*parent_sequence),
+                        });
+                    }
                 }
             }
         }

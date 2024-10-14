@@ -24,7 +24,7 @@ impl Display for MonsterError {
             Self::NoPathSequenceFoundOnStateChange(next_state) => {
                 write!(
                     f,
-                    "Tried to manipulate path when changing to state {:?} but no path dequence was found",
+                    "Tried to manipulate path when changing to state {:?} but no path sequence was found",
                     next_state
                 )
             }

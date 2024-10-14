@@ -6,7 +6,8 @@ impl Plugin for MonsterStrayPathUpdaterPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (update_stray_path, listen_for_state_set).in_set(MonsterSystemSet::PathUpdating),
+            (update_stray_path, listen_for_state_set)
+                .in_set(MonsterSystemSet::PathAndVisualUpdating),
         );
     }
 }
@@ -101,7 +102,8 @@ fn replace_current_path(
     let location_to_move_towards = if let MonsterState::Chasing(_) = monster.state {
         target_location
     } else {
-        target_location + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS
+        target_location
+            + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS * 1.2
     };
     let new_path_calculator =
         spawn_monster_move_calculator(monster_location, location_to_move_towards, commands);
@@ -140,22 +142,24 @@ fn destroy_current_path_timer_and_calculator(
             if let Ok(parent_sequence) =
                 emitting_timer_parent_sequence_query.get(timer_and_calculator.timer)
             {
-                if monster.path_timer_sequence == parent_sequence.parent_sequence {
-                    if destroy_calculator {
+                if let Some(timer_sequence) = monster.path_timer_sequence {
+                    if timer_sequence == parent_sequence.parent_sequence {
+                        if destroy_calculator {
+                            despawn_recursive_notify_on_fail(
+                                timer_and_calculator.value_calculator,
+                                "timer calculator when changing monster state",
+                                commands,
+                            );
+                        }
                         despawn_recursive_notify_on_fail(
-                            timer_and_calculator.value_calculator,
-                            "timer calculator when changing monster state",
+                            timer_and_calculator.timer,
+                            "timer when changing monster state",
                             commands,
                         );
+                        affecting_timer_calculators
+                            .remove(direct_line_mover_type, timer_and_calculator.timer);
+                        return Some(*parent_sequence);
                     }
-                    despawn_recursive_notify_on_fail(
-                        timer_and_calculator.timer,
-                        "timer when changing monster state",
-                        commands,
-                    );
-                    affecting_timer_calculators
-                        .remove(direct_line_mover_type, timer_and_calculator.timer);
-                    return Some(*parent_sequence);
                 }
             }
         }

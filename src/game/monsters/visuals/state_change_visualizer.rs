@@ -6,7 +6,7 @@ impl Plugin for MonsterStateChangeVisualizerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            listen_to_state_changes.in_set(MonsterSystemSet::PathUpdating),
+            listen_to_state_changes.in_set(MonsterSystemSet::PathAndVisualUpdating),
         );
     }
 }
