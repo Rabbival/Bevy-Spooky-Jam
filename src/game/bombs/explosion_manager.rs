@@ -202,7 +202,7 @@ fn move_due_to_blast_calculator(
     let location_delta_from_bomb =
         object_in_blast_transform.translation - bomb_transform.translation;
     let blast_strength =
-        BOMB_BLAST_FACTOR / clamp_and_notify(location_delta_from_bomb.norm_squared(), 16.0, 2500.0);
+        BOMB_BLAST_FACTOR / location_delta_from_bomb.norm_squared().clamp(16.0, 2500.0);
     let delta_due_to_blast = location_delta_from_bomb.normalize() * blast_strength;
     commands
         .spawn(GoingEventValueCalculator::new(
