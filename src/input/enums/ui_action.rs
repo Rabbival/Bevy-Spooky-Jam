@@ -4,4 +4,6 @@ use crate::prelude::*;
 pub enum UiAction {
     CloseGame,
     RestartGame,
+    #[cfg(debug_assertions)]
+    DebugKey,
 }

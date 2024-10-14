@@ -33,6 +33,10 @@ fn listen_for_ui_just_pressed_controls(
                 UiAction::RestartGame => {
                     game_event_writer.send(GameEvent::RestartGame);
                 }
+                #[cfg(debug_assertions)]
+                UiAction::DebugKey => {
+                    game_event_writer.send(GameEvent::DebugKeyPressed);
+                }
             }
         }
     }

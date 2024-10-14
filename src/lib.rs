@@ -53,6 +53,7 @@ pub mod prelude {
         print_config_struct::*,
         print_log::*,
         print_vec::*,
+        DebugPlugin,
     };
     pub use crate::ecs::{
         component_utilities::*,

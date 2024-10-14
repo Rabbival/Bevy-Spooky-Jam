@@ -20,7 +20,8 @@ lazy_static! {
         // FunctionalityOverride::AllBombsExplodeAfterOneSecond,
         // FunctionalityOverride::EnemiesDontMove,
         #[cfg(debug_assertions)]
-        FunctionalityOverride::DontUpdateUI
-        // FunctionalityOverride::SpawnOnlyOneEnemy
+        FunctionalityOverride::DontUpdateUI,
+                #[cfg(debug_assertions)]
+        FunctionalityOverride::SpawnOnlyOneEnemy,
     ];
 }

@@ -13,15 +13,15 @@ impl Plugin for MonsterStrayPathUpdaterPlugin {
 
 fn listen_for_state_set(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
-    monsters_query: Query<(Entity, &Monster, &Transform, &AffectingTimerCalculators)>,
+    mut monsters_query: Query<(Entity, &Monster, &Transform, &mut AffectingTimerCalculators)>,
     transforms: Query<&Transform>,
     emitting_timer_parent_sequence_query: Query<&TimerParentSequence, With<EmittingTimer>>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
     for event in monster_state_set_listener.read() {
-        match monsters_query.get(event.monster) {
-            Ok((monster_entity, monster, monster_transform, affecting_timer_calculators)) => {
+        match monsters_query.get_mut(event.monster) {
+            Ok((monster_entity, monster, monster_transform, mut affecting_timer_calculators)) => {
                 if let MonsterState::Chasing(target_entity) | MonsterState::Fleeing(target_entity) =
                     event.next_state
                 {
@@ -31,7 +31,7 @@ fn listen_for_state_set(
                             monster,
                             monster_entity,
                             monster_transform.translation,
-                            affecting_timer_calculators,
+                            &mut affecting_timer_calculators,
                             &emitting_timer_parent_sequence_query,
                             &mut timer_fire_request_writer,
                             &mut commands,
@@ -54,12 +54,13 @@ fn listen_for_state_set(
 
 fn update_stray_path(
     just_changed_transforms: Query<&Transform, Changed<Transform>>,
-    monsters_query: Query<(Entity, &Monster, &Transform, &AffectingTimerCalculators)>,
+    mut monsters_query: Query<(Entity, &Monster, &Transform, &mut AffectingTimerCalculators)>,
     emitting_timer_parent_sequence_query: Query<&TimerParentSequence, With<EmittingTimer>>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
-    for (monster_entity, monster, monster_transform, affecting_timer_calculators) in &monsters_query
+    for (monster_entity, monster, monster_transform, mut affecting_timer_calculators) in
+        &mut monsters_query
     {
         if let MonsterState::Chasing(target_entity) | MonsterState::Fleeing(target_entity) =
             monster.state
@@ -70,7 +71,7 @@ fn update_stray_path(
                     monster,
                     monster_entity,
                     monster_transform.translation,
-                    affecting_timer_calculators,
+                    &mut affecting_timer_calculators,
                     &emitting_timer_parent_sequence_query,
                     &mut timer_fire_request_writer,
                     &mut commands,
@@ -86,7 +87,7 @@ fn replace_current_path(
     monster: &Monster,
     monster_entity: Entity,
     monster_location: Vec3,
-    affecting_timer_calculators: &AffectingTimerCalculators,
+    affecting_timer_calculators: &mut AffectingTimerCalculators,
     emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
@@ -128,14 +129,13 @@ fn replace_current_path(
 
 fn destroy_current_path_timer_and_calculator(
     monster: &Monster,
-    affecting_timer_calculators: &AffectingTimerCalculators,
+    affecting_timer_calculators: &mut AffectingTimerCalculators,
     emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
     commands: &mut Commands,
     destroy_calculator: bool,
 ) -> Option<TimerParentSequence> {
-    if let Some(direct_line_movers) =
-        affecting_timer_calculators.get(&TimerGoingEventType::Move(MovementType::InDirectLine))
-    {
+    let direct_line_mover_type = &TimerGoingEventType::Move(MovementType::InDirectLine);
+    if let Some(direct_line_movers) = affecting_timer_calculators.get(direct_line_mover_type) {
         for timer_and_calculator in direct_line_movers {
             if let Ok(parent_sequence) =
                 emitting_timer_parent_sequence_query.get(timer_and_calculator.timer)
@@ -153,6 +153,8 @@ fn destroy_current_path_timer_and_calculator(
                         "timer when changing monster state",
                         commands,
                     );
+                    affecting_timer_calculators
+                        .remove(direct_line_mover_type, timer_and_calculator.timer);
                     return Some(*parent_sequence);
                 }
             }
