@@ -10,7 +10,39 @@ impl Plugin for PlayerMonsterCollisionDetectionPlugin {
                 player_monster_collision_detection_system,
                 handle_player_monster_collisions,
             ),
+        )
+        .add_systems(
+            Update,
+            listen_for_collider_radius_update_requests.in_set(TickingSystemSet::PostTicking),
         );
+    }
+}
+
+fn listen_for_collider_radius_update_requests(
+    mut event_reader: EventReader<TimerGoingEvent<Vec3>>,
+    mut monsters_collider_query: Query<&mut PlayerMonsterCollider>,
+) {
+    for event_from_timer in event_reader.read() {
+        if let TimerGoingEventType::Scale = event_from_timer.event_type {
+            match monsters_collider_query.get_mut(event_from_timer.entity) {
+                Ok(mut monsters_collider) => {
+                    monsters_collider.radius += event_from_timer.value_delta.x
+                        * MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING;
+                    info!(
+                        "Updating monster's collider radius {:?} of entity {:?}",
+                        monsters_collider.radius, monsters_collider
+                    );
+                }
+                Err(_) => {
+                    print_error(
+                        EntityError::EntityNotInQuery(
+                            "couldn't fetch monsters_collider from query on collider radius update function",
+                        ),
+                        vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
+                    );
+                }
+            }
+        }
     }
 }
 
