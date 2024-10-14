@@ -5,11 +5,7 @@ use crate::prelude::*;
 pub fn clamp_and_notify<T: PartialOrd + Debug + 'static>(value: T, min: T, max: T) -> T {
     if value < min {
         print_warning(
-            format!(
-                "value {:?} was below min: {:?},\n
-                fixed to min.",
-                value, min
-            ),
+            format!("value {:?} was below min: {:?}, fixed to min.", value, min),
             vec![
                 LogCategory::ValueValidation,
                 LogCategory::RequestNotFulfilled,
@@ -18,11 +14,7 @@ pub fn clamp_and_notify<T: PartialOrd + Debug + 'static>(value: T, min: T, max: 
         min
     } else if value > max {
         print_warning(
-            format!(
-                "value {:?} was above max: {:?},\n
-                fixed to max.",
-                value, max
-            ),
+            format!("value {:?} was above max: {:?}, fixed to max.", value, max),
             vec![
                 LogCategory::ValueValidation,
                 LogCategory::RequestNotFulfilled,

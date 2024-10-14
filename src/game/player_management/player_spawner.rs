@@ -51,5 +51,6 @@ fn spawn_player(
             ..default()
         },
         WorldBoundsWrapped,
+        PlayerMonsterCollider::new(PLAYER_COLLIDER_RADIUS),
     ));
 }

@@ -6,7 +6,10 @@ pub struct BombTickerPlugin;
 
 impl Plugin for BombTickerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, listen_for_bomb_tick_update);
+        app.add_systems(
+            Update,
+            listen_for_bomb_tick_update.in_set(TickingSystemSet::PostTicking),
+        );
     }
 }
 

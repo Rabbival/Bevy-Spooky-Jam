@@ -4,6 +4,7 @@ use crate::prelude::*;
 pub enum GameEvent {
     RestartGame,
     PauseGame,
+    DebugKeyPressed,
 }
 
 pub struct GameEventPlugin;

@@ -47,10 +47,13 @@ pub mod prelude {
         consts::*,
         enums::{bevy_log_level::*, functionality_override::*, log_category::*, os_access_log::*},
         game_session_log::*,
-        gizmos::{range_gizmos::*, ray_gizmos::*, GizmosPlugin},
+        gizmos::{
+            player_monster_collision_gizmos::*, range_gizmos::*, ray_gizmos::*, GizmosPlugin,
+        },
         print_config_struct::*,
         print_log::*,
         print_vec::*,
+        DebugPlugin,
     };
     pub use crate::ecs::{
         component_utilities::*,
@@ -84,8 +87,8 @@ pub mod prelude {
             MonstersPlugin,
         },
         player_management::{
-            consts::*, player_event_channel::*, player_movement::*, player_spawner::*, tags::*,
-            PlayerPlugin,
+            consts::*, player_event_channel::*, player_monster_collision_detection::*,
+            player_movement::*, player_spawner::*, tags::*, PlayerPlugin,
         },
         scores::{score_event_channel::*, score_manager::*, ScorePlugin},
         tags::*,
