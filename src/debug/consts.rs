@@ -19,11 +19,11 @@ lazy_static! {
         // FunctionalityOverride::PlayerMayCarryInfiniteBombs
         // FunctionalityOverride::AllBombsExplodeAfterOneSecond,
         // FunctionalityOverride::EnemiesDontMove,
-        #[cfg(debug_assertions)]
-        FunctionalityOverride::DontUpdateUI,
-        #[cfg(debug_assertions)]
-        FunctionalityOverride::SpawnOnlyOneEnemy,
-        #[cfg(debug_assertions)]
-        FunctionalityOverride::DontCheckMonsterColliders,
+        //#[cfg(debug_assertions)]
+        //FunctionalityOverride::DontUpdateUI,
+        //#[cfg(debug_assertions)]
+        //FunctionalityOverride::SpawnOnlyOneEnemy,
+        //#[cfg(debug_assertions)]
+        //FunctionalityOverride::DontCheckMonsterColliders,
     ];
 }

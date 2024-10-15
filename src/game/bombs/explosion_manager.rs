@@ -1,5 +1,8 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 use bevy::math::NormedVectorSpace;
+use bevy::prelude::*;
 
 pub struct ExplosionManagerPlugin;
 
@@ -10,6 +13,7 @@ impl Plugin for ExplosionManagerPlugin {
             (
                 (listen_for_done_bombs, explode_bombs_on_direct_collision),
                 manage_bomb_explosion_side_effects,
+                execute_animations,
             )
                 .chain()
                 .in_set(TickingSystemSet::PostTicking),
@@ -238,6 +242,7 @@ fn manage_bomb_explosion_side_effects(
             },
             WorldBoundsWrapped,
         ));
+        let animation_config = AnimationConfig::new(0, 60, 120);
         commands.spawn((
             SpriteBundle {
                 texture: bomb_explosion_sprites_atlas_resource.image_handle.clone(),
@@ -250,15 +255,63 @@ fn manage_bomb_explosion_side_effects(
             },
             TextureAtlas {
                 layout: bomb_explosion_sprites_atlas_resource.atlas_handle.clone(),
-                index: 0,
+                index: animation_config.first_sprite_index,
             },
+            animation_config,
             WorldBoundsWrapped,
         ));
+        AnimationConfig::timer_from_fps(120);
 
         if exploded_bomb.hit_monster {
             update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                 PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
             ));
+        }
+    }
+}
+
+#[derive(Component)]
+struct AnimationConfig {
+    first_sprite_index: usize,
+    last_sprite_index: usize,
+    fps: u8,
+    frame_timer: Timer,
+}
+
+impl AnimationConfig {
+    fn new(first: usize, last: usize, fps: u8) -> Self {
+        Self {
+            first_sprite_index: first,
+            last_sprite_index: last,
+            fps,
+            frame_timer: Self::timer_from_fps(fps),
+        }
+    }
+
+    fn timer_from_fps(fps: u8) -> Timer {
+        Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
+    }
+}
+
+fn execute_animations(
+    time: Res<Time>,
+    mut query: Query<(&mut AnimationConfig, &mut TextureAtlas)>,
+) {
+    for (mut config, mut atlas) in &mut query {
+        // we track how long the current sprite has been displayed for
+        config.frame_timer.tick(time.delta());
+
+        // If it has been displayed for the user-defined amount of time (fps)...
+        if config.frame_timer.just_finished() {
+            if atlas.index == config.last_sprite_index {
+                // ...and it IS the last frame, then we move back to the first frame and stop.
+                atlas.index = config.first_sprite_index;
+            } else {
+                // ...and it is NOT the last frame, then we move to the next frame...
+                atlas.index += 1;
+                // ...and reset the frame timer to start counting all over again
+                config.frame_timer = AnimationConfig::timer_from_fps(config.fps);
+            }
         }
     }
 }
