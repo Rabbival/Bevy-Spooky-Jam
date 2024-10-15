@@ -7,7 +7,11 @@ impl Plugin for ExplosionManagerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (listen_for_done_bombs, explode_bombs_on_direct_collision)
+            (
+                (listen_for_done_bombs, explode_bombs_on_direct_collision),
+                manage_bomb_explosion_side_effects,
+            )
+                .chain()
                 .in_set(TickingSystemSet::PostTicking),
         );
     }
@@ -16,15 +20,18 @@ impl Plugin for ExplosionManagerPlugin {
 fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
-    mut sounds_event_writer: EventWriter<SoundEvent>,
-    mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
+    mut bomb_exploded_event_writer: EventWriter<BombExploded>,
     explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&Bomb>)>,
     bomb_query: Query<(&Transform, &Bomb)>,
     transform_query: Query<
-        (&Transform, Entity, Option<&AffectingTimerCalculators>),
+        (
+            &Transform,
+            Entity,
+            Option<&AffectingTimerCalculators>,
+            Option<&Monster>,
+        ),
         With<WorldBoundsWrapped>,
     >,
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
     for (bomb_transform, bomb) in &bomb_query {
@@ -45,16 +52,10 @@ fn explode_bombs_on_direct_collision(
                         bomb_transform,
                         bomb.explosion_radius,
                         &transform_query,
+                        &mut bomb_exploded_event_writer,
                         &mut timer_fire_request_writer,
-                        &mut sounds_event_writer,
-                        &mut sprites_atlas_resource,
                         &mut commands,
                     );
-                    if maybe_monster.is_some() {
-                        update_player_score_event_writer.send(AppendToPlayerScoreEvent(
-                            PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
-                        ));
-                    }
                 }
             }
         }
@@ -65,13 +66,17 @@ fn listen_for_done_bombs(
     mut timer_done_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
-    mut sounds_event_writer: EventWriter<SoundEvent>,
+    mut bomb_exploded_event_writer: EventWriter<BombExploded>,
     bomb_query: Query<(&Transform, &Bomb)>,
     transform_query: Query<
-        (&Transform, Entity, Option<&AffectingTimerCalculators>),
+        (
+            &Transform,
+            Entity,
+            Option<&AffectingTimerCalculators>,
+            Option<&Monster>,
+        ),
         With<WorldBoundsWrapped>,
     >,
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
     for done_timer in timer_done_reader.read() {
@@ -83,9 +88,8 @@ fn listen_for_done_bombs(
                         bomb_transform,
                         explosion_radius,
                         &transform_query,
+                        &mut bomb_exploded_event_writer,
                         &mut timer_fire_request_writer,
-                        &mut sounds_event_writer,
-                        &mut sprites_atlas_resource,
                         &mut commands,
                     );
                 } else {
@@ -118,15 +122,19 @@ fn explode_bomb(
     bomb_transform: &Transform,
     explosion_radius: f32,
     transform_query: &Query<
-        (&Transform, Entity, Option<&AffectingTimerCalculators>),
+        (
+            &Transform,
+            Entity,
+            Option<&AffectingTimerCalculators>,
+            Option<&Monster>,
+        ),
         With<WorldBoundsWrapped>,
     >,
+    bomb_exploded_event_writer: &mut EventWriter<BombExploded>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
-    sounds_event_writer: &mut EventWriter<SoundEvent>,
-    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     commands: &mut Commands,
 ) {
-    for (transform_in_radius, entity_in_radius, maybe_affecting_timer_calculators) in
+    for (transform_in_radius, entity_in_radius, maybe_affecting_timer_calculators, maybe_monster) in
         transform_query
     {
         let distance_from_bomb = bomb_transform
@@ -141,19 +149,10 @@ fn explode_bomb(
                 maybe_affecting_timer_calculators,
                 commands,
             );
-            sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
-            commands.spawn((
-                SpriteBundle {
-                    texture: sprites_atlas_resource.floor_hole_handle.clone(),
-                    transform: Transform::from_xyz(
-                        bomb_transform.translation.x,
-                        bomb_transform.translation.y,
-                        Z_LAYER_FLOOR_HOLE,
-                    ),
-                    ..default()
-                },
-                WorldBoundsWrapped,
-            ));
+            bomb_exploded_event_writer.send(BombExploded {
+                location: bomb_transform.translation,
+                hit_monster: maybe_monster.is_some(),
+            });
         }
     }
 }
@@ -215,4 +214,34 @@ fn move_due_to_blast_calculator(
             TimerGoingEventType::Move(MovementType::InDirectLine),
         ))
         .id()
+}
+
+fn manage_bomb_explosion_side_effects(
+    mut explosions_listener: EventReader<BombExploded>,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
+    mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
+    sprites_atlas_resource: Res<SpritesAtlas>,
+    mut commands: Commands,
+) {
+    for exploded_bomb in explosions_listener.read() {
+        sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
+        commands.spawn((
+            SpriteBundle {
+                texture: sprites_atlas_resource.floor_hole_handle.clone(),
+                transform: Transform::from_xyz(
+                    exploded_bomb.location.x,
+                    exploded_bomb.location.y,
+                    Z_LAYER_FLOOR_HOLE,
+                ),
+                ..default()
+            },
+            WorldBoundsWrapped,
+        ));
+
+        if exploded_bomb.hit_monster {
+            update_player_score_event_writer.send(AppendToPlayerScoreEvent(
+                PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
+            ));
+        }
+    }
 }
