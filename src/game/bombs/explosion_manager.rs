@@ -239,7 +239,6 @@ fn manage_bomb_explosion_side_effects(
         ));
 
         if exploded_bomb.hit_monster {
-            sounds_event_writer.send(SoundEvent::MonsterDeathCry);
             update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                 PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
             ));

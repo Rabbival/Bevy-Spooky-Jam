@@ -75,6 +75,7 @@ pub mod prelude {
         monsters::{
             consts::*,
             monster::*,
+            monster_audio::*,
             monster_error::*,
             monster_path::{
                 main_path_initiation::*, stray_path_ender::*, stray_path_updater::*,

@@ -57,6 +57,7 @@ fn bombs_and_monsters_sounds_event_listener(
             }
             SoundEvent::MonsterBattleCry => {
                 source = sound_assets_resource.monster_battle_cry.clone();
+                volume_override = Some(0.6);
             }
             SoundEvent::MonsterDeathCry => {
                 source = sound_assets_resource.monster_death_cry.clone();
