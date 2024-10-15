@@ -28,10 +28,6 @@ fn listen_for_collider_radius_update_requests(
                 Ok(mut monsters_collider) => {
                     monsters_collider.radius += event_from_timer.value_delta.x
                         * MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING;
-                    info!(
-                        "Updating monster's collider radius {:?} of entity {:?}",
-                        monsters_collider.radius, monsters_collider
-                    );
                 }
                 Err(_) => {
                     print_error(
