@@ -6,21 +6,25 @@ use strum_macros::EnumIter;
 
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Clone, Copy, EnumIter, Reflect)]
 pub enum BasicDirection {
-    Up,
-    UpRight,
-    Right,
-    RightDown,
-    Down,
     DownLeft,
-    Left,
+    Down,
+    RightDown,
+    Right,
+    UpRight,
+    Up,
     LeftUp,
+    Left,
 }
 
 impl BasicDirection {
-    // pub fn closest(find_closest_to: Vec2) -> BasicDirection {
-    //     let angle = find_closest_to.angle_between(Vec2::X);
-
-    // }
+    pub fn closest(find_closest_to: Vec2) -> Self {
+        let angle = Vec2::X.angle_between(find_closest_to);
+        let normalized_angle = (angle + PI) - (PI / 8.0);
+        let positive_normalized = normalized_angle % (2.0 * PI);
+        let angle_in_eight_turns = positive_normalized / (PI / 4.0);
+        let rounded = angle_in_eight_turns.floor() as u8;
+        Self::index_to_dir(rounded).unwrap()
+    }
 
     pub fn opposite_direction_index(&self) -> u8 {
         let index = *self as u8;
@@ -38,5 +42,25 @@ impl BasicDirection {
             }
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_closest() {
+        let almost_up_left = Vec2::new(-1.0, 0.9);
+        let almost_down_left = Vec2::new(-0.85, -0.9);
+        let almost_down_right = Vec2::new(3.2, -3.1);
+
+        let should_be_up_left = BasicDirection::closest(almost_up_left);
+        let should_be_down_left = BasicDirection::closest(almost_down_left);
+        let should_be_down_right = BasicDirection::closest(almost_down_right);
+
+        assert_eq!(BasicDirection::LeftUp, should_be_up_left);
+        assert_eq!(BasicDirection::DownLeft, should_be_down_left);
+        assert_eq!(BasicDirection::RightDown, should_be_down_right);
     }
 }
