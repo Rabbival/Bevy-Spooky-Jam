@@ -35,7 +35,7 @@ fn listen_for_debug_key_presses(
                 vec![],
                 0.001,
                 TimerDoneEventType::DespawnAffectedEntities(
-                    DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences,
+                    DespawnPolicy::DespawnSelfAndAllThatAffectsIt,
                 ),
             ),
             parent_sequence: None,

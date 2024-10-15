@@ -175,7 +175,7 @@ fn knock_back_and_destroy(
         ))
     };
     let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
-        DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences
+        DespawnPolicy::DespawnSelfAndAllThatAffectsIt
     } else {
         DespawnPolicy::DespawnSelf
     };

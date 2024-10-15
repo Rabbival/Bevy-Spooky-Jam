@@ -3,5 +3,5 @@ pub enum DespawnPolicy {
     #[default]
     DespawnSelf,
     DespawnSelfAndRemoveFromAffectingTimers,
-    DespawnSelfAndAffectingTimersAndParentSequences,
+    DespawnSelfAndAllThatAffectsIt,
 }

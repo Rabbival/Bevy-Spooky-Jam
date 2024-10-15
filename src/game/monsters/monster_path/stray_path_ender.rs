@@ -14,7 +14,7 @@ impl Plugin for MonsterStrayPathEnderPlugin {
 fn end_stray_path_when_back_to_idle(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut timer_done_event_writer: EventWriter<TimerDoneEvent>,
-    monsters_query: Query<(&Monster, &AffectingTimerCalculators)>,
+    mut monsters_query: Query<(&Monster, &mut AffectingTimerCalculators)>,
     emitting_timer_with_parent_sequence_query: Query<(&EmittingTimer, &TimerParentSequence)>,
     mut commands: Commands,
 ) {
@@ -23,12 +23,12 @@ fn end_stray_path_when_back_to_idle(
             continue;
         }
         if let MonsterState::Idle = event.next_state {
-            match monsters_query.get(event.monster) {
-                Ok((monster, affecting_timer_calculators)) => {
+            match monsters_query.get_mut(event.monster) {
+                Ok((monster, mut affecting_timer_calculators)) => {
                     if cancel_stray_path_timer_and_begin_next_path_one(
                         &mut timer_done_event_writer,
                         &monster,
-                        affecting_timer_calculators,
+                        &mut affecting_timer_calculators,
                         &emitting_timer_with_parent_sequence_query,
                         &mut commands,
                     )
@@ -54,7 +54,7 @@ fn end_stray_path_when_back_to_idle(
 fn cancel_stray_path_timer_and_begin_next_path_one(
     timer_done_event_writer: &mut EventWriter<TimerDoneEvent>,
     monster: &Monster,
-    affecting_timer_calculators: &AffectingTimerCalculators,
+    affecting_timer_calculators: &mut AffectingTimerCalculators,
     emitting_timer_with_parent_sequence_query: &Query<(&EmittingTimer, &TimerParentSequence)>,
     commands: &mut Commands,
 ) -> Option<TimerDoneEvent> {
@@ -72,13 +72,12 @@ fn cancel_stray_path_timer_and_begin_next_path_one(
 
 fn despawn_stray_path_timer_and_get_done_event(
     monster: &Monster,
-    affecting_timer_calculators: &AffectingTimerCalculators,
+    affecting_timer_calculators: &mut AffectingTimerCalculators,
     emitting_timer_with_parent_sequence_query: &Query<(&EmittingTimer, &TimerParentSequence)>,
     commands: &mut Commands,
 ) -> Option<TimerDoneEvent> {
-    if let Some(direct_line_movers) =
-        affecting_timer_calculators.get(&TimerGoingEventType::Move(MovementType::InDirectLine))
-    {
+    let direct_line_mover_type = &TimerGoingEventType::Move(MovementType::InDirectLine);
+    if let Some(direct_line_movers) = affecting_timer_calculators.get(direct_line_mover_type) {
         for timer_and_calculator in direct_line_movers {
             let timer_entity = timer_and_calculator.timer;
             if let Ok((timer, parent_sequence)) =
@@ -91,6 +90,13 @@ fn despawn_stray_path_timer_and_get_done_event(
                             "timer when changing monster state",
                             commands,
                         );
+                        despawn_recursive_notify_on_fail(
+                            timer_and_calculator.value_calculator,
+                            "calculator when changing monster state",
+                            commands,
+                        );
+                        affecting_timer_calculators
+                            .remove(direct_line_mover_type, timer_and_calculator.timer);
                         return Some(TimerDoneEvent {
                             event_type: timer.send_once_done,
                             affected_entities: timer.affected_entities,

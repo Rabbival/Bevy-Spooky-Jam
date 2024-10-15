@@ -15,7 +15,9 @@ impl Plugin for PlayerPlugin {
             PlayerSpawnerPlugin,
             PlayerMovementPlugin,
             PlayerRequestPlugin,
-            PlayerMonsterCollisionDetectionPlugin,
         ));
+        if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
+            app.add_plugins(PlayerMonsterCollisionDetectionPlugin);
+        }
     }
 }

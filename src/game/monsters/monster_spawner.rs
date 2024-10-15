@@ -79,34 +79,34 @@ fn try_spawning_a_monster(
     let mut rng = rand::thread_rng();
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
-    let monster_entity = commands
-        .spawn((
-            Monster {
-                hearing_ring_distance: rng
-                    .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
-                state: MonsterState::Spawning,
+    let mut monster_entity = commands.spawn((
+        Monster {
+            hearing_ring_distance: rng
+                .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
+            state: MonsterState::Spawning,
+            ..default()
+        },
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgba(1.0, 1.0, 1.0, 0.0),
+                custom_size: Some(Vec2::new(80.0, 50.0)),
                 ..default()
             },
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::srgba(1.0, 1.0, 1.0, 0.0),
-                    custom_size: Some(Vec2::new(80.0, 50.0)),
-                    ..default()
-                },
-                texture: sprites_atlas_resource.image_handle.clone(),
-                transform: Transform::from_translation(place_to_spawn_in),
-                ..default()
-            },
-            TextureAtlas {
-                layout: sprites_atlas_resource.atlas_handle.clone(),
-                index: 0,
-            },
-            AffectingTimerCalculators::default(),
-            WorldBoundsWrapped,
-            PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS),
-        ))
-        .id();
-    spawn_grace_period_timer(monster_entity, event_writer, commands);
+            texture: sprites_atlas_resource.image_handle.clone(),
+            transform: Transform::from_translation(place_to_spawn_in),
+            ..default()
+        },
+        TextureAtlas {
+            layout: sprites_atlas_resource.atlas_handle.clone(),
+            index: 0,
+        },
+        AffectingTimerCalculators::default(),
+        WorldBoundsWrapped,
+    ));
+    if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
+        monster_entity.insert(PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS));
+    }
+    spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())
 }
 

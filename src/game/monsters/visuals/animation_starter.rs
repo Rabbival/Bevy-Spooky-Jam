@@ -47,11 +47,15 @@ fn spawn_and_fire_animation_timer_sequence(
     monster_entity: Entity,
     commands: &mut Commands,
 ) -> Result<Entity, TimerSequenceError> {
+    let mut frame_vec = vec![];
+    for index_offset in [0, 9, 18, 9] {
+        frame_vec.push(1 + index_offset);
+    }
     let timer_sequence = FrameSequence::looping_frame_sequence(
         vec![monster_entity],
         vec![TimeMultiplierId::GameTimeMultiplier],
         FLYING_FRAME_LOOP_DURATION,
-        vec![0, 3, 6, 3],
+        frame_vec,
     )
     .0;
     let sequence_entity = commands.spawn(timer_sequence).id();

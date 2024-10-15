@@ -1,56 +1,42 @@
+use std::f32::consts::PI;
+
 use crate::prelude::*;
+use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Clone, Copy, EnumIter, Reflect)]
 pub enum BasicDirection {
     Up,
+    UpRight,
     Right,
+    RightDown,
     Down,
+    DownLeft,
     Left,
+    LeftUp,
 }
 
 impl BasicDirection {
+    // pub fn closest(find_closest_to: Vec2) -> BasicDirection {
+    //     let angle = find_closest_to.angle_between(Vec2::X);
+
+    // }
+
     pub fn opposite_direction_index(&self) -> u8 {
         let index = *self as u8;
-        (index + 2) % 4
+        (index + 4) % 8
     }
 
     pub fn opposite_direction(&self) -> Option<Self> {
         Self::index_to_dir(self.opposite_direction_index())
     }
 
-    pub fn to_world_direction(&self) -> Vec2 {
-        match self {
-            Self::Up => Vec2::Y,
-            Self::Right => Vec2::X,
-            Self::Down => Vec2::NEG_Y,
-            Self::Left => Vec2::NEG_X,
-        }
-    }
-
-    pub fn to_rotation(&self) -> Quat {
-        Quat::from_rotation_arc_2d(Vec2::Y, self.to_world_direction())
-    }
-}
-
-impl BasicDirection {
     pub fn index_to_dir(index: u8) -> Option<Self> {
-        match index {
-            0 => Some(BasicDirection::Up),
-            1 => Some(BasicDirection::Right),
-            2 => Some(BasicDirection::Down),
-            3 => Some(BasicDirection::Left),
-            _ => None,
+        for (direction_index, direction) in BasicDirection::iter().enumerate() {
+            if direction_index == index as usize {
+                return Some(direction);
+            }
         }
-    }
-
-    pub fn from_keycode(keycode: &KeyCode) -> Option<BasicDirection> {
-        match keycode {
-            KeyCode::KeyW | KeyCode::ArrowUp => Some(BasicDirection::Up),
-            KeyCode::KeyD | KeyCode::ArrowRight => Some(BasicDirection::Right),
-            KeyCode::KeyS | KeyCode::ArrowDown => Some(BasicDirection::Down),
-            KeyCode::KeyA | KeyCode::ArrowLeft => Some(BasicDirection::Left),
-            _ => None,
-        }
+        None
     }
 }

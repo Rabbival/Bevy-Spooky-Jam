@@ -8,6 +8,7 @@ pub enum FunctionalityOverride {
     EnemiesDontMove,
     SpawnOnlyOneEnemy,
     DontUpdateUI,
+    DontCheckMonsterColliders,
 }
 
 impl FunctionalityOverride {
