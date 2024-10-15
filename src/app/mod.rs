@@ -35,6 +35,8 @@ pub fn main() {
             LateDespawnerPlugin,
             UiPlugin,
             GameAudioPlugin,
+            #[cfg(debug_assertions)]
+            DebugPlugin,
         ))
         //generic plugins (type registration, for generic events for example)
         .add_plugins(GenericPlugins);

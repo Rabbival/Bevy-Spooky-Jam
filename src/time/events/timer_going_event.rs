@@ -1,4 +1,5 @@
 use crate::{plugin_for_implementors_of_trait, prelude::*};
+use strum_macros::EnumIter;
 
 #[derive(Debug, Clone, Copy, PartialEq, Event)]
 pub struct TimerGoingEvent<T: Numeric> {
@@ -7,7 +8,7 @@ pub struct TimerGoingEvent<T: Numeric> {
     pub value_delta: T,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIter)]
 pub enum TimerGoingEventType {
     ChangeTimeMultiplierSpeed,
     Move(MovementType),

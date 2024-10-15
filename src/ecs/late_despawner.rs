@@ -88,19 +88,25 @@ fn destroy_affecting_timers_and_calculators_and_sequences(
             for affecting_timer in affecting_timers_of_type {
                 despawn_recursive_notify_on_fail(
                     affecting_timer.value_calculator,
-                    "EmittingTimer",
+                    "value calculator on late despawn",
                     commands,
                 );
-                if let Some(timer) = commands.get_entity(affecting_timer.timer) {
-                    timer.despawn_recursive();
-                    if let Ok(parent_sequence_component) =
-                        parent_timer_sequence_query.get(affecting_timer.timer)
+                despawn_recursive_notify_on_fail(
+                    affecting_timer.timer,
+                    "timer on late despawn",
+                    commands,
+                );
+                if let Ok(parent_sequence_component) =
+                    parent_timer_sequence_query.get(affecting_timer.timer)
+                {
+                    if let Some(timer_sequence_entity) =
+                        commands.get_entity(parent_sequence_component.parent_sequence)
                     {
-                        if let Some(timer_sequence) =
-                            commands.get_entity(parent_sequence_component.parent_sequence)
-                        {
-                            timer_sequence.despawn_recursive();
-                        }
+                        despawn_recursive_notify_on_fail(
+                            timer_sequence_entity.id(),
+                            "timer sequence on late despawn",
+                            commands,
+                        );
                     }
                 }
             }

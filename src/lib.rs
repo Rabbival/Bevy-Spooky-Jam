@@ -53,6 +53,7 @@ pub mod prelude {
         print_config_struct::*,
         print_log::*,
         print_vec::*,
+        DebugPlugin,
     };
     pub use crate::ecs::{
         component_utilities::*,
@@ -63,7 +64,7 @@ pub mod prelude {
     };
     pub use crate::game::{
         bombs::{
-            bomb::*, bomb_error::*, bomb_picking::*, bomb_spawner::*,
+            bomb::*, bomb_error::*, bomb_events::*, bomb_picking::*, bomb_spawner::*,
             bomb_spawning_sequence_manager::*, bomb_state::*, bomb_throwing::*, bomb_ticker::*,
             consts::*, explosion_manager::*, BombsPlugin,
         },
@@ -74,15 +75,17 @@ pub mod prelude {
             consts::*,
             monster::*,
             monster_error::*,
+            monster_path::{
+                main_path_initiation::*, stray_path_ender::*, stray_path_updater::*,
+                MonsterPathUpdatingPlugin,
+            },
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
-            path_updating::{
-                stray_path_ender::*, stray_path_updater::*, MonsterPathUpdatingPlugin,
-            },
             state_management::{
                 monster_state::*, monster_state_changed_event::*, monster_state_changer::*,
-                state_change_visualizer::*, MonsterStateManagementPlugin,
+                MonsterStateManagementPlugin,
             },
+            visuals::{animation_starter::*, state_change_visualizer::*, MonsterVisualsPlugin},
             MonstersPlugin,
         },
         player_management::{
