@@ -22,10 +22,6 @@ impl Plugin for ScreenSetupPlugin {
                 })
                 .build(),
         )
-        .insert_resource(SCREEN_COLOR_BACKGROUND)
-        .insert_resource(AmbientLight {
-            color: Color::default(),
-            brightness: 0.9,
-        });
+        .insert_resource(SCREEN_COLOR_BACKGROUND);
     }
 }

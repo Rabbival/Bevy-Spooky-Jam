@@ -21,9 +21,7 @@ pub enum TickingSystemSet {
 pub enum EndOfFrameSystemSet {
     PreTimerClearing,
     TimerClearing,
-    PostTimerClearing,
     LateDespawn,
-    PostLateDespawn,
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -75,18 +73,11 @@ impl Plugin for SystemSetsPlugin {
                     .chain()
                     .after(InputSystemSet::Handling),
                 (
-                    (
-                        EndOfFrameSystemSet::PreTimerClearing,
-                        EndOfFrameSystemSet::TimerClearing,
-                        EndOfFrameSystemSet::PostTimerClearing,
-                    )
-                        .chain(),
-                    (
-                        EndOfFrameSystemSet::LateDespawn,
-                        EndOfFrameSystemSet::PostLateDespawn,
-                    )
-                        .chain(),
+                    EndOfFrameSystemSet::PreTimerClearing,
+                    EndOfFrameSystemSet::TimerClearing,
+                    EndOfFrameSystemSet::LateDespawn,
                 )
+                    .chain()
                     .after(TickingSystemSet::PostTicking),
             ),
         );
