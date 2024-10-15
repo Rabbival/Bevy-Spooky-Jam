@@ -220,6 +220,7 @@ fn manage_bomb_explosion_side_effects(
     mut explosions_listener: EventReader<BombExploded>,
     mut sounds_event_writer: EventWriter<SoundEvent>,
     mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
+    bomb_explosion_sprites_atlas_resource: Res<BombExplosionSpritesAtlas>,
     sprites_atlas_resource: Res<SpritesAtlas>,
     mut commands: Commands,
 ) {
@@ -234,6 +235,22 @@ fn manage_bomb_explosion_side_effects(
                     Z_LAYER_FLOOR_HOLE,
                 ),
                 ..default()
+            },
+            WorldBoundsWrapped,
+        ));
+        commands.spawn((
+            SpriteBundle {
+                texture: bomb_explosion_sprites_atlas_resource.image_handle.clone(),
+                transform: Transform::from_xyz(
+                    exploded_bomb.location.x,
+                    exploded_bomb.location.y,
+                    Z_LAYER_BOMB_EXPLOSION,
+                ),
+                ..default()
+            },
+            TextureAtlas {
+                layout: bomb_explosion_sprites_atlas_resource.atlas_handle.clone(),
+                index: 0,
             },
             WorldBoundsWrapped,
         ));

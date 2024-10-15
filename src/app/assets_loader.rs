@@ -64,7 +64,8 @@ fn sprites_atlas_setup(
 ) {
     // bomb explosion
     let bomb_explosion_image_handle = asset_server.load("images/explosion_sprites_sheet.png");
-    let bomb_explosion_texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(100, 100), 8, 8, None, None);
+    let bomb_explosion_texture_atlas =
+        TextureAtlasLayout::from_grid(UVec2::new(100, 100), 8, 8, None, None);
     let bomb_explosion_texture_atlas_handle = texture_atlases.add(bomb_explosion_texture_atlas);
     commands.insert_resource(BombExplosionSpritesAtlas {
         atlas_handle: bomb_explosion_texture_atlas_handle,
