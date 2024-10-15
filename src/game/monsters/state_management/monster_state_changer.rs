@@ -55,7 +55,7 @@ fn update_monster_hearing_rings(
                 .distance(monster_transform.translation)
                 < monster.hearing_ring_distance
             {
-                sounds_event_writer.send(SoundEvent::MonsterDeathCry);
+                sounds_event_writer.send(SoundEvent::MonsterBattleCry);
                 next_state = MonsterState::Chasing(player_entity);
             }
         }
