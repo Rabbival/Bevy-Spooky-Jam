@@ -7,7 +7,10 @@ impl Plugin for SoundPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (bomb_sounds_event_listener, update_sound_resource_speed),
+            (
+                bombs_and_monsters_sounds_event_listener,
+                update_sound_resource_speed,
+            ),
         );
     }
 }
@@ -28,7 +31,7 @@ fn update_sound_resource_speed(
     }
 }
 
-fn bomb_sounds_event_listener(
+fn bombs_and_monsters_sounds_event_listener(
     sound_assets_resource: Res<SoundAssets>,
     mut sound_events_reader: EventReader<SoundEvent>,
     mut commands: Commands,
