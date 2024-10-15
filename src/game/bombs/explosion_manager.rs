@@ -316,6 +316,7 @@ fn execute_animations(
                 config.frame_timer = AnimationConfig::timer_from_fps(config.fps);
                 transform.scale.x += 0.05;
                 transform.scale.y += 0.05;
+                transform.rotation.z += 0.05;
             }
         }
     }
