@@ -1,5 +1,4 @@
 use crate::{prelude::*, read_no_field_variant};
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::Rng;
 
 pub struct MonsterSpawnerPlugin;
@@ -19,8 +18,6 @@ impl Plugin for MonsterSpawnerPlugin {
 fn respawn_monsters_on_game_restart(
     mut event_reader: EventReader<GameEvent>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
     sprites_atlas_resource: ResMut<SpritesAtlas>,
     event_writer: EventWriter<TimerFireRequest>,
     commands: Commands,
@@ -28,8 +25,6 @@ fn respawn_monsters_on_game_restart(
     for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
         spawn_initial_monster(
             transforms_not_to_spawn_next_to,
-            meshes,
-            materials,
             sprites_atlas_resource,
             event_writer,
             commands,
@@ -40,16 +35,12 @@ fn respawn_monsters_on_game_restart(
 
 fn spawn_initial_monster(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
     if let Err(monster_error) = try_spawning_a_monster(
         &transforms_not_to_spawn_next_to,
-        &mut meshes,
-        &mut materials,
         &mut sprites_atlas_resource,
         &mut event_writer,
         &mut commands,
@@ -61,8 +52,6 @@ fn spawn_initial_monster(
 fn listen_for_monster_spawning_requests(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
@@ -71,8 +60,6 @@ fn listen_for_monster_spawning_requests(
         if let TimerDoneEventType::Spawn(SpawnRequestType::Monster) = done_event.event_type {
             if let Err(monster_error) = try_spawning_a_monster(
                 &transforms_not_to_spawn_next_to,
-                &mut meshes,
-                &mut materials,
                 &mut sprites_atlas_resource,
                 &mut event_writer,
                 &mut commands,
@@ -85,8 +72,6 @@ fn listen_for_monster_spawning_requests(
 
 fn try_spawning_a_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
     sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     event_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
@@ -94,34 +79,34 @@ fn try_spawning_a_monster(
     let mut rng = rand::thread_rng();
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
-    let monster_entity = commands
-        .spawn((
-            Monster {
-                hearing_ring_distance: rng
-                    .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
-                state: MonsterState::Spawning,
+    let mut monster_entity = commands.spawn((
+        Monster {
+            hearing_ring_distance: rng
+                .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
+            state: MonsterState::Spawning,
+            ..default()
+        },
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgba(1.0, 1.0, 1.0, 0.0),
+                custom_size: Some(Vec2::new(80.0, 50.0)),
                 ..default()
             },
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Rectangle::new(80.0, 50.0))),
-                material: materials.add(ColorMaterial {
-                    color: Color::srgba(1.0, 1.0, 1.0, 0.0),
-                    texture: Some(sprites_atlas_resource.bato_san_image_handle.clone()),
-                    ..default()
-                }),
-                transform: Transform::from_translation(place_to_spawn_in),
-                ..default()
-            },
-            /*TextureAtlas {
-                layout: sprites_atlas_resource.atlas_handle.clone(),
-                index: 0,
-            },*/
-            AffectingTimerCalculators::default(),
-            WorldBoundsWrapped,
-            PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS),
-        ))
-        .id();
-    spawn_grace_period_timer(monster_entity, event_writer, commands);
+            texture: sprites_atlas_resource.image_handle.clone(),
+            transform: Transform::from_translation(place_to_spawn_in),
+            ..default()
+        },
+        TextureAtlas {
+            layout: sprites_atlas_resource.atlas_handle.clone(),
+            index: 0,
+        },
+        AffectingTimerCalculators::default(),
+        WorldBoundsWrapped,
+    ));
+    if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
+        monster_entity.insert(PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS));
+    }
+    spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())
 }
 

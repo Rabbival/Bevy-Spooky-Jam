@@ -1,6 +1,8 @@
 use crate::prelude::*;
 
 pub mod color_change;
+pub mod frame_change;
+pub mod frame_sequence;
 pub mod scale_change;
 pub mod translation_change;
 
@@ -12,6 +14,7 @@ impl Plugin for CustomAnimationPlugin {
             TranslationChangePlugin,
             ScaleChangePlugin,
             ColorChangePlugin,
+            FrameChangePlugin,
         ));
     }
 }

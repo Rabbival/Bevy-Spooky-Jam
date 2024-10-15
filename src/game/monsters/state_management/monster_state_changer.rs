@@ -40,7 +40,6 @@ fn listen_for_monsters_done_spawning(
 fn update_monster_hearing_rings(
     mut monster_state_set_writer: EventWriter<MonsterStateChanged>,
     mut monsters_query: Query<(&Transform, &mut Monster, Entity)>,
-    mut sounds_event_writer: EventWriter<SoundEvent>,
     player_query: Query<(&Transform, Entity), With<Player>>,
     bomb_query: Query<(&Transform, &Bomb, Entity)>,
 ) {
@@ -55,7 +54,6 @@ fn update_monster_hearing_rings(
                 .distance(monster_transform.translation)
                 < monster.hearing_ring_distance
             {
-                sounds_event_writer.send(SoundEvent::MonsterBattleCry);
                 next_state = MonsterState::Chasing(player_entity);
             }
         }

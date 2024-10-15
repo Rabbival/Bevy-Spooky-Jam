@@ -14,23 +14,20 @@ impl Plugin for MonsterStateChangeVisualizerPlugin {
 fn listen_to_state_changes(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
-    monsters_query: Query<(&Transform, &Handle<ColorMaterial>, Entity)>,
-    assets: Res<Assets<ColorMaterial>>,
+    monsters_query: Query<(&Transform, &Sprite, Entity)>,
     mut commands: Commands,
 ) {
     for request in monster_state_set_listener.read() {
         match monsters_query.get(request.monster) {
-            Ok((monster_transform, monster_color_handle, monster_entity)) => {
-                if let Some(monster_color) = assets.get(monster_color_handle.id()) {
-                    determine_visualize_change_and_initiate_if_required(
-                        &mut timer_fire_request_writer,
-                        monster_entity,
-                        monster_transform.scale,
-                        monster_color.color.alpha(),
-                        request,
-                        &mut commands,
-                    );
-                }
+            Ok((monster_transform, monster_sprite, monster_entity)) => {
+                determine_visualize_change_and_initiate_if_required(
+                    &mut timer_fire_request_writer,
+                    monster_entity,
+                    monster_transform.scale,
+                    monster_sprite.color.alpha(),
+                    request,
+                    &mut commands,
+                );
             }
             Err(_) => {
                 print_error(
