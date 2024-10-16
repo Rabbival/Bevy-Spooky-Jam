@@ -39,11 +39,13 @@ fn spawn_initial_monster(
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
+    let inital_spawn_spot = Vec3::new(0.0, WINDOW_SIZE_IN_PIXELS * 3.0 / 0.4, Z_LAYER_MONSTER);
     if let Err(monster_error) = try_spawning_a_monster(
         &transforms_not_to_spawn_next_to,
         &mut sprites_atlas_resource,
         &mut event_writer,
         &mut commands,
+        Some(inital_spawn_spot),
     ) {
         print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
     }
@@ -63,6 +65,7 @@ fn listen_for_monster_spawning_requests(
                 &mut sprites_atlas_resource,
                 &mut event_writer,
                 &mut commands,
+                None,
             ) {
                 print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
             }
@@ -75,10 +78,13 @@ fn try_spawning_a_monster(
     sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     event_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
+    override_spawning_spot: Option<Vec3>,
 ) -> Result<(), MonsterError> {
     let mut rng = rand::thread_rng();
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
-    let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
+    let place_to_spawn_in = override_spawning_spot.unwrap_or(try_finding_place_for_monster(
+        transforms_not_to_spawn_next_to,
+    )?);
     let monster_component = Monster {
         hearing_ring_distance: rng
             .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
@@ -87,7 +93,7 @@ fn try_spawning_a_monster(
         path_timer_sequence: None,
         animation_timer_sequence: None,
     };
-    let mut monster_entity = commands.spawn((
+    let monster_entity = commands.spawn((
         monster_component,
         SpriteBundle {
             sprite: Sprite {
@@ -108,9 +114,6 @@ fn try_spawning_a_monster(
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
     ));
-    if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
-        monster_entity.insert(PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS));
-    }
     spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())
 }
