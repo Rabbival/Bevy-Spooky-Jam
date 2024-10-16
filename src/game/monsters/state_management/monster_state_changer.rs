@@ -19,18 +19,24 @@ impl Plugin for MonsterStateChangerPlugin {
 fn listen_for_monsters_done_spawning(
     mut done_timers_listener: EventReader<TimerDoneEvent>,
     mut monster_state_set_writer: EventWriter<MonsterStateChanged>,
-    mut monsters_query: Query<&mut Monster>,
+    mut monsters_query: Query<(&mut Monster, Entity)>,
+    mut commands: Commands,
 ) {
     for done_timer in done_timers_listener.read() {
         if let TimerDoneEventType::DeclareSpawnDone = done_timer.event_type {
             for entity in done_timer.affected_entities.affected_entities_iter() {
-                if let Ok(mut monster) = monsters_query.get_mut(entity) {
+                if let Ok((mut monster, monster_entity)) = monsters_query.get_mut(entity) {
                     monster_state_set_writer.send(MonsterStateChanged {
                         monster: entity,
                         next_state: MonsterState::default(),
                         previous_state: monster.state,
                     });
                     monster.state = MonsterState::default();
+                    if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
+                        commands
+                            .entity(monster_entity)
+                            .insert(PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS));
+                    }
                 }
             }
         }

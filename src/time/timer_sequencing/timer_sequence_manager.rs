@@ -36,11 +36,6 @@ pub fn listen_for_done_sequence_timers(
                     vec![LogCategory::Time, LogCategory::RequestNotFulfilled],
                 )
             }
-        } else {
-            print_error(
-                EntityError::EntityNotInQuery("timer sequence of a done timer"),
-                vec![LogCategory::RequestNotFulfilled],
-            );
         }
     }
 }

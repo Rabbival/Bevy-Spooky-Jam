@@ -1,5 +1,5 @@
 use crate::{prelude::*, read_no_field_variant};
-use rand::Rng;
+use rand::{rngs::ThreadRng, Rng};
 
 pub struct MonsterSpawnerPlugin;
 
@@ -39,11 +39,13 @@ fn spawn_initial_monster(
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
+    let inital_spawn_spot = Vec3::new(0.0, WINDOW_SIZE_IN_PIXELS * 3.0 / 0.4, Z_LAYER_MONSTER);
     if let Err(monster_error) = try_spawning_a_monster(
         &transforms_not_to_spawn_next_to,
         &mut sprites_atlas_resource,
         &mut event_writer,
         &mut commands,
+        Some(inital_spawn_spot),
     ) {
         print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
     }
@@ -63,6 +65,7 @@ fn listen_for_monster_spawning_requests(
                 &mut sprites_atlas_resource,
                 &mut event_writer,
                 &mut commands,
+                None,
             ) {
                 print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
             }
@@ -75,17 +78,23 @@ fn try_spawning_a_monster(
     sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     event_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
+    override_spawning_spot: Option<Vec3>,
 ) -> Result<(), MonsterError> {
     let mut rng = rand::thread_rng();
     let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
-    let place_to_spawn_in = try_finding_place_for_monster(transforms_not_to_spawn_next_to)?;
-    let mut monster_entity = commands.spawn((
-        Monster {
-            hearing_ring_distance: rng
-                .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
-            state: MonsterState::Spawning,
-            ..default()
-        },
+    let place_to_spawn_in = override_spawning_spot.unwrap_or(try_finding_place_for_monster(
+        transforms_not_to_spawn_next_to,
+    )?);
+    let monster_component = Monster {
+        hearing_ring_distance: rng
+            .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
+        state: MonsterState::Spawning,
+        main_path: VecBasedArray::new(generate_initial_path_to_follow()),
+        path_timer_sequence: None,
+        animation_timer_sequence: None,
+    };
+    let monster_entity = commands.spawn((
+        monster_component,
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgba(1.0, 1.0, 1.0, 0.0),
@@ -98,16 +107,53 @@ fn try_spawning_a_monster(
         },
         TextureAtlas {
             layout: sprites_atlas_resource.atlas_handle.clone(),
-            index: 0,
+            index: monster_component
+                .heading_direction_by_index(0)
+                .to_monster_initial_frame_index(),
         },
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
     ));
-    if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
-        monster_entity.insert(PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS));
-    }
     spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())
+}
+
+fn generate_initial_path_to_follow() -> Vec<Vec3> {
+    let mut all_path_vertices: Vec<Vec3>;
+    let mut rng = rand::thread_rng();
+    let path_code = rng.gen_range(0..3);
+    all_path_vertices = get_path_by_chosen_code(path_code, &mut rng);
+    let is_reversed = rng.gen::<bool>();
+    if is_reversed {
+        all_path_vertices.reverse();
+    }
+    all_path_vertices
+}
+
+fn get_path_by_chosen_code(code: usize, rng: &mut ThreadRng) -> Vec<Vec3> {
+    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
+    let delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
+    let delta2 = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
+    match code {
+        0 => PathTravelType::Cycle.apply_to_path(vec![
+            Vec3::new(0.0, delta, 0.0),
+            Vec3::new(delta2, -delta, 0.0),
+            Vec3::new(-delta, delta2 / 2.0, 0.0),
+            Vec3::new(delta, delta2 / 2.0, 0.0),
+            Vec3::new(-delta2, -delta, 0.0),
+        ]),
+        1 => PathTravelType::Cycle.apply_to_path(vec![
+            Vec3::new(delta, delta, 0.0),
+            Vec3::new(delta, -delta, 0.0),
+            Vec3::new(-delta, -delta, 0.0),
+            Vec3::new(-delta, delta, 0.0),
+        ]),
+        _ => PathTravelType::GoBackAlongPath.apply_to_path(vec![
+            Vec3::new(-delta2, delta, 0.0),
+            Vec3::new(delta2, -delta, 0.0),
+            Vec3::new(-delta, -delta2, 0.0),
+        ]),
+    }
 }
 
 fn spawn_grace_period_timer(

@@ -30,7 +30,7 @@ fn listen_for_spawn_phase_ending(
                         &mut timer_fire_writer,
                         event.monster,
                         rng.gen_range(3.0..4.5),
-                        generate_initial_path_to_follow(),
+                        monster.main_path.iter().collect(),
                         &mut commands,
                     ) {
                         Ok(timer_sequence_entity) => {
@@ -47,35 +47,6 @@ fn listen_for_spawn_phase_ending(
             }
         }
     }
-}
-
-fn generate_initial_path_to_follow() -> Vec<Vec3> {
-    let mut all_path_vertices: Vec<Vec3>;
-    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
-    let mut rng = rand::thread_rng();
-    let is_cursed_pentagon = rng.gen::<bool>();
-    if is_cursed_pentagon {
-        all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(0.0, 150.0, 0.0),
-            Vec3::new(100.0, -150.0, 0.0),
-            Vec3::new(-150.0, 50.0, 0.0),
-            Vec3::new(150.0, 50.0, 0.0),
-            Vec3::new(-100.0, -150.0, 0.0),
-        ]);
-    } else {
-        let delta = rng.gen_range(fraction_window_size..150.0 + fraction_window_size);
-        all_path_vertices = PathTravelType::Cycle.apply_to_path(vec![
-            Vec3::new(delta, delta, 0.0),
-            Vec3::new(delta, -delta, 0.0),
-            Vec3::new(-delta, -delta, 0.0),
-            Vec3::new(-delta, delta, 0.0),
-        ]);
-    }
-    let is_reversed = rng.gen::<bool>();
-    if is_reversed {
-        all_path_vertices.reverse();
-    }
-    all_path_vertices
 }
 
 fn spawn_path_timer_sequence(
@@ -144,6 +115,6 @@ fn spawn_calculator_and_push_timer(
         }],
         vec![TimeMultiplierId::GameTimeMultiplier],
         timer_duration,
-        TimerDoneEventType::Nothing,
+        TimerDoneEventType::SetAnimationCycleByPathParentSequence,
     ));
 }

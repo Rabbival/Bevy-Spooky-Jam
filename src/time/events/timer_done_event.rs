@@ -18,6 +18,7 @@ pub enum TimerDoneEventType {
     ExplodeInRadius(f32),
     DeclareSpawnDone,
     SetFrame(usize),
+    SetAnimationCycleByPathParentSequence,
 }
 
 pub struct TimerDoneEventPlugin;

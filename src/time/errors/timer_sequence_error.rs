@@ -4,6 +4,7 @@ use std::fmt::{Debug, Display};
 pub enum TimerSequenceError {
     SequenceHasNoTimerInIndex(usize),
     TriedToFireATimerSequenceWithNoTimers,
+    ATimerFromASequenceFinishedButParentNotFound,
 }
 
 impl Display for TimerSequenceError {
@@ -18,6 +19,9 @@ impl Display for TimerSequenceError {
             }
             Self::TriedToFireATimerSequenceWithNoTimers => {
                 write!(f, "Tried to fire a timer sequence with an empty timer list")
+            }
+            Self::ATimerFromASequenceFinishedButParentNotFound => {
+                write!(f, "A sequence timer finished but its sequence doesnt exist")
             }
         }
     }
