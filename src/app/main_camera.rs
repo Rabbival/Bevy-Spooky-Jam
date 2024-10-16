@@ -111,7 +111,7 @@ fn spawn_and_push_calculator_there_and_back(
                 ValueByInterpolation::from_goal_and_current(
                     Vec3::ZERO,
                     *shake_location,
-                    Interpolator::default(),
+                    Interpolator::new(2.0),
                 ),
                 TimerGoingEventType::Move(MovementType::InDirectLine),
             ))
@@ -124,7 +124,7 @@ fn spawn_and_push_calculator_there_and_back(
                 ValueByInterpolation::from_goal_and_current(
                     *shake_location,
                     Vec3::ZERO,
-                    Interpolator::default(),
+                    Interpolator::new(2.0),
                 ),
                 TimerGoingEventType::Move(MovementType::InDirectLine),
             ))
