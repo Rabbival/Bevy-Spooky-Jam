@@ -87,7 +87,7 @@ pub mod prelude {
                 monster_state::*, monster_state_changed_event::*, monster_state_changer::*,
                 MonsterStateManagementPlugin,
             },
-            visuals::{animation_starter::*, state_change_visualizer::*, MonsterVisualsPlugin},
+            visuals::{animation_manager::*, state_change_visualizer::*, MonsterVisualsPlugin},
             MonstersPlugin,
         },
         player_management::{

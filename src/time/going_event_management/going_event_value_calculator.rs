@@ -20,6 +20,10 @@ impl<T: Numeric> GoingEventValueCalculator<T> {
         }
     }
 
+    pub fn get_full_delta(&self) -> T {
+        self.calculator.delta()
+    }
+
     pub fn get_timer_going_event(
         &mut self,
         normalized_progress: f32,

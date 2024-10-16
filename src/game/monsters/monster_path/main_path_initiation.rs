@@ -115,6 +115,6 @@ fn spawn_calculator_and_push_timer(
         }],
         vec![TimeMultiplierId::GameTimeMultiplier],
         timer_duration,
-        TimerDoneEventType::Nothing,
+        TimerDoneEventType::SetAnimationCycleByPathParentSequence,
     ));
 }
