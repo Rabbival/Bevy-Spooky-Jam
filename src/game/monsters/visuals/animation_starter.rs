@@ -22,6 +22,7 @@ fn listen_for_spawn_phase_ending(
             if event.next_state == MonsterState::default() {
                 if let Ok(mut monster) = monsters_query.get_mut(event.monster) {
                     match spawn_and_fire_animation_timer_sequence(
+                        monster.heading_direction_by_index(0),
                         &mut timer_fire_writer,
                         event.monster,
                         &mut commands,
@@ -43,13 +44,15 @@ fn listen_for_spawn_phase_ending(
 }
 
 fn spawn_and_fire_animation_timer_sequence(
+    heading_direction: BasicDirection,
     timer_fire_writer: &mut EventWriter<TimerFireRequest>,
     monster_entity: Entity,
     commands: &mut Commands,
 ) -> Result<Entity, TimerSequenceError> {
+    let initial_fram_index = heading_direction.to_monster_initial_frame_index();
     let mut frame_vec = vec![];
     for index_offset in [0, 9, 18, 9] {
-        frame_vec.push(1 + index_offset);
+        frame_vec.push(initial_fram_index + index_offset);
     }
     let timer_sequence = FrameSequence::looping_frame_sequence(
         vec![monster_entity],
