@@ -252,7 +252,9 @@ fn manage_bomb_explosion_side_effects(
                     exploded_bomb.location.x,
                     exploded_bomb.location.y,
                     Z_LAYER_BOMB_EXPLOSION,
-                ).with_rotation(Quat::from_rotation_z(rng.gen_range(0.0..360.0))).with_scale(Vec3::new(2.5, 2.5, 0.0)),
+                )
+                .with_rotation(Quat::from_rotation_z(rng.gen_range(0.0..360.0)))
+                .with_scale(Vec3::new(2.5, 2.5, 0.0)),
                 ..default()
             },
             TextureAtlas {
