@@ -24,19 +24,11 @@ fn listen_for_collider_radius_update_requests(
 ) {
     for event_from_timer in event_reader.read() {
         if let TimerGoingEventType::Scale = event_from_timer.event_type {
-            match monsters_collider_query.get_mut(event_from_timer.entity) {
-                Ok(mut monsters_collider) => {
-                    monsters_collider.radius += event_from_timer.value_delta.x
-                        * MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING;
-                }
-                Err(_) => {
-                    print_error(
-                        EntityError::EntityNotInQuery(
-                            "couldn't fetch monsters_collider from query on collider radius update function",
-                        ),
-                        vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
-                    );
-                }
+            if let Ok(mut monsters_collider) =
+                monsters_collider_query.get_mut(event_from_timer.entity)
+            {
+                monsters_collider.radius +=
+                    event_from_timer.value_delta.x * MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING;
             }
         }
     }
@@ -74,8 +66,9 @@ fn player_monster_collision_detection_system(
 }
 
 fn handle_player_monster_collisions(
-    mut commands: Commands,
+    mut game_event_writer: EventWriter<GameEvent>,
     query: Query<(Entity, &PlayerMonsterCollider), With<Player>>,
+    mut commands: Commands,
 ) {
     for (_entity, collider) in query.iter() {
         for &collided_entity in collider.colliding_monsters.iter() {
@@ -83,13 +76,8 @@ fn handle_player_monster_collisions(
             if query.get(collided_entity).is_ok() {
                 continue;
             }
-            // monster with player
-            info!("monster with player collision {:?}", _entity);
             commands.entity(_entity).despawn();
-            // TODO spawn GAME OVER text
-            // TODO spawn GAME OVER sound FX
-            // TODO stop stopwatch
-            // TODO stop monsters & threw bombs
+            game_event_writer.send(GameEvent::RestartGame);
         }
     }
 }
