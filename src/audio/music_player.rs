@@ -6,8 +6,13 @@ pub struct MusicPlayerPlugin;
 
 impl Plugin for MusicPlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_and_play_music)
-            .add_systems(Update, temp_test_system);
+        app.add_systems(Startup, load_and_play_music).add_systems(
+            Update,
+            (
+                change_layers_by_danger,
+                listen_to_music_volume_update_requests,
+            ),
+        );
     }
 }
 
@@ -27,19 +32,28 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
         },
         MusicLayer(2),
         AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
+        AffectingTimerCalculators::default(),
     ));
 }
 
-fn temp_test_system(
+fn change_layers_by_danger(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
+    mut fire_request_writer: EventWriter<TimerFireRequest>,
     monsters: Query<(Entity, &Monster)>,
-    query: Query<(&MusicLayer, &AudioSink)>,
+    query: Query<(Entity, &MusicLayer, &AudioSink)>,
+    mut commands: Commands,
 ) {
     'request_loop: for set_request in monster_state_set_listener.read() {
         if let MonsterState::Chasing(_) = set_request.next_state {
-            for (music_layer, audio) in &query {
+            for (audio_entity, music_layer, audio) in &query {
                 if music_layer.0 == 2 {
-                    audio.set_volume(1.0); //use timers of course to make it happen gradually, I'd use TakeNewTimer policy
+                    fire_music_set_timer(
+                        audio.volume(),
+                        1.0,
+                        audio_entity,
+                        &mut fire_request_writer,
+                        &mut commands,
+                    );
                 }
             }
         } else {
@@ -50,11 +64,78 @@ fn temp_test_system(
                     }
                 }
             }
-            //if we got here that means no monster is chasing the player
-            for (music_layer, audio) in &query {
+            for (audio_entity, music_layer, audio) in &query {
                 if music_layer.0 == 2 {
-                    audio.set_volume(0.0);
+                    fire_music_set_timer(
+                        audio.volume(),
+                        0.0,
+                        audio_entity,
+                        &mut fire_request_writer,
+                        &mut commands,
+                    );
                 }
+            }
+        }
+    }
+}
+
+fn fire_music_set_timer(
+    current_volume: f32,
+    wanted_volume: f32,
+    audio_sink_entity: Entity,
+    fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    commands: &mut Commands,
+) {
+    let calculator = spawn_volume_set_calculator(current_volume, wanted_volume, commands);
+    fire_request_writer.send(TimerFireRequest {
+        timer: EmittingTimer::new(
+            vec![TimerAffectedEntity {
+                affected_entity: audio_sink_entity,
+                value_calculator_entity: Some(calculator),
+            }],
+            vec![TimeMultiplierId::GameTimeMultiplier],
+            if wanted_volume > current_volume {
+                FADE_IN_TIME
+            } else {
+                FADE_OUT_TIME
+            },
+            TimerDoneEventType::Nothing,
+        ),
+        parent_sequence: None,
+    });
+}
+
+fn spawn_volume_set_calculator(
+    current_volume: f32,
+    wanted_volume: f32,
+    commands: &mut Commands,
+) -> Entity {
+    let interpolator_power = if wanted_volume > current_volume {
+        FADE_IN_POWER
+    } else {
+        FADE_OUT_POWER
+    };
+    commands
+        .spawn(GoingEventValueCalculator::new(
+            TimerCalculatorSetPolicy::KeepNewTimer,
+            ValueByInterpolation::from_goal_and_current(
+                current_volume,
+                wanted_volume,
+                Interpolator::new(interpolator_power),
+            ),
+            TimerGoingEventType::SetMusicVolume,
+        ))
+        .id()
+}
+
+fn listen_to_music_volume_update_requests(
+    mut event_reader: EventReader<TimerGoingEvent<f32>>,
+    query: Query<&AudioSink>,
+) {
+    for event in event_reader.read() {
+        if let TimerGoingEventType::SetMusicVolume = event.event_type {
+            if let Ok(audio) = query.get(event.entity) {
+                audio.set_volume(audio.volume() + event.value_delta);
             }
         }
     }
