@@ -299,10 +299,16 @@ impl AnimationConfig {
 
 fn execute_animations(
     time: Res<Time>,
-    mut query: Query<(&mut AnimationConfig, &mut Transform, &mut TextureAtlas)>,
+    mut query: Query<(
+        &mut AnimationConfig,
+        &mut Transform,
+        &mut TextureAtlas,
+        Entity,
+    )>,
     time_multipliers: Query<&TimeMultiplier>,
+    mut commands: Commands,
 ) {
-    for (mut config, mut transform, mut atlas) in &mut query {
+    for (mut config, mut transform, mut atlas, animation_entity) in &mut query {
         for time_multiplier in &time_multipliers {
             if let TimeMultiplierId::GameTimeMultiplier = time_multiplier.id() {
                 let time_to_multiply_delta_in = time_multiplier.value();
@@ -317,9 +323,10 @@ fn execute_animations(
                     if atlas.index == config.last_sprite_index {
                         // ...and it IS the last frame, then we move back to the first frame and stop.
                         atlas.index = config.first_sprite_index;
-                        // TODO remove sprite
-                        transform.scale.x = 0.0;
-                        transform.scale.y = 0.0;
+                        if let Some(mut animation_commands) = commands.get_entity(animation_entity)
+                        {
+                            animation_commands.despawn();
+                        }
                     } else {
                         // ...and it is NOT the last frame, then we move to the next frame...
                         atlas.index += 1;
