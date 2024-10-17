@@ -1,6 +1,5 @@
-use bevy::color::palettes::css::DARK_GRAY;
 use bevy::sprite::*;
-use bevy_light_2d::prelude::{PointLight2d, PointLight2dBundle};
+use bevy_light_2d::prelude::PointLight2d;
 use rand::Rng;
 
 use crate::{prelude::*, read_no_field_variant};
@@ -15,7 +14,6 @@ impl Plugin for BombSpawnerPlugin {
                 (
                     listen_for_bomb_spawning_requests,
                     listen_for_bombs_done_growing,
-                    candle_light_bomb_effect,
                 )
                     .in_set(TickingSystemSet::PostTicking),
                 respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Respawning),
@@ -28,8 +26,6 @@ fn respawn_initial_bomb_on_game_restart(
     mut event_reader: EventReader<GameEvent>,
     timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
     sprites_atlas_resource: ResMut<SpritesAtlas>,
     commands: Commands,
 ) {
@@ -37,8 +33,6 @@ fn respawn_initial_bomb_on_game_restart(
         spawn_initial_bombs(
             timer_fire_request_writer,
             transforms_not_to_spawn_next_to,
-            meshes,
-            materials,
             sprites_atlas_resource,
             commands,
         );
@@ -49,16 +43,12 @@ fn respawn_initial_bomb_on_game_restart(
 fn spawn_initial_bombs(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
     if let Err(bomb_error) = try_spawning_a_bomb(
         &mut timer_fire_request_writer,
         &transforms_not_to_spawn_next_to,
-        &mut meshes,
-        &mut materials,
         &mut sprites_atlas_resource,
         &mut commands,
     ) {
@@ -70,8 +60,6 @@ fn listen_for_bomb_spawning_requests(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
@@ -80,8 +68,6 @@ fn listen_for_bomb_spawning_requests(
             if let Err(bomb_error) = try_spawning_a_bomb(
                 &mut timer_fire_request_writer,
                 &transforms_not_to_spawn_next_to,
-                &mut meshes,
-                &mut materials,
                 &mut sprites_atlas_resource,
                 &mut commands,
             ) {
@@ -94,27 +80,26 @@ fn listen_for_bomb_spawning_requests(
 fn try_spawning_a_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
     sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     commands: &mut Commands,
 ) -> Result<(), BombError> {
     let place_to_spawn_in = try_finding_place_for_bomb(transforms_not_to_spawn_next_to)?;
+    let bomb_component = Bomb::default();
     let newborn_bomb = commands
         .spawn((
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Circle::new(BOMB_SIZE))),
-                material: materials.add(ColorMaterial {
-                    color: BombState::PreHeld.to_colors().unwrap().bomb,
-                    texture: Some(sprites_atlas_resource.pumpkin_image_handle.clone()),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: bomb_component.to_colors().unwrap().bomb,
+                    custom_size: Some(Vec2::new(50.0, 50.0)),
                     ..default()
-                }),
+                },
+                texture: sprites_atlas_resource.pumpkin_grey_image_handle.clone(),
                 transform: Transform::from_translation(place_to_spawn_in)
                     .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
             },
             AffectingTimerCalculators::default(),
-            Bomb::default(),
+            bomb_component,
             WorldBoundsWrapped,
         ))
         .id();
@@ -185,43 +170,28 @@ fn listen_for_bombs_done_growing(
             for affected_entity in done_event.affected_entities.affected_entities_iter() {
                 if let Ok(bomb) = bomb_query.get(affected_entity) {
                     commands
-                        .spawn(Text2dBundle {
-                            text: Text::from_section(
-                                format!("{:?}", bomb.full_duration),
-                                TextStyle {
-                                    font: text_fonts_resource.kenny_pixel_handle.clone(),
-                                    font_size: BOMB_TIME_LEFT_FONT_SIZE,
-                                    color: BombState::PreHeld.to_colors().unwrap().text,
-                                },
-                            ),
-                            transform: Transform::from_translation(Vec3::new(
-                                0.0,
-                                BOMB_TIME_LEFT_FONT_SIZE + 10.0,
-                                1.0,
-                            )),
-                            ..default()
-                        })
-                        .set_parent(affected_entity);
-                    commands
-                        .spawn(PointLight2dBundle {
-                            point_light: PointLight2d {
-                                color: Color::from(DARK_GRAY),
+                        .spawn((
+                            Text2dBundle {
+                                text: Text::from_section(
+                                    format!("{:?}", bomb.full_duration),
+                                    TextStyle {
+                                        font: text_fonts_resource.kenny_pixel_handle.clone(),
+                                        font_size: BOMB_TIME_LEFT_FONT_SIZE,
+                                        color: bomb.to_colors().unwrap().text,
+                                    },
+                                ),
+                                transform: Transform::from_translation(Vec3::new(2.0, -2.0, 1.0)),
+                                ..default()
+                            },
+                            PointLight2d {
+                                color: Color::from(bomb.to_colors().unwrap().text),
                                 radius: BOMB_EXPLOSION_RADIUS,
                                 ..default()
                             },
-                            ..default()
-                        })
+                        ))
                         .set_parent(affected_entity);
                 }
             }
         }
-    }
-}
-
-fn candle_light_bomb_effect(mut bomb_point_light_query: Query<&mut PointLight2d>) {
-    let mut rng = rand::thread_rng();
-    for mut bomb in bomb_point_light_query.iter_mut() {
-        bomb.intensity = rng.gen_range(0.0..3.0);
-        bomb.falloff = rng.gen_range(0.0..1.0);
     }
 }

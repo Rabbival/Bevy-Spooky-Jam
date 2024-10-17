@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, read_no_field_variant};
 use std::time::Duration;
 
 use bevy::text::Text2dBounds;
@@ -17,8 +17,20 @@ impl Plugin for UiPlugin {
                     update_player_game_stopwatch,
                     update_player_scoring,
                     update_high_score,
+                    reset_timer_when_resetting_game,
                 ),
             );
+        }
+    }
+}
+
+fn reset_timer_when_resetting_game(
+    mut game_event_listener: EventReader<GameEvent>,
+    mut stopwatch_query: Query<&mut PlayerGameStopwatchUi>,
+) {
+    for _restart_request in read_no_field_variant!(game_event_listener, GameEvent::RestartGame) {
+        for mut stopwatch in &mut stopwatch_query {
+            stopwatch.timer.reset();
         }
     }
 }
@@ -138,10 +150,7 @@ fn spawn_ui(
 }
 
 fn update_player_game_stopwatch(
-    mut player_game_stopwatch_text_query: Query<
-        (&mut Text, &mut PlayerGameStopwatchUi),
-        With<PlayerGameStopwatchUi>,
-    >,
+    mut player_game_stopwatch_text_query: Query<(&mut Text, &mut PlayerGameStopwatchUi)>,
     time: Res<Time>,
 ) {
     for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
