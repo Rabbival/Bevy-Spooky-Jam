@@ -12,7 +12,7 @@ impl Plugin for BombSpawningSequenceManagerPlugin {
             .add_systems(
                 Update,
                 (
-                    respawn_bombs_spawner_on_game_restart.in_set(GameRestartSystemSet::Respawning),
+                    respawn_bombs_spawner_on_game_restart.in_set(GameRestartSystemSet::Spawning),
                     accelerate_upon_bomb_spawn,
                 ),
             );

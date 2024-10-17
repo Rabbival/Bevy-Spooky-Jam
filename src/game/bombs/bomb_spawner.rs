@@ -16,7 +16,7 @@ impl Plugin for BombSpawnerPlugin {
                     listen_for_bombs_done_growing,
                 )
                     .in_set(TickingSystemSet::PostTicking),
-                respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Respawning),
+                respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Spawning),
             ),
         );
     }

@@ -12,8 +12,7 @@ impl Plugin for MonsterSpawningSequenceManagerPlugin {
             .add_systems(
                 Update,
                 (
-                    respawn_monsters_spawner_on_game_restart
-                        .in_set(GameRestartSystemSet::Respawning),
+                    respawn_monsters_spawner_on_game_restart.in_set(GameRestartSystemSet::Spawning),
                     accelerate_upon_monster_spawn,
                 ),
             );

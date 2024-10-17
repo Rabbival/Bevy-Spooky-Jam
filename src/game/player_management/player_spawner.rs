@@ -8,7 +8,7 @@ impl Plugin for PlayerSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player).add_systems(
             Update,
-            respawn_player_on_game_restart.in_set(GameRestartSystemSet::Respawning),
+            respawn_player_on_game_restart.in_set(GameRestartSystemSet::Spawning),
         );
     }
 }

@@ -33,8 +33,9 @@ pub enum MonsterSystemSet {
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameRestartSystemSet {
+    RespawnerCall,
     Despawning,
-    Respawning,
+    Spawning,
 }
 
 pub struct SystemSetsPlugin;
@@ -51,8 +52,9 @@ impl Plugin for SystemSetsPlugin {
                 )
                     .chain(),
                 (
+                    GameRestartSystemSet::RespawnerCall,
                     GameRestartSystemSet::Despawning,
-                    GameRestartSystemSet::Respawning,
+                    GameRestartSystemSet::Spawning,
                 )
                     .chain()
                     .after(InputSystemSet::Handling),
