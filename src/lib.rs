@@ -20,8 +20,8 @@ extern crate lazy_static;
 
 pub mod prelude {
     pub use crate::animation::{
-        color_change::*, frame_change::*, frame_sequence::*, scale_change::*,
-        translation_change::*, CustomAnimationPlugin,
+        color_change::*, dynamic_light_manager::*, frame_change::*, frame_sequence::*,
+        scale_change::*, translation_change::*, CustomAnimationPlugin,
     };
     pub use crate::app::{
         assets_loader::*, consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*,
@@ -77,6 +77,7 @@ pub mod prelude {
             monster::*,
             monster_audio::*,
             monster_error::*,
+            monster_events::*,
             monster_path::{
                 main_path_initiation::*, stray_path_ender::*, stray_path_updater::*,
                 MonsterPathUpdatingPlugin,
@@ -84,10 +85,9 @@ pub mod prelude {
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
             state_management::{
-                monster_state::*, monster_state_changed_event::*, monster_state_changer::*,
-                MonsterStateManagementPlugin,
+                monster_state::*, monster_state_changer::*, MonsterStateManagementPlugin,
             },
-            visuals::{animation_starter::*, state_change_visualizer::*, MonsterVisualsPlugin},
+            visuals::{animation_manager::*, state_change_visualizer::*, MonsterVisualsPlugin},
             MonstersPlugin,
         },
         player_management::{

@@ -14,10 +14,11 @@ impl Plugin for MonsterStrayPathUpdaterPlugin {
 
 fn listen_for_state_set(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
+    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    mut new_path_event_writer: EventWriter<MonsterStrayPathUpdated>,
     mut monsters_query: Query<(Entity, &Monster, &Transform, &mut AffectingTimerCalculators)>,
     transforms: Query<&Transform>,
     emitting_timer_parent_sequence_query: Query<&TimerParentSequence, With<EmittingTimer>>,
-    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
     for event in monster_state_set_listener.read() {
@@ -27,7 +28,7 @@ fn listen_for_state_set(
                     event.next_state
                 {
                     if let Ok(target_transform) = transforms.get(target_entity) {
-                        replace_current_path(
+                        let new_delta = replace_current_path_get_new_delta(
                             target_transform.translation,
                             monster,
                             monster_entity,
@@ -38,6 +39,10 @@ fn listen_for_state_set(
                             &mut commands,
                             true,
                         );
+                        new_path_event_writer.send(MonsterStrayPathUpdated {
+                            new_delta,
+                            monster_entity,
+                        });
                     }
                 }
             }
@@ -54,10 +59,11 @@ fn listen_for_state_set(
 }
 
 fn update_stray_path(
+    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    mut new_path_event_writer: EventWriter<MonsterStrayPathUpdated>,
     just_changed_transforms: Query<&Transform, Changed<Transform>>,
     mut monsters_query: Query<(Entity, &Monster, &Transform, &mut AffectingTimerCalculators)>,
     emitting_timer_parent_sequence_query: Query<&TimerParentSequence, With<EmittingTimer>>,
-    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
     for (monster_entity, monster, monster_transform, mut affecting_timer_calculators) in
@@ -67,7 +73,7 @@ fn update_stray_path(
             monster.state
         {
             if let Ok(target_transform) = just_changed_transforms.get(target_entity) {
-                replace_current_path(
+                let new_delta = replace_current_path_get_new_delta(
                     target_transform.translation,
                     monster,
                     monster_entity,
@@ -78,12 +84,16 @@ fn update_stray_path(
                     &mut commands,
                     false,
                 );
+                new_path_event_writer.send(MonsterStrayPathUpdated {
+                    new_delta,
+                    monster_entity,
+                });
             }
         }
     }
 }
 
-fn replace_current_path(
+fn replace_current_path_get_new_delta(
     target_location: Vec3,
     monster: &Monster,
     monster_entity: Entity,
@@ -93,7 +103,7 @@ fn replace_current_path(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
     destroy_calculator: bool,
-) {
+) -> Vec2 {
     let speed = if let MonsterState::Chasing(_) = monster.state {
         MONSTER_SPEED_WHEN_CHASING
     } else {
@@ -122,11 +132,12 @@ fn replace_current_path(
                 }],
                 vec![TimeMultiplierId::GameTimeMultiplier],
                 location_to_move_towards.distance(monster_location) / speed,
-                TimerDoneEventType::Nothing,
+                TimerDoneEventType::SetAnimationCycleByPathParentSequence,
             ),
             parent_sequence: Some(path_timer_parent_sequence),
         });
     }
+    (location_to_move_towards - monster_location).truncate()
 }
 
 fn destroy_current_path_timer_and_calculator(

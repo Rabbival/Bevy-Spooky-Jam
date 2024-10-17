@@ -26,13 +26,17 @@ impl BasicDirection {
         Self::index_to_dir(rounded).unwrap()
     }
 
-    pub fn opposite_direction_index(&self) -> u8 {
-        let index = *self as u8;
-        (index + 4) % 8
-    }
-
-    pub fn opposite_direction(&self) -> Option<Self> {
-        Self::index_to_dir(self.opposite_direction_index())
+    pub fn to_monster_initial_frame_index(&self) -> usize {
+        match self {
+            Self::DownLeft => 6,
+            Self::Down => 7,
+            Self::RightDown => 8,
+            Self::Right => 5,
+            Self::UpRight => 2,
+            Self::Up => 1,
+            Self::LeftUp => 0,
+            Self::Left => 3,
+        }
     }
 
     pub fn index_to_dir(index: u8) -> Option<Self> {
