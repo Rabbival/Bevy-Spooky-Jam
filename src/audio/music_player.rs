@@ -11,6 +11,7 @@ impl Plugin for MusicPlayerPlugin {
             (
                 change_layers_by_danger,
                 listen_to_music_volume_update_requests,
+                check_dangers_after_despawns,
             ),
         );
     }
@@ -39,13 +40,13 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
 fn change_layers_by_danger(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut fire_request_writer: EventWriter<TimerFireRequest>,
-    monsters: Query<(Entity, &Monster)>,
-    query: Query<(Entity, &MusicLayer, &AudioSink)>,
+    monsters: Query<&Monster>,
+    music_layers_query: Query<(Entity, &MusicLayer, &AudioSink)>,
     mut commands: Commands,
 ) {
-    'request_loop: for set_request in monster_state_set_listener.read() {
+    for set_request in monster_state_set_listener.read() {
         if let MonsterState::Chasing(_) = set_request.next_state {
-            for (audio_entity, music_layer, audio) in &query {
+            for (audio_entity, music_layer, audio) in &music_layers_query {
                 if music_layer.0 == 2 {
                     fire_music_set_timer(
                         audio.volume(),
@@ -57,24 +58,55 @@ fn change_layers_by_danger(
                 }
             }
         } else {
-            for (entity, monster) in &monsters {
-                if entity != set_request.monster {
-                    if let MonsterState::Chasing(_) = monster.state {
-                        continue 'request_loop;
-                    }
-                }
-            }
-            for (audio_entity, music_layer, audio) in &query {
-                if music_layer.0 == 2 {
-                    fire_music_set_timer(
-                        audio.volume(),
-                        0.0,
-                        audio_entity,
-                        &mut fire_request_writer,
-                        &mut commands,
-                    );
-                }
-            }
+            calm_down_music_if_there_are_no_chasing_monsters(
+                &mut fire_request_writer,
+                &monsters,
+                &music_layers_query,
+                &mut commands,
+            );
+        }
+    }
+}
+
+fn check_dangers_after_despawns(
+    mut done_timers: EventReader<TimerDoneEvent>,
+    mut fire_request_writer: EventWriter<TimerFireRequest>,
+    monsters: Query<&Monster>,
+    music_layers_query: Query<(Entity, &MusicLayer, &AudioSink)>,
+    mut commands: Commands,
+) {
+    for done_event in done_timers.read() {
+        if let TimerDoneEventType::DespawnAffectedEntities(_) = done_event.event_type {
+            calm_down_music_if_there_are_no_chasing_monsters(
+                &mut fire_request_writer,
+                &monsters,
+                &music_layers_query,
+                &mut commands,
+            );
+        }
+    }
+}
+
+fn calm_down_music_if_there_are_no_chasing_monsters(
+    fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    monsters: &Query<&Monster>,
+    music_layers_query: &Query<(Entity, &MusicLayer, &AudioSink)>,
+    commands: &mut Commands,
+) {
+    for monster in monsters {
+        if let MonsterState::Chasing(_) = monster.state {
+            return;
+        }
+    }
+    for (audio_entity, music_layer, audio) in music_layers_query {
+        if music_layer.0 == 2 {
+            fire_music_set_timer(
+                audio.volume(),
+                0.0,
+                audio_entity,
+                fire_request_writer,
+                commands,
+            );
         }
     }
 }
