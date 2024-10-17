@@ -7,10 +7,13 @@ impl Plugin for MonsterAnimationManagerPlugin {
         app.add_systems(
             Update,
             (
-                listen_for_spawn_phase_ending,
-                listen_for_done_main_path_timers,
-            )
-                .in_set(MonsterSystemSet::PathAndVisualUpdating),
+                (
+                    listen_for_spawn_phase_ending,
+                    listen_for_done_main_path_timers,
+                )
+                    .in_set(MonsterSystemSet::PathAndVisualUpdating),
+                listen_for_stray_path_changes.in_set(MonsterSystemSet::PostPathUpdating),
+            ),
         );
     }
 }
@@ -75,17 +78,11 @@ fn listen_for_done_main_path_timers(
                         }
                         Ok(new_animation_sequence_entity) => {
                             if let Ok(mut monster) = monsters_query.get_mut(monster_entity) {
-                                if let Some(current_animation_sequence) =
-                                    monster.animation_timer_sequence
-                                {
-                                    despawn_recursive_notify_on_fail(
-                                        current_animation_sequence,
-                                        "monster animation sequence",
-                                        &mut commands,
-                                    );
-                                }
-                                monster.animation_timer_sequence =
-                                    Some(new_animation_sequence_entity);
+                                replace_timer_sequence_for_monster(
+                                    new_animation_sequence_entity,
+                                    &mut monster,
+                                    &mut commands,
+                                );
                             }
                         }
                     }
@@ -141,6 +138,35 @@ fn get_direction_facing_from_timer(
     None
 }
 
+fn listen_for_stray_path_changes(
+    mut stray_path_change_listener: EventReader<MonsterStrayPathUpdated>,
+    mut timer_fire_writer: EventWriter<TimerFireRequest>,
+    mut monsters_query: Query<&mut Monster>,
+    mut commands: Commands,
+) {
+    for event in stray_path_change_listener.read() {
+        if let Ok(mut monster) = monsters_query.get_mut(event.monster_entity) {
+            match spawn_and_fire_animation_timer_sequence(
+                BasicDirection::closest(event.new_delta),
+                &mut timer_fire_writer,
+                event.monster_entity,
+                &mut commands,
+            ) {
+                Err(timer_sequence_error) => {
+                    print_warning(timer_sequence_error, vec![LogCategory::RequestNotFulfilled]);
+                }
+                Ok(new_animation_sequence) => {
+                    replace_timer_sequence_for_monster(
+                        new_animation_sequence,
+                        &mut monster,
+                        &mut commands,
+                    );
+                }
+            }
+        }
+    }
+}
+
 fn spawn_and_fire_animation_timer_sequence(
     heading_direction: BasicDirection,
     timer_fire_writer: &mut EventWriter<TimerFireRequest>,
@@ -162,4 +188,19 @@ fn spawn_and_fire_animation_timer_sequence(
     let sequence_entity = commands.spawn(timer_sequence).id();
     timer_sequence.fire_first_timer(sequence_entity, timer_fire_writer)?;
     Ok(sequence_entity)
+}
+
+fn replace_timer_sequence_for_monster(
+    new_animation_sequence_entity: Entity,
+    monster: &mut Monster,
+    commands: &mut Commands,
+) {
+    if let Some(current_animation_sequence) = monster.animation_timer_sequence {
+        despawn_recursive_notify_on_fail(
+            current_animation_sequence,
+            "monster animation sequence",
+            commands,
+        );
+    }
+    monster.animation_timer_sequence = Some(new_animation_sequence_entity);
 }

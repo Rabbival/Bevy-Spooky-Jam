@@ -28,6 +28,7 @@ pub enum EndOfFrameSystemSet {
 pub enum MonsterSystemSet {
     StateChanging,
     PathAndVisualUpdating,
+    PostPathUpdating,
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -58,6 +59,7 @@ impl Plugin for SystemSetsPlugin {
                 (
                     MonsterSystemSet::StateChanging,
                     MonsterSystemSet::PathAndVisualUpdating,
+                    MonsterSystemSet::PostPathUpdating,
                 )
                     .chain()
                     .after(InputSystemSet::Handling)

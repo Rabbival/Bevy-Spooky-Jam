@@ -77,6 +77,7 @@ pub mod prelude {
             monster::*,
             monster_audio::*,
             monster_error::*,
+            monster_events::*,
             monster_path::{
                 main_path_initiation::*, stray_path_ender::*, stray_path_updater::*,
                 MonsterPathUpdatingPlugin,
@@ -84,8 +85,7 @@ pub mod prelude {
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
             state_management::{
-                monster_state::*, monster_state_changed_event::*, monster_state_changer::*,
-                MonsterStateManagementPlugin,
+                monster_state::*, monster_state_changer::*, MonsterStateManagementPlugin,
             },
             visuals::{animation_manager::*, state_change_visualizer::*, MonsterVisualsPlugin},
             MonstersPlugin,

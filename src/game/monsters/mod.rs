@@ -4,6 +4,7 @@ pub mod consts;
 pub mod monster;
 pub mod monster_audio;
 pub mod monster_error;
+pub mod monster_events;
 pub mod monster_path;
 pub mod monster_spawner;
 pub mod monster_spawning_sequence_manager;
@@ -21,6 +22,7 @@ impl Plugin for MonstersPlugin {
             MonsterVisualsPlugin,
             MonsterPathUpdatingPlugin,
             MonsterAudioPlugin,
+            MonsterEventsPlugin,
         ));
     }
 }
