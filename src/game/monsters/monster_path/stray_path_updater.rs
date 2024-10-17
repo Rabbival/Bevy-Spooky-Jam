@@ -132,7 +132,7 @@ fn replace_current_path_get_new_delta(
                 }],
                 vec![TimeMultiplierId::GameTimeMultiplier],
                 location_to_move_towards.distance(monster_location) / speed,
-                TimerDoneEventType::Nothing,
+                TimerDoneEventType::SetAnimationCycleByPathParentSequence,
             ),
             parent_sequence: Some(path_timer_parent_sequence),
         });
