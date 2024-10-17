@@ -15,13 +15,13 @@ impl Plugin for BombTickerPlugin {
 
 fn listen_for_bomb_tick_update(
     mut timer_going_event_reader: EventReader<TimerGoingEvent<f32>>,
-    mut bomb_query: Query<&mut Bomb>,
+    mut bomb_query: Query<(&mut Bomb, &mut Sprite)>,
     mut text_query: Query<(&mut Text, &Parent)>,
     mut sounds_event_writer: EventWriter<SoundEvent>,
 ) {
     for timer_going_event in timer_going_event_reader.read() {
         if let TimerGoingEventType::BombCountdown = timer_going_event.event_type {
-            if let Ok(mut bomb) = bomb_query.get_mut(timer_going_event.entity) {
+            if let Ok((mut bomb, mut bomb_sprite)) = bomb_query.get_mut(timer_going_event.entity) {
                 if let BombState::PreHeld = bomb.state {
                     print_error(
                         BombError::AskedToTickAPreHeldBomb,
@@ -29,6 +29,7 @@ fn listen_for_bomb_tick_update(
                     );
                 } else if let Err(_parse_error) = tick_bomb_and_update_text(
                     &mut bomb,
+                    &mut bomb_sprite,
                     timer_going_event.value_delta,
                     timer_going_event.entity,
                     &mut text_query,
@@ -51,6 +52,7 @@ fn listen_for_bomb_tick_update(
 
 fn tick_bomb_and_update_text(
     bomb: &mut Bomb,
+    bomb_sprite: &mut Sprite,
     time_delta: f32,
     bomb_entity: Entity,
     text_query: &mut Query<(&mut Text, &Parent)>,
@@ -64,12 +66,41 @@ fn tick_bomb_and_update_text(
             if text_value >= ceiled_time_until_explosion {
                 text.sections[0].value = ceiled_time_until_explosion.to_string();
             }
-            if ceiled_time_until_explosion < text_value && 0 < ceiled_time_until_explosion {
-                sounds_event_writer.send(SoundEvent::BombTickEvent(
-                    1.0 - (ceiled_time_until_explosion as f32 * 0.08),
-                ));
+            if ceiled_time_until_explosion <= ABOUT_TO_EXPLODE_TIME_CIEL {
+                alert_of_close_explosion(
+                    bomb,
+                    bomb_sprite,
+                    ceiled_time_until_explosion,
+                    &mut text,
+                    text_value,
+                    sounds_event_writer,
+                );
             }
         }
     }
     Ok(())
+}
+
+fn alert_of_close_explosion(
+    bomb: &mut Bomb,
+    bomb_sprite: &mut Sprite,
+    ceiled_time_until_explosion: usize,
+    bomb_text: &mut Text,
+    bomb_text_value: usize,
+    sounds_event_writer: &mut EventWriter<SoundEvent>,
+) {
+    if !bomb.about_to_explode {
+        bomb.about_to_explode = true;
+        if let Some(bomb_colors) = bomb.to_colors() {
+            bomb_text.sections[0].style.color = bomb_colors.text;
+            bomb_sprite.color = bomb_colors.bomb;
+        }
+    }
+    if bomb.about_to_explode {
+        if ceiled_time_until_explosion < bomb_text_value && 0 < ceiled_time_until_explosion {
+            sounds_event_writer.send(SoundEvent::BombTickEvent(
+                1.0 - (ceiled_time_until_explosion as f32 * 0.08),
+            ));
+        }
+    }
 }

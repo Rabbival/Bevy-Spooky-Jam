@@ -5,7 +5,7 @@ pub struct SpritesAtlas {
     pub atlas_handle: Handle<TextureAtlasLayout>,
     pub image_handle: Handle<Image>,
     pub pumpkin_image_handle: Handle<Image>,
-    pub punpkin_grey_image_handle: Handle<Image>,
+    pub pumpkin_grey_image_handle: Handle<Image>,
     pub floor_image_handle: Handle<Image>,
     pub floor_hole_handle: Handle<Image>,
 }
@@ -63,7 +63,7 @@ fn sprites_atlas_setup(
         atlas_handle: texture_atlas_handle,
         image_handle,
         pumpkin_image_handle: asset_server.load("images/pumpkin.png"),
-        punpkin_grey_image_handle: asset_server.load("images/pumpkinGreyed.png"),
+        pumpkin_grey_image_handle: asset_server.load("images/pumpkinGreyed.png"),
         floor_image_handle: asset_server.load("images/full_floor.png"),
         floor_hole_handle: asset_server.load("images/floor_hole.png"),
     });
