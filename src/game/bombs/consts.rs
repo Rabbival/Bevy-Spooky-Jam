@@ -15,7 +15,7 @@ pub const BOMB_TIME_LEFT_FONT_SIZE: f32 = 26.0;
 pub const BOMB_THROWING_SPEED: f32 = 2000.0;
 
 pub const BOMB_EXPLOSION_RADIUS: f32 = 180.0;
-pub const BOMB_BLAST_FACTOR: f32 = 50000.0;
+pub const BOMB_BLAST_FACTOR: f32 = 5000.0;
 pub const POST_BOMB_HIT_DESPAWN_TIME: f32 = 0.08;
 
 pub const ABOUT_TO_EXPLODE_TIME_CIEL: usize = 3;
