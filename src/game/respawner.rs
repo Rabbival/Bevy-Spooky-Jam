@@ -5,10 +5,7 @@ pub struct RespawnerPlugin;
 impl Plugin for RespawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_invisible_again_screen)
-            .add_systems(
-                Update,
-                show_again_and_respawn_world.in_set(GameRestartSystemSet::RespawnerCall),
-            );
+            .add_systems(Update, show_again_and_respawn_world);
     }
 }
 
@@ -20,14 +17,21 @@ fn spawn_invisible_again_screen(images: ResMut<SpritesAtlas>, mut commands: Comm
                 ..default()
             },
             texture: images.again_screen_handle.clone(),
+            transform: Transform::from_xyz(
+                0.0,
+                TOP_UI_HEADER_BAR_HEIGHT / 2.0,
+                CAMERA_Z_LAYER - 1.0,
+            ),
             ..default()
         },
+        AffectingTimerCalculators::default(),
         AgainScreen,
     ));
 }
 
 fn show_again_and_respawn_world(
     mut game_over_listener: EventReader<GameEvent>,
+    mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     again_screens: Query<(Entity, &Sprite), With<AgainScreen>>,
     mut timer_fire_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
@@ -48,6 +52,11 @@ fn show_again_and_respawn_world(
             {
                 print_error(sequence_error, vec![LogCategory::RequestNotFulfilled]);
             }
+            time_multiplier_request_writer.send(SetTimeMultiplier {
+                multiplier_id: TimeMultiplierId::GameTimeMultiplier,
+                new_multiplier: MULTIPLIER_WHEN_SLOW_MOTION,
+                duration: AGAIN_SCREEN_FADE_TIME,
+            });
         }
     }
 }
@@ -65,7 +74,7 @@ fn again_fade_timer(
             value_calculator_entity: Some(calculator),
         }],
         vec![TimeMultiplierId::RealTime],
-        SLOW_MOTION_KICK_IN_AND_OUT_TIME,
+        AGAIN_SCREEN_FADE_TIME,
         if fade_in {
             TimerDoneEventType::GameEvent(GameEvent::RestartGame)
         } else {
@@ -82,11 +91,15 @@ fn spawn_again_fade_calculator(
     commands
         .spawn(GoingEventValueCalculator::new(
             TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
-            ValueByInterpolation::from_goal_and_current(
-                if fade_in { current_alpha } else { 0.0 },
-                if fade_in { 0.0 } else { 1.0 },
-                Interpolator::default(),
-            ),
+            if fade_in {
+                ValueByInterpolation::from_goal_and_current(
+                    current_alpha,
+                    1.0,
+                    Interpolator::new(0.5),
+                )
+            } else {
+                ValueByInterpolation::from_goal_and_current(1.0, 0.0, Interpolator::new(2.0))
+            },
             TimerGoingEventType::SetAlpha,
         ))
         .id()

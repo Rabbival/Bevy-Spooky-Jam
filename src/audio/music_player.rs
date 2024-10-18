@@ -1,6 +1,6 @@
 use bevy::audio::Volume;
 
-use crate::prelude::*;
+use crate::{prelude::*, read_no_field_variant};
 
 pub struct MusicPlayerPlugin;
 
@@ -12,6 +12,7 @@ impl Plugin for MusicPlayerPlugin {
                 change_layers_by_danger,
                 listen_to_music_volume_update_requests,
                 check_dangers_after_despawns,
+                calm_down_music_when_game_over.in_set(GameRestartSystemSet::Spawning),
             ),
         );
     }
@@ -83,6 +84,27 @@ fn check_dangers_after_despawns(
                 &music_layers_query,
                 &mut commands,
             );
+        }
+    }
+}
+
+fn calm_down_music_when_game_over(
+    mut game_event_listener: EventReader<GameEvent>,
+    mut fire_request_writer: EventWriter<TimerFireRequest>,
+    music_layers_query: Query<(Entity, &MusicLayer, &AudioSink)>,
+    mut commands: Commands,
+) {
+    for _game_over in read_no_field_variant!(game_event_listener, GameEvent::RestartGame) {
+        for (audio_entity, music_layer, audio) in &music_layers_query {
+            if music_layer.0 == 2 {
+                fire_music_set_timer(
+                    audio.volume(),
+                    0.0,
+                    audio_entity,
+                    &mut fire_request_writer,
+                    &mut commands,
+                );
+            }
         }
     }
 }

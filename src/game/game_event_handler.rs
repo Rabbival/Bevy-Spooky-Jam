@@ -6,8 +6,29 @@ impl Plugin for GameEventHandlerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            despawn_all_upon_restart.in_set(GameRestartSystemSet::Despawning),
+            (
+                listen_for_done_timers_with_game_events
+                    .in_set(GameRestartSystemSet::ScreenDoneFadingListening),
+                despawn_all_upon_restart.in_set(GameRestartSystemSet::Despawning),
+            ),
         );
+    }
+}
+
+fn listen_for_done_timers_with_game_events(
+    mut timer_done_listener: EventReader<TimerDoneEvent>,
+    mut game_event_writer: EventWriter<GameEvent>,
+    mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
+) {
+    for done_timer in timer_done_listener.read() {
+        if let TimerDoneEventType::GameEvent(game_event) = done_timer.event_type {
+            game_event_writer.send(game_event);
+            time_multiplier_request_writer.send(SetTimeMultiplier {
+                multiplier_id: TimeMultiplierId::GameTimeMultiplier,
+                new_multiplier: 1.0,
+                duration: AGAIN_SCREEN_FADE_TIME,
+            });
+        }
     }
 }
 

@@ -33,7 +33,7 @@ pub enum MonsterSystemSet {
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameRestartSystemSet {
-    RespawnerCall,
+    ScreenDoneFadingListening,
     Despawning,
     Spawning,
 }
@@ -52,7 +52,7 @@ impl Plugin for SystemSetsPlugin {
                 )
                     .chain(),
                 (
-                    GameRestartSystemSet::RespawnerCall,
+                    GameRestartSystemSet::ScreenDoneFadingListening,
                     GameRestartSystemSet::Despawning,
                     GameRestartSystemSet::Spawning,
                 )
