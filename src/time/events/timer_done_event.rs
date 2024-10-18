@@ -19,6 +19,7 @@ pub enum TimerDoneEventType {
     DeclareSpawnDone,
     SetFrame(usize),
     SetAnimationCycleByPathParentSequence,
+    GameEvent(GameEvent),
 }
 
 pub struct TimerDoneEventPlugin;

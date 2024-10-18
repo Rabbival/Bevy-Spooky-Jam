@@ -77,7 +77,7 @@ fn handle_player_monster_collisions(
                 continue;
             }
             commands.entity(_entity).despawn();
-            game_event_writer.send(GameEvent::RestartGame);
+            game_event_writer.send(GameEvent::GameOver);
         }
     }
 }
