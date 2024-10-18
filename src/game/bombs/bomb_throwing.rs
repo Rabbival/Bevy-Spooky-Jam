@@ -34,9 +34,8 @@ fn listen_for_bomb_throwing_requests(
                         &mut bomb,
                         &mut commands,
                     );
-                    fire_bomb_and_unslow_time(
+                    throw_bomb(
                         &mut timer_fire_request_writer,
-                        &mut time_multiplier_request_writer,
                         bomb_entity,
                         &bomb_transform,
                         cursor_world_position.0,
@@ -44,6 +43,11 @@ fn listen_for_bomb_throwing_requests(
                     );
                     sounds_event_writer.send(SoundEvent::BombThrowEvent);
                 }
+                time_multiplier_request_writer.send(SetTimeMultiplier {
+                    multiplier_id: TimeMultiplierId::GameTimeMultiplier,
+                    new_multiplier: 1.0,
+                    duration: SLOW_MOTION_KICK_IN_AND_OUT_TIME,
+                });
             }
         }
     }
@@ -61,16 +65,14 @@ fn disconnect_bomb_from_player(
     bomb_transform.translation += player_transform.translation; //now its transform is no longer relative to the player
 }
 
-fn fire_bomb_and_unslow_time(
+fn throw_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
-    time_multiplier_request_writer: &mut EventWriter<SetTimeMultiplier>,
     bomb_entity: Entity,
     bomb_transform: &Transform,
     cursor_position: Vec2,
     commands: &mut Commands,
 ) {
     let throw_value_calculator = bomb_throw_calculator(bomb_transform, cursor_position, commands);
-
     timer_fire_request_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
             vec![TimerAffectedEntity {
@@ -85,12 +87,6 @@ fn fire_bomb_and_unslow_time(
             TimerDoneEventType::Nothing,
         ),
         parent_sequence: None,
-    });
-
-    time_multiplier_request_writer.send(SetTimeMultiplier {
-        multiplier_id: TimeMultiplierId::GameTimeMultiplier,
-        new_multiplier: 1.0,
-        duration: SLOW_MOTION_KICK_IN_AND_OUT_TIME,
     });
 }
 
