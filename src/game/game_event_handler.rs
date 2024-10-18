@@ -35,6 +35,7 @@ fn listen_for_done_timers_with_game_events(
 fn despawn_all_upon_restart(
     mut event_reader: EventReader<GameEvent>,
     border_crossers_query: Query<Entity, With<WorldBoundsWrapped>>,
+    border_non_crossers_query: Query<Entity, With<InWorldButNotBoundWrapped>>,
     timer_query: Query<(Entity, &EmittingTimer)>,
     timer_sequence_query: Query<Entity, With<TimerSequence>>,
     mut commands: Commands,
@@ -44,6 +45,13 @@ fn despawn_all_upon_restart(
             despawn_recursive_notify_on_fail(
                 border_crosser,
                 "border crosser when pending restart",
+                &mut commands,
+            );
+        }
+        for border_non_crosser in &border_non_crossers_query {
+            despawn_recursive_notify_on_fail(
+                border_non_crosser,
+                "border non-crosser when pending restart",
                 &mut commands,
             );
         }

@@ -3,8 +3,11 @@ use std::time::Duration;
 
 use bevy::time::Stopwatch;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
+
+#[derive(Component, Debug)]
+pub struct InWorldButNotBoundWrapped;
 
 #[derive(Component, Default)]
 pub struct PlayerGameStopwatchUi {

@@ -235,7 +235,7 @@ fn manage_bomb_explosion_side_effects(
                 ),
                 ..default()
             },
-            WorldBoundsWrapped,
+            InWorldButNotBoundWrapped,
         ));
 
         if exploded_bomb.hit_monster {
