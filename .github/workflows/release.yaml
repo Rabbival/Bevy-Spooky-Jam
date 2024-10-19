@@ -97,12 +97,12 @@ jobs:
 #            package_ext: .zip
 #            runner: ubuntu-latest
 
-          - platform: windows
-            targets: x86_64-pc-windows-msvc
-            profile: release-native
-            binary_ext: .exe
-            package_ext: .zip
-            runner: windows-latest
+#          - platform: windows
+#            targets: x86_64-pc-windows-msvc
+#            profile: release-native
+#            binary_ext: .exe
+#            package_ext: .zip
+#            runner: windows-latest
 
 #          - platform: macos
 #            targets: x86_64-apple-darwin aarch64-apple-darwin
