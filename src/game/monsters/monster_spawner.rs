@@ -80,13 +80,12 @@ fn try_spawning_a_monster(
     override_spawning_spot: Option<Vec3>,
 ) -> Result<(), MonsterError> {
     let mut rng = rand::thread_rng();
-    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let place_to_spawn_in = override_spawning_spot.unwrap_or(try_finding_place_for_monster(
         transforms_not_to_spawn_next_to,
     )?);
     let monster_component = Monster {
         hearing_ring_distance: rng
-            .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
+            .gen_range(BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE..MONSTER_FULL_SIZE * 9.0),
         state: MonsterState::Spawning,
         main_path: VecBasedArray::new(generate_initial_path_to_follow()),
         path_timer_sequence: None,
