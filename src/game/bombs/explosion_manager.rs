@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::prelude::*;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
@@ -14,7 +12,6 @@ impl Plugin for ExplosionManagerPlugin {
             (
                 (listen_for_done_bombs, explode_bombs_on_direct_collision),
                 manage_bomb_explosion_side_effects,
-                execute_animations,
             )
                 .chain()
                 .in_set(TickingSystemSet::PostTicking),
@@ -302,73 +299,6 @@ fn manage_bomb_explosion_side_effects(
         }
         if exploded_bomb.hit_player {
             game_event_writer.send(GameEvent::GameOver);
-        }
-    }
-}
-
-#[derive(Component)]
-struct AnimationConfig {
-    first_sprite_index: usize,
-    last_sprite_index: usize,
-    fps: u8,
-    frame_timer: Timer,
-}
-
-impl AnimationConfig {
-    fn new(first: usize, last: usize, fps: u8) -> Self {
-        Self {
-            first_sprite_index: first,
-            last_sprite_index: last,
-            fps,
-            frame_timer: Self::timer_from_fps(fps),
-        }
-    }
-
-    fn timer_from_fps(fps: u8) -> Timer {
-        Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
-    }
-}
-
-fn execute_animations(
-    time: Res<Time>,
-    mut query: Query<(
-        &mut AnimationConfig,
-        &mut Transform,
-        &mut TextureAtlas,
-        Entity,
-    )>,
-    time_multipliers: Query<&TimeMultiplier>,
-    mut commands: Commands,
-) {
-    for (mut config, mut transform, mut atlas, animation_entity) in &mut query {
-        for time_multiplier in &time_multipliers {
-            if let TimeMultiplierId::GameTimeMultiplier = time_multiplier.id() {
-                let time_to_multiply_delta_in = time_multiplier.value();
-
-                // we track how long the current sprite has been displayed for
-                config
-                    .frame_timer
-                    .tick(time.delta() * time_to_multiply_delta_in as u32);
-
-                // If it has been displayed for the user-defined amount of time (fps)...
-                if config.frame_timer.just_finished() {
-                    if atlas.index == config.last_sprite_index {
-                        // ...and it IS the last frame, then we move back to the first frame and stop.
-                        atlas.index = config.first_sprite_index;
-                        if let Some(mut animation_commands) = commands.get_entity(animation_entity)
-                        {
-                            animation_commands.despawn();
-                        }
-                    } else {
-                        // ...and it is NOT the last frame, then we move to the next frame...
-                        atlas.index += 1;
-                        // ...and reset the frame timer to start counting all over again
-                        config.frame_timer = AnimationConfig::timer_from_fps(config.fps);
-                        transform.scale.x += 0.04;
-                        transform.scale.y += 0.04;
-                    }
-                }
-            }
         }
     }
 }
