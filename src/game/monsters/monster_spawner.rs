@@ -84,8 +84,10 @@ fn try_spawning_a_monster(
         transforms_not_to_spawn_next_to,
     )?);
     let monster_component = Monster {
-        hearing_ring_distance: rng
-            .gen_range(BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE..MONSTER_FULL_SIZE * 9.0),
+        hearing_ring_distance: rng.gen_range(
+            BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE
+                ..(BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE) * 2.0,
+        ),
         state: MonsterState::Spawning,
         main_path: VecBasedArray::new(generate_initial_path_to_follow()),
         path_timer_sequence: None,
