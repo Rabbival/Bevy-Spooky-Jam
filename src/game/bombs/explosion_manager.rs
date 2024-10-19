@@ -47,7 +47,18 @@ fn explode_bombs_on_direct_collision(
                 {
                     continue;
                 }
-                if bomb_transform.translation.distance(transform.translation) <= BOMB_SIZE {
+                let radius_of_exploded = if let Some(monster) = maybe_monster {
+                    if let MonsterState::Chasing(_) = monster.state {
+                        MONSTER_COLLIDER_RADIUS + MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING
+                    } else {
+                        MONSTER_COLLIDER_RADIUS
+                    }
+                } else {
+                    BOMB_SIZE
+                };
+                if bomb_transform.translation.distance(transform.translation)
+                    <= BOMB_SIZE + radius_of_exploded
+                {
                     unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
                     bomb.state = BombState::Exploded;
                     explode_bomb(
