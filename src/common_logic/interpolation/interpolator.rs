@@ -24,6 +24,7 @@ impl Default for Interpolator {
 
 #[cfg(test)]
 mod tests {
+    use std::f32::consts::PI;
     use super::*;
 
     #[test]
@@ -31,8 +32,8 @@ mod tests {
         let interpolator = Interpolator::default();
         let origin_value = 1.0;
         let value_delta = 41.0;
-        let above_max_limit_progress = 3.14;
-        let below_min_limit_progress = -3.14;
+        let above_max_limit_progress = PI;
+        let below_min_limit_progress = -PI;
 
         let endpoint = interpolator.calculate(origin_value, value_delta, above_max_limit_progress);
         let startpoint =
