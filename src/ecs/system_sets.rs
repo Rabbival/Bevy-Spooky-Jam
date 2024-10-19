@@ -21,9 +21,21 @@ pub enum TickingSystemSet {
 pub enum EndOfFrameSystemSet {
     PreTimerClearing,
     TimerClearing,
-    PostTimerClearing,
     LateDespawn,
-    PostLateDespawn,
+}
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum MonsterSystemSet {
+    StateChanging,
+    PathAndVisualUpdating,
+    PostPathUpdating,
+}
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum GameRestartSystemSet {
+    ScreenDoneFadingListening,
+    Despawning,
+    Spawning,
 }
 
 pub struct SystemSetsPlugin;
@@ -40,6 +52,21 @@ impl Plugin for SystemSetsPlugin {
                 )
                     .chain(),
                 (
+                    GameRestartSystemSet::ScreenDoneFadingListening,
+                    GameRestartSystemSet::Despawning,
+                    GameRestartSystemSet::Spawning,
+                )
+                    .chain()
+                    .after(InputSystemSet::Handling),
+                (
+                    MonsterSystemSet::StateChanging,
+                    MonsterSystemSet::PathAndVisualUpdating,
+                    MonsterSystemSet::PostPathUpdating,
+                )
+                    .chain()
+                    .after(InputSystemSet::Handling)
+                    .before(TickingSystemSet::PreTickingEarlyPreperations),
+                (
                     TickingSystemSet::PreTickingEarlyPreperations,
                     TickingSystemSet::PreTickingPreperations,
                     TickingSystemSet::PreTicking,
@@ -50,18 +77,11 @@ impl Plugin for SystemSetsPlugin {
                     .chain()
                     .after(InputSystemSet::Handling),
                 (
-                    (
-                        EndOfFrameSystemSet::PreTimerClearing,
-                        EndOfFrameSystemSet::TimerClearing,
-                        EndOfFrameSystemSet::PostTimerClearing,
-                    )
-                        .chain(),
-                    (
-                        EndOfFrameSystemSet::LateDespawn,
-                        EndOfFrameSystemSet::PostLateDespawn,
-                    )
-                        .chain(),
+                    EndOfFrameSystemSet::PreTimerClearing,
+                    EndOfFrameSystemSet::TimerClearing,
+                    EndOfFrameSystemSet::LateDespawn,
                 )
+                    .chain()
                     .after(TickingSystemSet::PostTicking),
             ),
         );

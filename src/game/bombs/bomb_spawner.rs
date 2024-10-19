@@ -1,22 +1,66 @@
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+use bevy::sprite::*;
+use bevy_light_2d::prelude::PointLight2d;
 use rand::Rng;
 
-use crate::prelude::*;
+use crate::{prelude::*, read_no_field_variant};
 
 pub struct BombSpawnerPlugin;
 
 impl Plugin for BombSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, listen_for_bomb_spawning_requests);
+        app.add_systems(Startup, spawn_initial_bombs).add_systems(
+            Update,
+            (
+                (
+                    listen_for_bomb_spawning_requests,
+                    listen_for_bombs_done_growing,
+                )
+                    .in_set(TickingSystemSet::PostTicking),
+                respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Spawning),
+            ),
+        );
+    }
+}
+
+fn respawn_initial_bomb_on_game_restart(
+    mut event_reader: EventReader<GameEvent>,
+    timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    sprites_atlas_resource: ResMut<SpritesAtlas>,
+    commands: Commands,
+) {
+    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+        spawn_initial_bombs(
+            timer_fire_request_writer,
+            transforms_not_to_spawn_next_to,
+            sprites_atlas_resource,
+            commands,
+        );
+        break;
+    }
+}
+
+fn spawn_initial_bombs(
+    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    mut commands: Commands,
+) {
+    if let Err(bomb_error) = try_spawning_a_bomb(
+        &mut timer_fire_request_writer,
+        &transforms_not_to_spawn_next_to,
+        &mut sprites_atlas_resource,
+        &mut commands,
+    ) {
+        print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
     }
 }
 
 fn listen_for_bomb_spawning_requests(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
-    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Monster>)>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut commands: Commands,
 ) {
     for done_event in timer_done_event_reader.read() {
@@ -24,8 +68,7 @@ fn listen_for_bomb_spawning_requests(
             if let Err(bomb_error) = try_spawning_a_bomb(
                 &mut timer_fire_request_writer,
                 &transforms_not_to_spawn_next_to,
-                &mut meshes,
-                &mut materials,
+                &mut sprites_atlas_resource,
                 &mut commands,
             ) {
                 print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
@@ -36,22 +79,29 @@ fn listen_for_bomb_spawning_requests(
 
 fn try_spawning_a_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
-    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Monster>)>>,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
+    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
+    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
     commands: &mut Commands,
 ) -> Result<(), BombError> {
     let place_to_spawn_in = try_finding_place_for_bomb(transforms_not_to_spawn_next_to)?;
+    let bomb_component = Bomb::default();
     let newborn_bomb = commands
         .spawn((
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Circle::new(BOMB_SPAWN_SIZE))),
-                material: materials.add(Color::srgb(0.8, 0.2, 0.0)),
-                transform: Transform::from_translation(place_to_spawn_in),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: bomb_component.to_colors().unwrap().bomb,
+                    custom_size: Some(Vec2::new(50.0, 50.0)),
+                    ..default()
+                },
+                texture: sprites_atlas_resource.pumpkin_grey_image_handle.clone(),
+                transform: Transform::from_translation(place_to_spawn_in)
+                    .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
                 ..default()
             },
             AffectingTimerCalculators::default(),
-            Bomb,
+            bomb_component,
+            BombTag,
+            WorldBoundsWrapped,
         ))
         .id();
     timer_fire_request_writer.send(TimerFireRequest {
@@ -62,7 +112,7 @@ fn try_spawning_a_bomb(
             }],
             vec![TimeMultiplierId::GameTimeMultiplier],
             TIME_IT_TAKES_BOMB_TO_GROW,
-            TimerDoneEventType::Nothing,
+            TimerDoneEventType::SpawnChildForAffectedEntities(SpawnRequestType::BombText),
         ),
         parent_sequence: None,
     });
@@ -74,8 +124,8 @@ fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
         .spawn(GoingEventValueCalculator::new(
             TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
             ValueByInterpolation::from_goal_and_current(
-                BOMB_SPAWN_SIZE,
-                BOMB_FULL_SIZE,
+                Vec3::ONE * BOMB_SPAWN_SCALE,
+                Vec3::ONE,
                 Interpolator::default(),
             ),
             TimerGoingEventType::Scale,
@@ -84,24 +134,65 @@ fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
 }
 
 fn try_finding_place_for_bomb(
-    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Monster>)>>,
+    transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
 ) -> Result<Vec3, BombError> {
+    if FunctionalityOverride::AlwaysSpawnBombsInMiddle.enabled() {
+        return Ok(Vec3::ZERO);
+    }
+
     let mut rng = rand::thread_rng();
-    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_FULL_SIZE * 2.0;
-    for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
+    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_SIZE * 2.0;
+    'bomb_spawning_loop: for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
         let vector = Vec3::new(
             rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
             rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),
             Z_LAYER_BOMB,
         );
         for transform in transforms_not_to_spawn_next_to {
-            if calculate_distance_including_through_screen_border(vector, transform.translation)
-                < BOMB_SAFE_RADIUS
-            {
-                continue;
+            if vector.distance(transform.translation) < BOMB_SAFE_RADIUS {
+                continue 'bomb_spawning_loop;
             }
         }
         return Ok(vector);
     }
     Err(BombError::CouldntFindAPlaceToSpawnBombIn)
+}
+
+fn listen_for_bombs_done_growing(
+    mut timer_done_event_reader: EventReader<TimerDoneEvent>,
+    mut commands: Commands,
+    bomb_query: Query<&Bomb>,
+    text_fonts_resource: ResMut<TextFonts>,
+) {
+    for done_event in timer_done_event_reader.read() {
+        if let TimerDoneEventType::SpawnChildForAffectedEntities(SpawnRequestType::BombText) =
+            done_event.event_type
+        {
+            for affected_entity in done_event.affected_entities.affected_entities_iter() {
+                if let Ok(bomb) = bomb_query.get(affected_entity) {
+                    commands
+                        .spawn((
+                            Text2dBundle {
+                                text: Text::from_section(
+                                    format!("{:?}", bomb.full_duration),
+                                    TextStyle {
+                                        font: text_fonts_resource.kenny_pixel_handle.clone(),
+                                        font_size: BOMB_TIME_LEFT_FONT_SIZE,
+                                        color: bomb.to_colors().unwrap().text,
+                                    },
+                                ),
+                                transform: Transform::from_translation(Vec3::new(2.0, -2.0, 1.0)),
+                                ..default()
+                            },
+                            PointLight2d {
+                                color: bomb.to_colors().unwrap().text,
+                                radius: BOMB_EXPLOSION_RADIUS,
+                                ..default()
+                            },
+                        ))
+                        .set_parent(affected_entity);
+                }
+            }
+        }
+    }
 }

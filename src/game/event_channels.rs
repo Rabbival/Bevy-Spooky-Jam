@@ -1,16 +1,16 @@
 use crate::prelude::*;
 
-#[derive(Debug, Event)]
-pub enum OrbEvent{
-    SpawnOrb(Vec2),
-    CollectAllOrbs(Vec2),
+#[derive(Event, Debug, Clone, Copy, PartialEq)]
+pub enum GameEvent {
+    RestartGame,
+    GameOver,
+    DebugKeyPressed,
 }
 
+pub struct GameEventPlugin;
 
-pub struct GameEventChannelsPlugin;
-
-impl Plugin for GameEventChannelsPlugin {
+impl Plugin for GameEventPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<OrbEvent>();
+        app.add_event::<GameEvent>();
     }
 }

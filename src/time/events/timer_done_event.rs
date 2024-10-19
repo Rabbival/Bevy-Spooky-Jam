@@ -14,6 +14,12 @@ pub enum TimerDoneEventType {
     Nothing,
     DespawnAffectedEntities(DespawnPolicy),
     Spawn(SpawnRequestType),
+    SpawnChildForAffectedEntities(SpawnRequestType),
+    ExplodeInRadius(f32),
+    DeclareSpawnDone,
+    SetFrame(usize),
+    SetAnimationCycleByPathParentSequence,
+    GameEvent(GameEvent),
 }
 
 pub struct TimerDoneEventPlugin;

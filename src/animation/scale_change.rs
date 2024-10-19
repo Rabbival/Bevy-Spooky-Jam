@@ -12,7 +12,7 @@ impl Plugin for ScaleChangePlugin {
 }
 
 fn listen_for_scale_update_requests(
-    mut event_reader: EventReader<TimerGoingEvent<f32>>,
+    mut event_reader: EventReader<TimerGoingEvent<Vec3>>,
     mut transforms: Query<&mut Transform>,
 ) {
     for event_from_timer in event_reader.read() {
@@ -23,9 +23,9 @@ fn listen_for_scale_update_requests(
                 }
                 Err(_) => {
                     print_error(
-                        EntityError::EntityNotInQuery(&format!(
+                        EntityError::EntityNotInQuery(
                             "couldn't fetch transform from query on scale update function",
-                        )),
+                        ),
                         vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
                     );
                 }

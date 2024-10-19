@@ -15,6 +15,8 @@ pub fn listen_for_despawn_requests_from_timers(
     mut event_reader: EventReader<TimerDoneEvent>,
     mut remove_from_timer_event_writer: EventWriter<RemoveFromTimerAffectedEntities>,
     affecting_timers_query: Query<&AffectingTimerCalculators>,
+    timer_sequences_query: Query<&TimerSequence>,
+    timer_query: Query<(Entity, &EmittingTimer, Option<&TimerParentSequence>)>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
@@ -29,8 +31,16 @@ pub fn listen_for_despawn_requests_from_timers(
                             affected_entity.affected_entity,
                         );
                     }
+                    DespawnPolicy::DespawnSelfAndAllThatAffectsIt => {
+                        despawn_all_that_affect(
+                            affected_entity.affected_entity,
+                            &timer_sequences_query,
+                            &timer_query,
+                            &mut commands,
+                        );
+                    }
                 }
-                despawn_entity_notify_on_fail(
+                despawn_recursive_notify_on_fail(
                     affected_entity.affected_entity,
                     "(affected entity from timer despawn affected entities request)",
                     &mut commands,
@@ -65,5 +75,39 @@ fn remove_from_all_affecting_entities(
             ),
             vec![LogCategory::RequestNotFulfilled],
         );
+    }
+}
+
+fn despawn_all_that_affect(
+    affected_entity: Entity,
+    timer_sequences_query: &Query<&TimerSequence>,
+    timer_query: &Query<(Entity, &EmittingTimer, Option<&TimerParentSequence>)>,
+    commands: &mut Commands,
+) {
+    for (timer_entity, timer, maybe_parent) in timer_query {
+        for timer_affected_entity in timer.affected_entities.iter() {
+            if timer_affected_entity.affected_entity == affected_entity {
+                if let Some(calculator) = timer_affected_entity.value_calculator_entity {
+                    despawn_recursive_notify_on_fail(
+                        calculator,
+                        "calculator on late despawn",
+                        commands,
+                    );
+                }
+                despawn_recursive_notify_on_fail(timer_entity, "timer on late despawn", commands);
+                if let Some(parent_sequence) = maybe_parent {
+                    if timer_sequences_query
+                        .get(parent_sequence.parent_sequence)
+                        .is_ok()
+                    {
+                        despawn_recursive_notify_on_fail(
+                            parent_sequence.parent_sequence,
+                            "timer parent sequence on late despawn",
+                            commands,
+                        );
+                    }
+                }
+            }
+        }
     }
 }

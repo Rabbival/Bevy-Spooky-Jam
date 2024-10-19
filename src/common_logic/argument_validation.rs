@@ -1,17 +1,11 @@
-use std::{any::TypeId, fmt::Debug};
+use std::fmt::Debug;
 
 use crate::prelude::*;
 
 pub fn clamp_and_notify<T: PartialOrd + Debug + 'static>(value: T, min: T, max: T) -> T {
     if value < min {
         print_warning(
-            format!(
-                "value of type {:?} had value below min: {:?},\n
-                fixed to min: {:?}.",
-                TypeId::of::<T>(),
-                value,
-                min
-            ),
+            format!("value {:?} was below min: {:?}, fixed to min.", value, min),
             vec![
                 LogCategory::ValueValidation,
                 LogCategory::RequestNotFulfilled,
@@ -20,13 +14,7 @@ pub fn clamp_and_notify<T: PartialOrd + Debug + 'static>(value: T, min: T, max: 
         min
     } else if value > max {
         print_warning(
-            format!(
-                "value of type {:?} had value above max: {:?},\n
-                fixed to max: {:?}.",
-                TypeId::of::<T>(),
-                value,
-                max
-            ),
+            format!("value {:?} was above max: {:?}, fixed to max.", value, max),
             vec![
                 LogCategory::ValueValidation,
                 LogCategory::RequestNotFulfilled,

@@ -20,14 +20,14 @@ pub fn remove_component_notify_on_fail<T: Component>(
     }
 }
 
-pub fn despawn_entity_notify_on_fail(
-    entity_to_remove_from: Entity,
+pub fn despawn_recursive_notify_on_fail(
+    entity_to_destroy: Entity,
     entity_name: &str,
     commands: &mut Commands,
 ) {
-    match commands.get_entity(entity_to_remove_from) {
-        Some(mut entity_commands) => {
-            entity_commands.despawn();
+    match commands.get_entity(entity_to_destroy) {
+        Some(entity_commands) => {
+            entity_commands.despawn_recursive();
         }
         None => {
             print_error(

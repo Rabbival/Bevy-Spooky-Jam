@@ -1,12 +1,13 @@
-use crate::debug::gizmos::gizmos::GizmosPlugin;
 use crate::prelude::*;
 
 pub mod bombs;
 pub mod consts;
 pub mod event_channels;
+pub mod game_event_handler;
 pub mod monsters;
-pub mod orb;
-pub mod player;
+pub mod player_management;
+pub mod respawner;
+pub mod scores;
 pub mod tags;
 
 pub struct GamePlugin;
@@ -17,9 +18,11 @@ impl Plugin for GamePlugin {
             PlayerPlugin,
             MonstersPlugin,
             GizmosPlugin,
-            OrbPlugin,
             BombsPlugin,
-            GameEventChannelsPlugin,
+            ScorePlugin,
+            GameEventPlugin,
+            GameEventHandlerPlugin,
+            RespawnerPlugin,
         ));
     }
 }

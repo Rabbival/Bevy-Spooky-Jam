@@ -13,7 +13,7 @@ impl Plugin for ScreenSetupPlugin {
                     primary_window: Some(Window {
                         resolution: WindowResolution::new(
                             WINDOW_SIZE_IN_PIXELS,
-                            WINDOW_SIZE_IN_PIXELS,
+                            WINDOW_SIZE_IN_PIXELS + TOP_UI_HEADER_BAR_HEIGHT,
                         ),
                         resizable: false,
                         ..default()
@@ -22,10 +22,6 @@ impl Plugin for ScreenSetupPlugin {
                 })
                 .build(),
         )
-        .insert_resource(SCREEN_COLOR_BACKGROUND)
-        .insert_resource(AmbientLight {
-            color: Color::default(),
-            brightness: 0.9,
-        });
+        .insert_resource(SCREEN_COLOR_BACKGROUND);
     }
 }

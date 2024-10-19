@@ -1,29 +1,26 @@
 use crate::prelude::*;
 
-#[derive(Debug, Clone, Copy, Component)]
-pub struct Orb;
+use bevy::time::Stopwatch;
 
-#[derive(Debug, Clone, Copy, Component)]
-pub struct Patroller;
+#[derive(Component, Debug)]
+pub struct BombTag;
 
-#[derive(Component)]
-pub struct Player;
-
-#[derive(Component, Default)]
-pub struct Monster {
-    pub hearing_ring_distance: f32,
-    pub state: MonsterState,
-}
-
-#[derive(Component, Eq, PartialEq, Default)]
-pub enum MonsterState {
-    #[default]
-    Idle,
-    Alert
-}
-
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
 
+#[derive(Component, Debug)]
+pub struct InWorldButNotBoundWrapped;
+
+#[derive(Component, Default)]
+pub struct PlayerGameStopwatchUi {
+    pub timer: Stopwatch,
+}
+
+#[derive(Component, Default)]
+pub struct PlayerScoreTextUi;
+
+#[derive(Component, Default)]
+pub struct BestScoreTextUi;
+
 #[derive(Component)]
-pub struct Bomb;
+pub struct AgainScreen;

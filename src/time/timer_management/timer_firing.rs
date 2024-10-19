@@ -139,9 +139,11 @@ fn destory_inactive_and_send_removal_request(
     emitting_timers: &Query<&EmittingTimer>,
     commands: &mut Commands,
 ) {
-    commands
-        .entity(remove_from_and_destroy.value_calculator)
-        .despawn();
+    despawn_recursive_notify_on_fail(
+        remove_from_and_destroy.value_calculator,
+        "calculator when choosing an affecting timer",
+        commands,
+    );
     if let Ok(timer) = emitting_timers.get(remove_from_and_destroy.timer) {
         if let Some(affected_entity) = timer
             .affected_entities
