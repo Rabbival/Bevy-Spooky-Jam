@@ -4,6 +4,7 @@ use crate::prelude::*;
 pub struct BombExploded {
     pub location: Vec3,
     pub hit_monster: bool,
+    pub hit_player: bool,
 }
 
 pub struct BombEventsPlugin;
