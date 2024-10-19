@@ -21,7 +21,7 @@ fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&Player>)>,
+    explode_in_contact_query: Query<&Transform, With<Monster>>,
     mut bomb_query: Query<(&Transform, &mut Bomb)>,
     transform_query: Query<
         (
@@ -37,10 +37,7 @@ fn explode_bombs_on_direct_collision(
 ) {
     for (bomb_transform, mut bomb) in &mut bomb_query {
         if let BombState::PostHeld = bomb.state {
-            for (transform, maybe_monster, maybe_player) in &explode_in_contact_query {
-                if maybe_monster.is_none() && maybe_player.is_none() {
-                    continue;
-                }
+            for transform in &explode_in_contact_query {
                 if bomb_transform.translation.distance(transform.translation) <= BOMB_SIZE {
                     unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
                     bomb.state = BombState::Exploded;
@@ -235,6 +232,7 @@ fn manage_bomb_explosion_side_effects(
     mut explosions_listener: EventReader<BombExploded>,
     mut sounds_event_writer: EventWriter<SoundEvent>,
     mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
+    mut game_event_writer: EventWriter<GameEvent>,
     sprites_atlas_resource: Res<SpritesAtlas>,
     mut commands: Commands,
 ) {
@@ -257,6 +255,9 @@ fn manage_bomb_explosion_side_effects(
             update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                 PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
             ));
+        }
+        if exploded_bomb.hit_monster {
+            game_event_writer.send(GameEvent::GameOver);
         }
     }
 }
