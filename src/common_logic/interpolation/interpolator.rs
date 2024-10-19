@@ -24,8 +24,8 @@ impl Default for Interpolator {
 
 #[cfg(test)]
 mod tests {
-    use std::f32::consts::PI;
     use super::*;
+    use std::f32::consts::PI;
 
     #[test]
     fn test_interpolator_for_out_of_bounds_progress() {
