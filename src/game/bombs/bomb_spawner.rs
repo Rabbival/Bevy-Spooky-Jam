@@ -185,7 +185,7 @@ fn listen_for_bombs_done_growing(
                                 ..default()
                             },
                             PointLight2d {
-                                color: Color::from(bomb.to_colors().unwrap().text),
+                                color: bomb.to_colors().unwrap().text,
                                 radius: BOMB_EXPLOSION_RADIUS,
                                 ..default()
                             },

@@ -37,10 +37,13 @@ fn listen_for_bomb_tick_update(
                     &mut text_query,
                     &mut sounds_event_writer,
                 ) {
-                    print_error(
-                        BombError::CouldntParseTimerIntoInteger,
-                        vec![LogCategory::RequestNotFulfilled],
-                    );
+                    if let BombState::Exploded = bomb.state {
+                    } else {
+                        print_error(
+                            BombError::CouldntParseTimerIntoInteger,
+                            vec![LogCategory::RequestNotFulfilled],
+                        );
+                    }
                 }
             } else {
                 print_error(
