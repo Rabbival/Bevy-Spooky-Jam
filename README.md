@@ -1,7 +1,7 @@
-Bevy Spooky Jam v0.1
-====================
+Soul Bomb Monster Hunt v0.1
+===========================
 
-TODO: decide a game name <- here
+Soul Bomb Monster Hunt Bevy Spooky Jam entry.
 
 ### Installation requirements
 
@@ -12,8 +12,8 @@ TODO: decide a game name <- here
 ### Installation instructions
 
 ```bash
-$ git clone git@github.com:Rabbival/Bevy-Spooky-Jam.git
-$ cd Bevy-Spooky-Jam
+$ git clone git@github.com:Rabbival/Bevy-Spooky-Jam.git soul-bomb-monster-hunt
+$ cd soul-bomb-monster-hunt
 $ cargo run --release
 ```
 
@@ -27,7 +27,11 @@ $ cargo run --target wasm32-unknown-unknown -- DISABLE_OUTPUT_LOG_FILE
 
 #### Goal
 
-TODO: decide game goal <- here
+When near a bomb, press left mouse button to pick it up. When held, aim the bomb, then release it.
+
+Monsters can't see you, but they can hear you, so don't get too close. Luckily for you, picking up a soul bomb slows your perception of time, so you'll have an easier time aiming them!
+
+Try to kill as many monsters as possible. Good luck!
 
 #### Controls
 
