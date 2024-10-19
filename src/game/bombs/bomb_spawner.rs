@@ -29,14 +29,13 @@ fn respawn_initial_bomb_on_game_restart(
     sprites_atlas_resource: ResMut<SpritesAtlas>,
     commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
         spawn_initial_bombs(
             timer_fire_request_writer,
             transforms_not_to_spawn_next_to,
             sprites_atlas_resource,
             commands,
         );
-        break;
     }
 }
 
