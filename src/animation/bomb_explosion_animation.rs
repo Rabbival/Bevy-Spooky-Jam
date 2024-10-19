@@ -5,12 +5,12 @@ use rand::Rng;
 pub struct AnimationConfig {
     pub first_sprite_index: usize,
     pub last_sprite_index: usize,
-    pub fps: usize,
+    pub fps: u32,
     pub time_since_frame_update: f32,
 }
 
 impl AnimationConfig {
-    pub fn new(first: usize, last: usize, fps: usize) -> Self {
+    pub fn new(first: usize, last: usize, fps: u32) -> Self {
         Self {
             first_sprite_index: first,
             last_sprite_index: last,
@@ -74,47 +74,30 @@ fn update_explosion_animations(
     time_multipliers: Query<&TimeMultiplier>,
     mut commands: Commands,
 ) {
-    for (mut config, mut transform, mut atlas, animation_entity) in &mut query {
+    for (mut animation_config, mut animation_transform, mut atlas, animation_entity) in &mut query {
         for time_multiplier in &time_multipliers {
             if let TimeMultiplierId::GameTimeMultiplier = time_multiplier.id() {
-                let time_since_frame_update =
-                    config.time_since_frame_update + time.delta_seconds() * time_multiplier.value();
-                let frames_since_frame_update = time_since_frame_update as usize * config.fps;
-                //DEBUG
-                info!(
-                    "multiplied time {:?}",
-                    time.delta_seconds() * time_multiplier.value()
-                );
-
-                config.time_since_frame_update = time_since_frame_update % config.fps as f32;
+                animation_config.time_since_frame_update +=
+                    time.delta_seconds() * (time_multiplier.value().powf(2.0));
+                let frames_since_frame_update =
+                    (animation_config.time_since_frame_update * animation_config.fps as f32) as u32;
+                animation_config.time_since_frame_update -=
+                    (frames_since_frame_update / BOMB_EXPLOSION_ANIMATION_FPS) as f32;
                 for _frame in 0..frames_since_frame_update {
-                    advance_frame_and_despawn_if_done(
-                        animation_entity,
-                        &mut transform,
-                        &mut atlas,
-                        &config,
-                        &mut commands,
-                    );
+                    if atlas.index == animation_config.last_sprite_index {
+                        if let Some(mut animation_commands) = commands.get_entity(animation_entity)
+                        {
+                            animation_commands.despawn();
+                            break;
+                        }
+                    } else {
+                        atlas.index += 1;
+                        animation_transform.scale.x += 0.04;
+                        animation_transform.scale.y += 0.04;
+                    }
                 }
+                break;
             }
         }
-    }
-}
-
-fn advance_frame_and_despawn_if_done(
-    animation_entity: Entity,
-    animation_transform: &mut Transform,
-    atlas: &mut TextureAtlas,
-    animation_config: &AnimationConfig,
-    commands: &mut Commands,
-) {
-    if atlas.index == animation_config.last_sprite_index {
-        if let Some(mut animation_commands) = commands.get_entity(animation_entity) {
-            animation_commands.despawn();
-        }
-    } else {
-        atlas.index += 1;
-        animation_transform.scale.x += 0.04;
-        animation_transform.scale.y += 0.04;
     }
 }
