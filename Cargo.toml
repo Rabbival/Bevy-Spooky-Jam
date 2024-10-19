@@ -1,6 +1,6 @@
 [package]
-name = "spooky_jam"
-version = "0.1.0"
+name = "soul_bomb_monster_hunt"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]

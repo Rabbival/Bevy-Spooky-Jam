@@ -24,7 +24,8 @@ Cargo.lock
 /.vscode
 
 # No need to change the logs file every time we run the program
-game_logs/
+/game_logs/*
+!/game_logs/.gitkeep
 /assets/Assets Master.ai
 /assets/AssetsPS.psd
 /assets/FloorHolePS.psd
