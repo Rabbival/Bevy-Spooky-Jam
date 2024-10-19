@@ -80,7 +80,10 @@ fn tick_bomb_and_update_text(
                         bomb_sprite.color = bomb_colors.bomb;
                     }
                 }
-                if bomb.about_to_explode && ceiled_time_until_explosion < text_value && 0 < ceiled_time_until_explosion {
+                if bomb.about_to_explode
+                    && ceiled_time_until_explosion < text_value
+                    && 0 < ceiled_time_until_explosion
+                {
                     sounds_event_writer.send(SoundEvent::BombTickEvent(
                         1.0 - (ceiled_time_until_explosion as f32 * 0.08),
                     ));
