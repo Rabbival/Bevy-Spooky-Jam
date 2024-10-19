@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use std::time::Duration;
 
 use bevy::time::Stopwatch;
 
@@ -21,13 +20,7 @@ pub struct PlayerGameStopwatchUi {
 pub struct PlayerScoreTextUi;
 
 #[derive(Component, Default)]
-pub struct LeaderboardScoreTextUi;
-
-#[derive(Component, Default)]
-pub struct WorldChampionshipLeaderboardScoring {
-    pub elapsed: Duration,
-    pub hi_score: u32,
-}
+pub struct BestScoreTextUi;
 
 #[derive(Component)]
 pub struct AgainScreen;

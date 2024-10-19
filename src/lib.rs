@@ -95,7 +95,7 @@ pub mod prelude {
             player_movement::*, player_spawner::*, tags::*, PlayerPlugin,
         },
         respawner::*,
-        scores::{score_event_channel::*, score_manager::*, ScorePlugin},
+        scores::{components::*, score_event_channel::*, score_manager::*, ScorePlugin},
         tags::*,
         GamePlugin,
     };

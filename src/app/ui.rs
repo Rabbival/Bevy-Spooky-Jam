@@ -1,5 +1,4 @@
 use crate::{prelude::*, read_no_field_variant};
-use std::time::Duration;
 
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
@@ -140,12 +139,7 @@ fn spawn_ui(
             ),
             ..default()
         },
-        LeaderboardScoreTextUi,
-        // TODO add globally persisted values
-        WorldChampionshipLeaderboardScoring {
-            elapsed: Duration::from_secs(0),
-            hi_score: 0,
-        },
+        BestScoreTextUi,
     ));
 }
 
@@ -160,29 +154,25 @@ fn update_player_game_stopwatch(
 }
 
 fn update_player_scoring(
-    players_query: Query<&Player>,
+    changed_game_score_query: Query<&CurrentGameScore, Changed<CurrentGameScore>>,
     mut player_scoring_text_query: Query<&mut Text, With<PlayerScoreTextUi>>,
 ) {
-    for player in players_query.iter() {
-        for mut player_scoring_text in player_scoring_text_query.iter_mut() {
+    for game_score in &changed_game_score_query {
+        for mut player_scoring_text in &mut player_scoring_text_query {
             player_scoring_text.sections[0].value =
-                format!("Score: {:0>7}", player.score.to_string());
+                format!("Score: {:0>7}", game_score.0.to_string());
         }
     }
 }
 
 fn update_high_score(
-    world_championship_leaderboard_scoring_query: Query<&WorldChampionshipLeaderboardScoring>,
-    mut high_score_text_query: Query<&mut Text, With<LeaderboardScoreTextUi>>,
+    changed_best_score_query: Query<&BestScoreSoFar, Changed<BestScoreSoFar>>,
+    mut high_score_text_query: Query<&mut Text, With<BestScoreTextUi>>,
 ) {
-    for world_championship_leaderboard_scoring in
-        world_championship_leaderboard_scoring_query.iter()
-    {
-        for mut high_score_text in high_score_text_query.iter_mut() {
-            high_score_text.sections[0].value = format!(
-                "Hi  Score: {:0>7}",
-                world_championship_leaderboard_scoring.hi_score.to_string()
-            );
+    for best_score in &changed_best_score_query {
+        for mut high_score_text in &mut high_score_text_query {
+            high_score_text.sections[0].value =
+                format!("Hi  Score: {:0>7}", best_score.0.to_string());
         }
     }
 }

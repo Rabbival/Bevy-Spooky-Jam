@@ -45,10 +45,7 @@ fn spawn_player(
             input_map,
         },
         AffectingTimerCalculators::default(),
-        Player {
-            score: 0,
-            ..default()
-        },
+        Player::default(),
         WorldBoundsWrapped,
         PlayerMonsterCollider::new(PLAYER_COLLIDER_RADIUS),
     ));
