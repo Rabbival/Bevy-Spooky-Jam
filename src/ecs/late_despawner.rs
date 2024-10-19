@@ -15,7 +15,8 @@ pub fn listen_for_despawn_requests_from_timers(
     mut event_reader: EventReader<TimerDoneEvent>,
     mut remove_from_timer_event_writer: EventWriter<RemoveFromTimerAffectedEntities>,
     affecting_timers_query: Query<&AffectingTimerCalculators>,
-    parent_timer_sequence_query: Query<&TimerParentSequence>,
+    timer_sequences_query: Query<&TimerSequence>,
+    timer_query: Query<(Entity, &EmittingTimer, Option<&TimerParentSequence>)>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
@@ -30,11 +31,11 @@ pub fn listen_for_despawn_requests_from_timers(
                             affected_entity.affected_entity,
                         );
                     }
-                    DespawnPolicy::DespawnSelfAndAffectingTimersAndParentSequences => {
-                        destroy_affecting_timers_and_calculators_and_sequences(
+                    DespawnPolicy::DespawnSelfAndAllThatAffectsIt => {
+                        despawn_all_that_affect(
                             affected_entity.affected_entity,
-                            &affecting_timers_query,
-                            &parent_timer_sequence_query,
+                            &timer_sequences_query,
+                            &timer_query,
                             &mut commands,
                         );
                     }
@@ -77,41 +78,36 @@ fn remove_from_all_affecting_entities(
     }
 }
 
-fn destroy_affecting_timers_and_calculators_and_sequences(
+fn despawn_all_that_affect(
     affected_entity: Entity,
-    affecting_timers_query: &Query<&AffectingTimerCalculators>,
-    parent_timer_sequence_query: &Query<&TimerParentSequence>,
+    timer_sequences_query: &Query<&TimerSequence>,
+    timer_query: &Query<(Entity, &EmittingTimer, Option<&TimerParentSequence>)>,
     commands: &mut Commands,
 ) {
-    if let Ok(affecting_timers) = affecting_timers_query.get(affected_entity) {
-        for affecting_timers_of_type in affecting_timers.values() {
-            for affecting_timer in affecting_timers_of_type {
-                despawn_recursive_notify_on_fail(
-                    affecting_timer.value_calculator,
-                    "EmittingTimer",
-                    commands,
-                );
-                if let Some(timer) = commands.get_entity(affecting_timer.timer) {
-                    timer.despawn_recursive();
-                    if let Ok(parent_sequence_component) =
-                        parent_timer_sequence_query.get(affecting_timer.timer)
+    for (timer_entity, timer, maybe_parent) in timer_query {
+        for timer_affected_entity in timer.affected_entities.iter() {
+            if timer_affected_entity.affected_entity == affected_entity {
+                if let Some(calculator) = timer_affected_entity.value_calculator_entity {
+                    despawn_recursive_notify_on_fail(
+                        calculator,
+                        "calculator on late despawn",
+                        commands,
+                    );
+                }
+                despawn_recursive_notify_on_fail(timer_entity, "timer on late despawn", commands);
+                if let Some(parent_sequence) = maybe_parent {
+                    if timer_sequences_query
+                        .get(parent_sequence.parent_sequence)
+                        .is_ok()
                     {
-                        if let Some(timer_sequence) =
-                            commands.get_entity(parent_sequence_component.parent_sequence)
-                        {
-                            timer_sequence.despawn_recursive();
-                        }
+                        despawn_recursive_notify_on_fail(
+                            parent_sequence.parent_sequence,
+                            "timer parent sequence on late despawn",
+                            commands,
+                        );
                     }
                 }
             }
         }
-    } else {
-        print_warning(
-            format!(
-                "Was asked to destroy the calculator, timer and sequence of entity {:?}, but it has no affecting timers component.",
-                affected_entity
-            ),
-            vec![LogCategory::RequestNotFulfilled],
-        );
     }
 }

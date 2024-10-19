@@ -1,3 +1,5 @@
+use bevy_light_2d::light::PointLight2d;
+
 use crate::{prelude::*, read_no_field_variant};
 
 #[derive(Debug, Clone, Copy)]
@@ -26,12 +28,9 @@ fn listen_for_bomb_picking_attempts(
     mut player_request_listener: EventReader<PlayerRequest>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
-    mut bomb_query: Query<
-        (&mut Bomb, &mut Transform, &Handle<ColorMaterial>, Entity),
-        Without<Player>,
-    >,
+    mut bomb_query: Query<(&mut Bomb, &mut Transform, &mut Sprite, Entity), Without<Player>>,
     mut player_query: Query<(&mut Player, &Transform, Entity), Without<Bomb>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut sounds_event_writer: EventWriter<SoundEvent>,
     mut commands: Commands,
 ) {
     for _bomb_pickup_request in
@@ -47,16 +46,16 @@ fn listen_for_bomb_picking_attempts(
                     player_transform,
                     bomb_entity,
                     &mut bomb_query,
-                    &mut materials,
                     &mut commands,
                 );
                 pull_bomb_and_slow_down_time(
                     bomb_entity,
-                    &bomb_query,
+                    &mut bomb_query,
                     &mut timer_fire_request_writer,
                     &mut time_multiplier_request_writer,
                     &mut commands,
                 );
+                sounds_event_writer.send(SoundEvent::BombPickUpEvent);
 
                 print_info(
                     format!("player picked up bomb entity: {:?}", bomb_entity),
@@ -69,10 +68,7 @@ fn listen_for_bomb_picking_attempts(
 
 fn try_getting_closest_bomb(
     player_location: Vec3,
-    bomb_query: &mut Query<
-        (&mut Bomb, &mut Transform, &Handle<ColorMaterial>, Entity),
-        Without<Player>,
-    >,
+    bomb_query: &mut Query<(&mut Bomb, &mut Transform, &mut Sprite, Entity), Without<Player>>,
 ) -> Option<Entity> {
     let mut maybe_closest_bomb: Option<BombEntityAndDistance> = None;
     for (_, bomb_transform, _, bomb_entity) in bomb_query {
@@ -102,19 +98,14 @@ fn make_player_hold_bomb(
     player: &mut Player,
     player_transform: &Transform,
     bomb_entity: Entity,
-    bomb_query: &mut Query<
-        (&mut Bomb, &mut Transform, &Handle<ColorMaterial>, Entity),
-        Without<Player>,
-    >,
-    materials: &mut Assets<ColorMaterial>,
+    bomb_query: &mut Query<(&mut Bomb, &mut Transform, &mut Sprite, Entity), Without<Player>>,
     commands: &mut Commands,
 ) {
-    let (mut bomb, mut bomb_transform, material, _) = bomb_query.get_mut(bomb_entity).unwrap();
+    let (mut bomb, mut bomb_transform, mut bomb_sprite, _) =
+        bomb_query.get_mut(bomb_entity).unwrap();
     bomb.state = BombState::Held;
-    if let Some(material) = materials.get_mut(material.id()) {
-        if let Some(bomb_state_colors) = bomb.state.to_colors() {
-            material.color = bomb_state_colors.bomb;
-        }
+    if let Some(bomb_state_colors) = bomb.to_colors() {
+        bomb_sprite.color = bomb_state_colors.bomb;
     }
     player.held_bomb = Some(bomb_entity);
     commands.entity(player_entity).push_children(&[bomb_entity]);
@@ -123,10 +114,7 @@ fn make_player_hold_bomb(
 
 fn pull_bomb_and_slow_down_time(
     bomb_entity: Entity,
-    bomb_query: &Query<
-        (&mut Bomb, &mut Transform, &Handle<ColorMaterial>, Entity),
-        Without<Player>,
-    >,
+    bomb_query: &mut Query<(&mut Bomb, &mut Transform, &mut Sprite, Entity), Without<Player>>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     time_multiplier_request_writer: &mut EventWriter<SetTimeMultiplier>,
     commands: &mut Commands,
@@ -205,17 +193,21 @@ fn bomb_countdown_calculator(bomb: &Bomb, commands: &mut Commands) -> Entity {
 fn update_bomb_text_color_after_pick(
     mut player_request_listener: EventReader<PlayerRequest>,
     player_query: Query<&Player>,
-    mut text_query: Query<(&mut Text, &Parent)>,
+    mut text_query: Query<(&mut Text, &mut PointLight2d, &Parent)>,
+    bomb_query: Query<&Bomb>,
 ) {
     for _bomb_throw_request in
         read_no_field_variant!(player_request_listener, PlayerRequest::PickUpBomb)
     {
         for player in &player_query {
             if let Some(bomb_entity) = player.held_bomb {
-                for (mut text, text_parent_entity) in &mut text_query {
-                    if text_parent_entity.get() == bomb_entity {
-                        if let Some(bomb_state_colors) = BombState::Held.to_colors() {
-                            text.sections[0].style.color = bomb_state_colors.text;
+                if let Ok(bomb) = bomb_query.get(bomb_entity) {
+                    for (mut text, mut light, text_parent_entity) in &mut text_query {
+                        if text_parent_entity.get() == bomb_entity {
+                            if let Some(bomb_state_colors) = bomb.to_colors() {
+                                text.sections[0].style.color = bomb_state_colors.text;
+                                light.color = bomb_state_colors.text;
+                            }
                         }
                     }
                 }

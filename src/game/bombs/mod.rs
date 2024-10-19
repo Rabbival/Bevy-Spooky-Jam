@@ -2,6 +2,7 @@ use crate::prelude::*;
 
 pub mod bomb;
 pub mod bomb_error;
+pub mod bomb_events;
 pub mod bomb_picking;
 pub mod bomb_spawner;
 pub mod bomb_spawning_sequence_manager;
@@ -22,6 +23,7 @@ impl Plugin for BombsPlugin {
             BombThrowingPlugin,
             ExplosionManagerPlugin,
             BombTickerPlugin,
+            BombEventsPlugin,
         ));
     }
 }

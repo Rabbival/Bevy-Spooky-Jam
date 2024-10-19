@@ -1,6 +1,7 @@
 #![allow(clippy::type_complexity)]
 pub mod animation;
 mod app;
+mod audio;
 mod common_logic;
 mod data_structures;
 mod debug;
@@ -19,11 +20,16 @@ extern crate lazy_static;
 
 pub mod prelude {
     pub use crate::animation::{
-        color_change::*, scale_change::*, translation_change::*, CustomAnimationPlugin,
+        bomb_explosion_animation::*, color_change::*, dynamic_light_manager::*, frame_change::*,
+        frame_sequence::*, scale_change::*, translation_change::*, CustomAnimationPlugin,
     };
     pub use crate::app::{
         assets_loader::*, consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*,
         tags::*, ui::*,
+    };
+    pub use crate::audio::{
+        consts::*, music_player::*, sound_event_channel::*, sound_player::*, tags::*,
+        GameAudioPlugin,
     };
     pub use crate::common_logic::{
         argument_validation::*,
@@ -42,10 +48,13 @@ pub mod prelude {
         consts::*,
         enums::{bevy_log_level::*, functionality_override::*, log_category::*, os_access_log::*},
         game_session_log::*,
-        gizmos::{range_gizmos::*, ray_gizmos::*, GizmosPlugin},
+        gizmos::{
+            player_monster_collision_gizmos::*, range_gizmos::*, ray_gizmos::*, GizmosPlugin,
+        },
         print_config_struct::*,
         print_log::*,
         print_vec::*,
+        DebugPlugin,
     };
     pub use crate::ecs::{
         component_utilities::*,
@@ -56,31 +65,37 @@ pub mod prelude {
     };
     pub use crate::game::{
         bombs::{
-            bomb::*, bomb_error::*, bomb_picking::*, bomb_spawner::*,
+            bomb::*, bomb_error::*, bomb_events::*, bomb_picking::*, bomb_spawner::*,
             bomb_spawning_sequence_manager::*, bomb_state::*, bomb_throwing::*, bomb_ticker::*,
             consts::*, explosion_manager::*, BombsPlugin,
         },
         consts::*,
+        event_channels::*,
+        game_event_handler::*,
         monsters::{
             consts::*,
             monster::*,
-            monster_chase_updater::*,
+            monster_audio::*,
             monster_error::*,
-            monster_listening::*,
+            monster_events::*,
+            monster_path::{
+                main_path_initiation::*, stray_path_ender::*, stray_path_updater::*,
+                MonsterPathUpdatingPlugin,
+            },
             monster_spawner::*,
             monster_spawning_sequence_manager::*,
-            monster_state::*,
-            monster_state_set_request::*,
-            state_initiation::{
-                chase_state_initiation::*, idle_state_initiation::*, MonsterStateInitiationPlugin,
+            state_management::{
+                monster_state::*, monster_state_changer::*, MonsterStateManagementPlugin,
             },
+            visuals::{animation_manager::*, state_change_visualizer::*, MonsterVisualsPlugin},
             MonstersPlugin,
         },
         player_management::{
-            consts::*, player_event_channel::*, player_movement::*, player_spawner::*, tags::*,
-            PlayerPlugin,
+            consts::*, player_event_channel::*, player_monster_collision_detection::*,
+            player_movement::*, player_spawner::*, tags::*, PlayerPlugin,
         },
-        scores::{score_event_channel::*, score_manager::*, ScorePlugin},
+        respawner::*,
+        scores::{components::*, score_event_channel::*, score_manager::*, ScorePlugin},
         tags::*,
         GamePlugin,
     };

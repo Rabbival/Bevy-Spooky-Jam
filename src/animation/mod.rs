@@ -1,6 +1,10 @@
 use crate::prelude::*;
 
+pub mod bomb_explosion_animation;
 pub mod color_change;
+pub mod dynamic_light_manager;
+pub mod frame_change;
+pub mod frame_sequence;
 pub mod scale_change;
 pub mod translation_change;
 
@@ -12,6 +16,9 @@ impl Plugin for CustomAnimationPlugin {
             TranslationChangePlugin,
             ScaleChangePlugin,
             ColorChangePlugin,
+            FrameChangePlugin,
+            DynamicLightManagerPlugin,
+            BombExplosionAnimationPlugin,
         ));
     }
 }

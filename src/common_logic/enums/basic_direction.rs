@@ -1,56 +1,70 @@
+use std::f32::consts::PI;
+
 use crate::prelude::*;
+use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Clone, Copy, EnumIter, Reflect)]
 pub enum BasicDirection {
-    Up,
-    Right,
+    DownLeft,
     Down,
+    RightDown,
+    Right,
+    UpRight,
+    Up,
+    LeftUp,
     Left,
 }
 
 impl BasicDirection {
-    pub fn opposite_direction_index(&self) -> u8 {
-        let index = *self as u8;
-        (index + 2) % 4
+    pub fn closest(find_closest_to: Vec2) -> Self {
+        let angle = Vec2::X.angle_between(find_closest_to);
+        let normalized_angle = (angle + PI) - (PI / 8.0);
+        let positive_normalized = normalized_angle % (2.0 * PI);
+        let angle_in_eight_turns = positive_normalized / (PI / 4.0);
+        let rounded = angle_in_eight_turns.floor() as u8;
+        Self::index_to_dir(rounded).unwrap()
     }
 
-    pub fn opposite_direction(&self) -> Option<Self> {
-        Self::index_to_dir(self.opposite_direction_index())
-    }
-
-    pub fn to_world_direction(&self) -> Vec2 {
+    pub fn to_monster_initial_frame_index(&self) -> usize {
         match self {
-            Self::Up => Vec2::Y,
-            Self::Right => Vec2::X,
-            Self::Down => Vec2::NEG_Y,
-            Self::Left => Vec2::NEG_X,
+            Self::DownLeft => 6,
+            Self::Down => 7,
+            Self::RightDown => 8,
+            Self::Right => 5,
+            Self::UpRight => 2,
+            Self::Up => 1,
+            Self::LeftUp => 0,
+            Self::Left => 3,
         }
     }
 
-    pub fn to_rotation(&self) -> Quat {
-        Quat::from_rotation_arc_2d(Vec2::Y, self.to_world_direction())
+    pub fn index_to_dir(index: u8) -> Option<Self> {
+        for (direction_index, direction) in BasicDirection::iter().enumerate() {
+            if direction_index == index as usize {
+                return Some(direction);
+            }
+        }
+        None
     }
 }
 
-impl BasicDirection {
-    pub fn index_to_dir(index: u8) -> Option<Self> {
-        match index {
-            0 => Some(BasicDirection::Up),
-            1 => Some(BasicDirection::Right),
-            2 => Some(BasicDirection::Down),
-            3 => Some(BasicDirection::Left),
-            _ => None,
-        }
-    }
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    pub fn from_keycode(keycode: &KeyCode) -> Option<BasicDirection> {
-        match keycode {
-            KeyCode::KeyW | KeyCode::ArrowUp => Some(BasicDirection::Up),
-            KeyCode::KeyD | KeyCode::ArrowRight => Some(BasicDirection::Right),
-            KeyCode::KeyS | KeyCode::ArrowDown => Some(BasicDirection::Down),
-            KeyCode::KeyA | KeyCode::ArrowLeft => Some(BasicDirection::Left),
-            _ => None,
-        }
+    #[test]
+    fn test_closest() {
+        let almost_up_left = Vec2::new(-1.0, 0.9);
+        let almost_down_left = Vec2::new(-0.85, -0.9);
+        let almost_down_right = Vec2::new(3.2, -3.1);
+
+        let should_be_up_left = BasicDirection::closest(almost_up_left);
+        let should_be_down_left = BasicDirection::closest(almost_down_left);
+        let should_be_down_right = BasicDirection::closest(almost_down_right);
+
+        assert_eq!(BasicDirection::LeftUp, should_be_up_left);
+        assert_eq!(BasicDirection::DownLeft, should_be_down_left);
+        assert_eq!(BasicDirection::RightDown, should_be_down_right);
     }
 }
