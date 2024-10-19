@@ -20,7 +20,7 @@ fn sound_monster_sounds(
         break;
     }
     for bomb_explosion in bomb_explosion_reader.read() {
-        if bomb_explosion.hit_monster {
+        if bomb_explosion.monster_hit_count > 0 {
             sounds_event_writer.send(SoundEvent::MonsterDeathCry);
         }
         break;

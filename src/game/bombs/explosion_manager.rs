@@ -26,33 +26,34 @@ fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&Bomb>)>,
-    bomb_query: Query<(&Transform, &Bomb)>,
+    explode_in_contact_query: Query<(
+        &Transform,
+        Option<&Monster>,
+        Option<&BombTagForCollisionDetection>,
+    )>,
+    mut bomb_query: Query<(&Transform, &mut Bomb)>,
     transform_query: Query<
         (
             &Transform,
             Entity,
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
+            Option<&Player>,
         ),
         With<WorldBoundsWrapped>,
     >,
     mut commands: Commands,
 ) {
-    for (bomb_transform, bomb) in &bomb_query {
+    for (bomb_transform, mut bomb) in &mut bomb_query {
         if let BombState::PostHeld = bomb.state {
             for (transform, maybe_monster, maybe_bomb) in &explode_in_contact_query {
                 if bomb_transform == transform || (maybe_monster.is_none() && maybe_bomb.is_none())
                 {
                     continue;
                 }
-                if let Some(bomb) = maybe_bomb {
-                    if let BombState::PreHeld | BombState::Held = bomb.state {
-                        continue;
-                    }
-                }
                 if bomb_transform.translation.distance(transform.translation) <= BOMB_SIZE {
-                    unslow_time_if_was_held(&mut time_multiplier_request_writer, bomb);
+                    unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
+                    bomb.state = BombState::Exploded;
                     explode_bomb(
                         bomb_transform,
                         bomb.explosion_radius,
@@ -72,13 +73,14 @@ fn listen_for_done_bombs(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    bomb_query: Query<(&Transform, &Bomb)>,
+    mut bomb_query: Query<(&Transform, &mut Bomb)>,
     transform_query: Query<
         (
             &Transform,
             Entity,
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
+            Option<&Player>,
         ),
         With<WorldBoundsWrapped>,
     >,
@@ -87,8 +89,8 @@ fn listen_for_done_bombs(
     for done_timer in timer_done_reader.read() {
         if let TimerDoneEventType::ExplodeInRadius(explosion_radius) = done_timer.event_type {
             for affected_entity in done_timer.affected_entities.affected_entities_iter() {
-                if let Ok((bomb_transform, bomb)) = bomb_query.get(affected_entity) {
-                    unslow_time_if_was_held(&mut time_multiplier_request_writer, bomb);
+                if let Ok((bomb_transform, mut bomb)) = bomb_query.get_mut(affected_entity) {
+                    unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
                     explode_bomb(
                         bomb_transform,
                         explosion_radius,
@@ -97,6 +99,7 @@ fn listen_for_done_bombs(
                         &mut timer_fire_request_writer,
                         &mut commands,
                     );
+                    bomb.state = BombState::Exploded;
                 } else {
                     print_error(
                         EntityError::EntityNotInQuery(
@@ -132,6 +135,7 @@ fn explode_bomb(
             Entity,
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
+            Option<&Player>,
         ),
         With<WorldBoundsWrapped>,
     >,
@@ -139,8 +143,15 @@ fn explode_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
 ) {
-    for (transform_in_radius, entity_in_radius, maybe_affecting_timer_calculators, maybe_monster) in
-        transform_query
+    let mut monsters_in_explosion = 0;
+    let mut player_caught_in_explosion = false;
+    for (
+        transform_in_radius,
+        entity_in_radius,
+        maybe_affecting_timer_calculators,
+        maybe_monster,
+        maybe_player,
+    ) in transform_query
     {
         let distance_from_bomb = bomb_transform
             .translation
@@ -154,12 +165,19 @@ fn explode_bomb(
                 maybe_affecting_timer_calculators,
                 commands,
             );
-            bomb_exploded_event_writer.send(BombExploded {
-                location: bomb_transform.translation,
-                hit_monster: maybe_monster.is_some(),
-            });
+            if maybe_monster.is_some() {
+                monsters_in_explosion += 1;
+            }
+            if maybe_player.is_some() {
+                player_caught_in_explosion = true;
+            }
         }
     }
+    bomb_exploded_event_writer.send(BombExploded {
+        location: bomb_transform.translation,
+        monster_hit_count: monsters_in_explosion,
+        hit_player: player_caught_in_explosion,
+    });
 }
 
 fn knock_back_and_destroy(
@@ -221,10 +239,21 @@ fn move_due_to_blast_calculator(
         .id()
 }
 
+// fn explode_bombs_in_explosion(
+//NTS: don't forget to knock them back
+// ){
+//     for bomb in bomb_query {
+//         if let BombState::PostHeld = bomb.state {
+//             //do the thing
+//         }
+//     }
+// }
+
 fn manage_bomb_explosion_side_effects(
     mut explosions_listener: EventReader<BombExploded>,
     mut sounds_event_writer: EventWriter<SoundEvent>,
     mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
+    mut game_event_writer: EventWriter<GameEvent>,
     bomb_explosion_sprites_atlas_resource: Res<BombExplosionSpritesAtlas>,
     sprites_atlas_resource: Res<SpritesAtlas>,
     mut commands: Commands,
@@ -242,7 +271,7 @@ fn manage_bomb_explosion_side_effects(
                 ),
                 ..default()
             },
-            WorldBoundsWrapped,
+            InWorldButNotBoundWrapped,
         ));
         let animation_config = AnimationConfig::new(0, 60, 240);
         commands.spawn((
@@ -266,10 +295,13 @@ fn manage_bomb_explosion_side_effects(
         ));
         AnimationConfig::timer_from_fps(240);
 
-        if exploded_bomb.hit_monster {
+        if exploded_bomb.monster_hit_count > 0 {
             update_player_score_event_writer.send(AppendToPlayerScoreEvent(
-                PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
+                PLAYER_SCORE_POINTS_ON_MONSTER_KILLED * exploded_bomb.monster_hit_count as u32,
             ));
+        }
+        if exploded_bomb.hit_player {
+            game_event_writer.send(GameEvent::GameOver);
         }
     }
 }

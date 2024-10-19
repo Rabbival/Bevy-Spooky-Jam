@@ -3,8 +3,14 @@ use std::time::Duration;
 
 use bevy::time::Stopwatch;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
+pub struct BombTagForCollisionDetection;
+
+#[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
+
+#[derive(Component, Debug)]
+pub struct InWorldButNotBoundWrapped;
 
 #[derive(Component, Default)]
 pub struct PlayerGameStopwatchUi {
@@ -22,3 +28,6 @@ pub struct WorldChampionshipLeaderboardScoring {
     pub elapsed: Duration,
     pub hi_score: u32,
 }
+
+#[derive(Component)]
+pub struct AgainScreen;
