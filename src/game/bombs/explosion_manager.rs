@@ -1,8 +1,8 @@
 use crate::prelude::*;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
-use rand::Rng;
 use bevy_light_2d::light::PointLight2d;
+use rand::Rng;
 
 pub struct ExplosionManagerPlugin;
 
