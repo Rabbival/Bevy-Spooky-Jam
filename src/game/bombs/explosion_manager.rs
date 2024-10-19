@@ -1,5 +1,7 @@
 use crate::prelude::*;
 use bevy::math::NormedVectorSpace;
+use bevy::prelude::*;
+use rand::Rng;
 use bevy_light_2d::light::PointLight2d;
 
 pub struct ExplosionManagerPlugin;
@@ -287,9 +289,11 @@ fn manage_bomb_explosion_side_effects(
     mut sounds_event_writer: EventWriter<SoundEvent>,
     mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
     mut game_event_writer: EventWriter<GameEvent>,
+    bomb_explosion_sprites_atlas_resource: Res<BombExplosionSpritesAtlas>,
     sprites_atlas_resource: Res<SpritesAtlas>,
     mut commands: Commands,
 ) {
+    let mut rng = rand::thread_rng();
     for exploded_bomb in explosions_listener.read() {
         sounds_event_writer.send(SoundEvent::BombExplodeSoundEvent);
         commands.spawn((
@@ -304,7 +308,27 @@ fn manage_bomb_explosion_side_effects(
             },
             InWorldButNotBoundWrapped,
         ));
-
+        let animation_config = AnimationConfig::new(0, 60, 240);
+        commands.spawn((
+            SpriteBundle {
+                texture: bomb_explosion_sprites_atlas_resource.image_handle.clone(),
+                transform: Transform::from_xyz(
+                    exploded_bomb.location.x,
+                    exploded_bomb.location.y,
+                    Z_LAYER_BOMB_EXPLOSION,
+                )
+                .with_rotation(Quat::from_rotation_z(rng.gen_range(0.0..360.0)))
+                .with_scale(Vec3::new(2.5, 2.5, 0.0)),
+                ..default()
+            },
+            TextureAtlas {
+                layout: bomb_explosion_sprites_atlas_resource.atlas_handle.clone(),
+                index: animation_config.first_sprite_index,
+            },
+            animation_config,
+            WorldBoundsWrapped,
+        ));
+        AnimationConfig::timer_from_fps(240);
         if exploded_bomb.monster_hit_count > 0 {
             update_player_score_event_writer.send(AppendToPlayerScoreEvent(
                 PLAYER_SCORE_POINTS_ON_MONSTER_KILLED * exploded_bomb.monster_hit_count as u32,

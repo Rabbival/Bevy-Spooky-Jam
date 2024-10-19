@@ -1,6 +1,12 @@
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
+pub struct BombExplosionSpritesAtlas {
+    pub atlas_handle: Handle<TextureAtlasLayout>,
+    pub image_handle: Handle<Image>,
+}
+
+#[derive(Resource, Default)]
 pub struct SpritesAtlas {
     pub atlas_handle: Handle<TextureAtlasLayout>,
     pub image_handle: Handle<Image>,
@@ -57,6 +63,16 @@ fn sprites_atlas_setup(
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     mut commands: Commands,
 ) {
+    // bomb explosion
+    let bomb_explosion_image_handle = asset_server.load("images/explosion_sprites_sheet.png");
+    let bomb_explosion_texture_atlas =
+        TextureAtlasLayout::from_grid(UVec2::new(100, 100), 8, 8, None, None);
+    let bomb_explosion_texture_atlas_handle = texture_atlases.add(bomb_explosion_texture_atlas);
+    commands.insert_resource(BombExplosionSpritesAtlas {
+        atlas_handle: bomb_explosion_texture_atlas_handle,
+        image_handle: bomb_explosion_image_handle,
+    });
+    // bato-san
     let image_handle = asset_server.load("images/sprites_sheet.png");
     let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(180, 107), 3, 9, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
