@@ -113,8 +113,7 @@ fn replace_current_path_get_new_delta(
         target_location
     } else {
         target_location
-            + (monster_location - target_location).normalize()
-                * (BOMB_EXPLOSION_RADIUS * 1.2 + MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING)
+            + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS * 1.2
     };
     let new_path_calculator =
         spawn_monster_move_calculator(monster_location, location_to_move_towards, commands);
