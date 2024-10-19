@@ -3,7 +3,8 @@ use crate::prelude::*;
 #[derive(Event, Debug, Clone, Copy, PartialEq)]
 pub struct BombExploded {
     pub location: Vec3,
-    pub hit_monster: bool,
+    pub monster_hit_count: usize,
+    pub hit_player: bool,
 }
 
 pub struct BombEventsPlugin;

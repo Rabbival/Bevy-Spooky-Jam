@@ -100,6 +100,7 @@ fn try_spawning_a_bomb(
             },
             AffectingTimerCalculators::default(),
             bomb_component,
+            BombTag,
             WorldBoundsWrapped,
         ))
         .id();

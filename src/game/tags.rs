@@ -3,6 +3,9 @@ use crate::prelude::*;
 use bevy::time::Stopwatch;
 
 #[derive(Component, Debug)]
+pub struct BombTag;
+
+#[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
 
 #[derive(Component, Debug)]
