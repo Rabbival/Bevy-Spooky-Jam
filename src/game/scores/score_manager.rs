@@ -28,10 +28,10 @@ fn update_player_scoring(
 
 fn listen_for_game_over_events(
     mut game_events_listener: EventReader<GameEvent>,
-    mut game_score_query: Query<&mut BestScoreSoFar>,
-    mut best_score_query: Query<&mut CurrentGameScore>,
+    mut game_score_query: Query<&mut CurrentGameScore>,
+    mut best_score_query: Query<&mut BestScoreSoFar>,
 ) {
-    for _game_over in read_no_field_variant!(game_events_listener, GameEvent::GameOver) {
+    if read_no_field_variant!(game_events_listener, GameEvent::GameOver).count() > 0 {
         let mut game_score = single_mut_else_return!(game_score_query);
         let mut best_score = single_mut_else_return!(best_score_query);
         if game_score.0 > best_score.0 {
