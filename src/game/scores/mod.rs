@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+pub mod components;
 pub mod score_event_channel;
 pub mod score_manager;
 
