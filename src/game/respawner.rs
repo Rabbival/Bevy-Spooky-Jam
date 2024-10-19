@@ -1,3 +1,5 @@
+use bevy::text::Text2dBounds;
+
 use crate::{prelude::*, read_no_field_variant};
 
 pub struct RespawnerPlugin;
@@ -9,7 +11,11 @@ impl Plugin for RespawnerPlugin {
     }
 }
 
-fn spawn_invisible_again_screen(images: ResMut<SpritesAtlas>, mut commands: Commands) {
+fn spawn_invisible_again_screen(
+    images: ResMut<SpritesAtlas>,
+    text_fonts_resource: ResMut<TextFonts>,
+    mut commands: Commands,
+) {
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -20,11 +26,36 @@ fn spawn_invisible_again_screen(images: ResMut<SpritesAtlas>, mut commands: Comm
             transform: Transform::from_xyz(
                 0.0,
                 TOP_UI_HEADER_BAR_HEIGHT / 2.0,
-                CAMERA_Z_LAYER - 1.0,
+                CAMERA_Z_LAYER - 10.0,
             ),
             ..default()
         },
         AffectingTimerCalculators::default(),
+        AgainScreen,
+    ));
+    commands.spawn((
+        Text2dBundle {
+            text: Text::from_section(
+                "Hi  Score: 0000000",
+                TextStyle {
+                    font: text_fonts_resource.kenny_high_square_handle.clone(),
+                    font_size: 100.0,
+                    color: Color::srgba(0.9, 0.9, 0.9, 0.0),
+                },
+            )
+            .with_justify(JustifyText::Left),
+            text_2d_bounds: Text2dBounds {
+                size: Vec2::new(WINDOW_SIZE_IN_PIXELS, WINDOW_SIZE_IN_PIXELS / 4.0),
+            },
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                -(WINDOW_SIZE_IN_PIXELS / 2.0) + TOP_UI_HEADER_BAR_HEIGHT,
+                CAMERA_Z_LAYER - 9.0,
+            )),
+            ..default()
+        },
+        AffectingTimerCalculators::default(),
+        BestScoreTextUi,
         AgainScreen,
     ));
 }
@@ -32,13 +63,20 @@ fn spawn_invisible_again_screen(images: ResMut<SpritesAtlas>, mut commands: Comm
 fn show_again_and_respawn_world(
     mut game_over_listener: EventReader<GameEvent>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
-    again_screens: Query<(Entity, &Sprite), With<AgainScreen>>,
+    again_screens: Query<(Entity, Option<&Sprite>, Option<&Text>), With<AgainScreen>>,
     mut timer_fire_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
     for _game_over in read_no_field_variant!(game_over_listener, GameEvent::GameOver) {
-        for (again_screen_entity, again_screen_sprite) in &again_screens {
-            let current_alpha = again_screen_sprite.color.alpha();
+        for (again_screen_entity, maybe_sprite, maybe_text) in &again_screens {
+            let current_alpha;
+            if let Some(sprite) = maybe_sprite {
+                current_alpha = sprite.color.alpha();
+            } else if let Some(text) = maybe_text {
+                current_alpha = text.sections[0].style.color.alpha();
+            } else {
+                continue;
+            }
             let fade_in_timer =
                 again_fade_timer(true, again_screen_entity, current_alpha, &mut commands);
             let fade_out_timer =
