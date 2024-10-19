@@ -6,6 +6,9 @@ use bevy::time::Stopwatch;
 pub struct BombTag;
 
 #[derive(Component, Debug)]
+pub struct BombAffected;
+
+#[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
 
 #[derive(Component, Debug)]
