@@ -37,6 +37,7 @@ fn explode_bombs_on_direct_collision(
         ),
         With<WorldBoundsWrapped>,
     >,
+    explosion_affected_query: Query<&Transform, With<BombAffected>>,
     mut commands: Commands,
 ) {
     for (bomb_transform, mut bomb) in &mut bomb_query {
@@ -53,6 +54,7 @@ fn explode_bombs_on_direct_collision(
                         bomb_transform,
                         bomb.explosion_radius,
                         &transform_query,
+                        &explosion_affected_query,
                         &mut bomb_exploded_event_writer,
                         &mut timer_fire_request_writer,
                         &mut commands,
@@ -80,6 +82,7 @@ fn listen_for_done_bombs(
         ),
         With<WorldBoundsWrapped>,
     >,
+    explosion_affected_query: Query<&Transform, With<BombAffected>>,
     mut commands: Commands,
 ) {
     for done_timer in timer_done_reader.read() {
@@ -91,6 +94,7 @@ fn listen_for_done_bombs(
                         bomb_transform,
                         explosion_radius,
                         &transform_query,
+                        &explosion_affected_query,
                         &mut bomb_exploded_event_writer,
                         &mut timer_fire_request_writer,
                         &mut commands,
@@ -136,6 +140,7 @@ fn explode_bomb(
         ),
         With<WorldBoundsWrapped>,
     >,
+    explosion_affected_query: &Query<&Transform, With<BombAffected>>,
     bomb_exploded_event_writer: &mut EventWriter<BombExploded>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
@@ -151,11 +156,18 @@ fn explode_bomb(
         maybe_bomb,
     ) in transform_query
     {
+        if let Ok(bomb_affected_transform) = explosion_affected_query.get(entity_in_radius) {
+            if *bomb_affected_transform == *bomb_transform {
+                commands.entity(entity_in_radius).despawn_recursive();
+            }
+            continue;
+        }
         let distance_from_bomb = bomb_transform
             .translation
             .truncate()
             .distance(transform_in_radius.translation.truncate());
         if distance_from_bomb <= explosion_radius {
+            commands.entity(entity_in_radius).insert(BombAffected);
             let done_event = determine_done_event(
                 transform_in_radius == bomb_transform,
                 maybe_bomb,
