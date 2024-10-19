@@ -21,7 +21,11 @@ fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    explode_in_contact_query: Query<&Transform, With<Monster>>,
+    explode_in_contact_query: Query<(
+        &Transform,
+        Option<&Monster>,
+        Option<&BombTagForCollisionDetection>,
+    )>,
     mut bomb_query: Query<(&Transform, &mut Bomb)>,
     transform_query: Query<
         (
@@ -37,7 +41,11 @@ fn explode_bombs_on_direct_collision(
 ) {
     for (bomb_transform, mut bomb) in &mut bomb_query {
         if let BombState::PostHeld = bomb.state {
-            for transform in &explode_in_contact_query {
+            for (transform, maybe_monster, maybe_bomb) in &explode_in_contact_query {
+                if bomb_transform == transform || (maybe_monster.is_none() && maybe_bomb.is_none())
+                {
+                    continue;
+                }
                 if bomb_transform.translation.distance(transform.translation) <= BOMB_SIZE {
                     unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
                     bomb.state = BombState::Exploded;
@@ -130,6 +138,8 @@ fn explode_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
 ) {
+    let mut monsters_in_explosion = 0;
+    let mut player_caught_in_explosion = false;
     for (
         transform_in_radius,
         entity_in_radius,
@@ -150,13 +160,19 @@ fn explode_bomb(
                 maybe_affecting_timer_calculators,
                 commands,
             );
-            bomb_exploded_event_writer.send(BombExploded {
-                location: bomb_transform.translation,
-                hit_monster: maybe_monster.is_some(),
-                hit_player: maybe_player.is_some(),
-            });
+            if maybe_monster.is_some() {
+                monsters_in_explosion += 1;
+            }
+            if maybe_player.is_some() {
+                player_caught_in_explosion = true;
+            }
         }
     }
+    bomb_exploded_event_writer.send(BombExploded {
+        location: bomb_transform.translation,
+        monster_hit_count: monsters_in_explosion,
+        hit_player: player_caught_in_explosion,
+    });
 }
 
 fn knock_back_and_destroy(
@@ -251,12 +267,12 @@ fn manage_bomb_explosion_side_effects(
             InWorldButNotBoundWrapped,
         ));
 
-        if exploded_bomb.hit_monster {
+        if exploded_bomb.monster_hit_count > 0 {
             update_player_score_event_writer.send(AppendToPlayerScoreEvent(
-                PLAYER_SCORE_POINTS_ON_MONSTER_KILLED,
+                PLAYER_SCORE_POINTS_ON_MONSTER_KILLED * exploded_bomb.monster_hit_count as u32,
             ));
         }
-        if exploded_bomb.hit_monster {
+        if exploded_bomb.hit_player {
             game_event_writer.send(GameEvent::GameOver);
         }
     }

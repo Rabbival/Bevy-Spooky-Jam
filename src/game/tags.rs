@@ -4,6 +4,9 @@ use std::time::Duration;
 use bevy::time::Stopwatch;
 
 #[derive(Component, Debug)]
+pub struct BombTagForCollisionDetection;
+
+#[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
 
 #[derive(Component, Debug)]
