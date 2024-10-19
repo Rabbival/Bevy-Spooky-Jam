@@ -25,13 +25,12 @@ fn respawn_monsters_spawner_on_game_restart(
     monster_sequence_resource: ResMut<MonsterSpawnSequence>,
     commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
         spawn_monster_spawner_timer_sequence(
             timer_fire_event_writer,
             monster_sequence_resource,
             commands,
         );
-        break;
     }
 }
 

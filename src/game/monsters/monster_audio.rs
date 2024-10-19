@@ -16,13 +16,13 @@ fn sound_monster_sounds(
     for set_request in monster_state_set_reader.read() {
         if let MonsterState::Chasing(_) = set_request.next_state {
             sounds_event_writer.send(SoundEvent::MonsterBattleCry);
+            break;
         }
-        break;
     }
     for bomb_explosion in bomb_explosion_reader.read() {
         if bomb_explosion.monster_hit_count > 0 {
             sounds_event_writer.send(SoundEvent::MonsterDeathCry);
+            break;
         }
-        break;
     }
 }

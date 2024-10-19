@@ -108,7 +108,7 @@ fn fire_next_path_timer_animation_sequence(
         if let Some(next_timer_index) = sequence_status.next_timer_index {
             let next_timer = path_sequence.get_timer_by_index(next_timer_index)?;
             let maybe_next_direction =
-                get_direction_facing_from_timer(next_timer, &vec3_timer_calculators);
+                get_direction_facing_from_timer(next_timer, vec3_timer_calculators);
             if let Some(next_facing_direction) = maybe_next_direction {
                 return spawn_and_fire_animation_timer_sequence(
                     next_facing_direction,

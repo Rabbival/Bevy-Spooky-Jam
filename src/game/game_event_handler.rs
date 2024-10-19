@@ -40,7 +40,7 @@ fn despawn_all_upon_restart(
     timer_sequence_query: Query<Entity, With<TimerSequence>>,
     mut commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
         for border_crosser in &border_crossers_query {
             despawn_recursive_notify_on_fail(
                 border_crosser,
@@ -76,6 +76,5 @@ fn despawn_all_upon_restart(
                 &mut commands,
             );
         }
-        break;
     }
 }

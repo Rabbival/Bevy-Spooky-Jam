@@ -27,7 +27,7 @@ fn end_stray_path_when_back_to_idle(
                 Ok((monster, mut affecting_timer_calculators)) => {
                     if cancel_stray_path_timer_and_begin_next_path_one(
                         &mut timer_done_event_writer,
-                        &monster,
+                        monster,
                         &mut affecting_timer_calculators,
                         &emitting_timer_with_parent_sequence_query,
                         &mut commands,

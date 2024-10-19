@@ -22,14 +22,13 @@ fn respawn_monsters_on_game_restart(
     event_writer: EventWriter<TimerFireRequest>,
     commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
         spawn_initial_monster(
             transforms_not_to_spawn_next_to,
             sprites_atlas_resource,
             event_writer,
             commands,
         );
-        break;
     }
 }
 
