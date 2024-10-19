@@ -92,7 +92,6 @@ fn spawn_ui(
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 30.0,
                     color: text_color,
-                    ..default()
                 },
             )
             .with_justify(JustifyText::Left),

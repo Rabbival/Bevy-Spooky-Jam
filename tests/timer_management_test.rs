@@ -1,4 +1,4 @@
-use spooky_jam::prelude::*;
+use soul_bomb_monster_hunt::prelude::*;
 
 mod test_dependencies;
 
