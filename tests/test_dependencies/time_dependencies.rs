@@ -1,4 +1,4 @@
-use spooky_jam::prelude::*;
+use soul_bomb_monster_hunt::prelude::*;
 use std::time::Duration;
 
 #[allow(dead_code)]

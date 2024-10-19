@@ -1,26 +1,22 @@
 use crate::prelude::*;
-use std::time::Duration;
+use rand::Rng;
 
 #[derive(Component)]
 pub struct AnimationConfig {
     pub first_sprite_index: usize,
     pub last_sprite_index: usize,
-    pub fps: u8,
-    pub frame_timer: Timer,
+    pub fps: usize,
+    pub time_since_frame_update: f32,
 }
 
 impl AnimationConfig {
-    pub fn new(first: usize, last: usize, fps: u8) -> Self {
+    pub fn new(first: usize, last: usize, fps: usize) -> Self {
         Self {
             first_sprite_index: first,
             last_sprite_index: last,
             fps,
-            frame_timer: Self::timer_from_fps(fps),
+            time_since_frame_update: 0.0,
         }
-    }
-
-    pub fn timer_from_fps(fps: u8) -> Timer {
-        Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
     }
 }
 
@@ -30,8 +26,40 @@ impl Plugin for BombExplosionAnimationPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            update_explosion_animations.in_set(TickingSystemSet::PostTicking),
+            (listen_for_exploded_bombs, update_explosion_animations)
+                .chain()
+                .in_set(TickingSystemSet::PostTicking),
         );
+    }
+}
+
+fn listen_for_exploded_bombs(
+    mut explosions_listener: EventReader<BombExploded>,
+    bomb_explosion_sprites_atlas_resource: Res<BombExplosionSpritesAtlas>,
+    mut commands: Commands,
+) {
+    for explosion in explosions_listener.read() {
+        let mut rng = rand::thread_rng();
+        let animation_config = AnimationConfig::new(0, 60, BOMB_EXPLOSION_ANIMATION_FPS);
+        commands.spawn((
+            SpriteBundle {
+                texture: bomb_explosion_sprites_atlas_resource.image_handle.clone(),
+                transform: Transform::from_xyz(
+                    explosion.location.x,
+                    explosion.location.y,
+                    Z_LAYER_BOMB_EXPLOSION,
+                )
+                .with_rotation(Quat::from_rotation_z(rng.gen_range(0.0..360.0)))
+                .with_scale(Vec3::new(2.5, 2.5, 0.0)),
+                ..default()
+            },
+            TextureAtlas {
+                layout: bomb_explosion_sprites_atlas_resource.atlas_handle.clone(),
+                index: animation_config.first_sprite_index,
+            },
+            animation_config,
+            WorldBoundsWrapped,
+        ));
     }
 }
 
@@ -49,26 +77,44 @@ fn update_explosion_animations(
     for (mut config, mut transform, mut atlas, animation_entity) in &mut query {
         for time_multiplier in &time_multipliers {
             if let TimeMultiplierId::GameTimeMultiplier = time_multiplier.id() {
-                let time_to_multiply_delta_in = time_multiplier.value();
-                config
-                    .frame_timer
-                    .tick(time.delta() * time_to_multiply_delta_in as u32);
+                let time_since_frame_update =
+                    config.time_since_frame_update + time.delta_seconds() * time_multiplier.value();
+                let frames_since_frame_update = time_since_frame_update as usize * config.fps;
+                //DEBUG
+                info!(
+                    "multiplied time {:?}",
+                    time.delta_seconds() * time_multiplier.value()
+                );
 
-                if config.frame_timer.just_finished() {
-                    if atlas.index == config.last_sprite_index {
-                        atlas.index = config.first_sprite_index;
-                        if let Some(mut animation_commands) = commands.get_entity(animation_entity)
-                        {
-                            animation_commands.despawn();
-                        }
-                    } else {
-                        atlas.index += 1;
-                        config.frame_timer = AnimationConfig::timer_from_fps(config.fps);
-                        transform.scale.x += 0.04;
-                        transform.scale.y += 0.04;
-                    }
+                config.time_since_frame_update = time_since_frame_update % config.fps as f32;
+                for _frame in 0..frames_since_frame_update {
+                    advance_frame_and_despawn_if_done(
+                        animation_entity,
+                        &mut transform,
+                        &mut atlas,
+                        &config,
+                        &mut commands,
+                    );
                 }
             }
         }
+    }
+}
+
+fn advance_frame_and_despawn_if_done(
+    animation_entity: Entity,
+    animation_transform: &mut Transform,
+    atlas: &mut TextureAtlas,
+    animation_config: &AnimationConfig,
+    commands: &mut Commands,
+) {
+    if atlas.index == animation_config.last_sprite_index {
+        if let Some(mut animation_commands) = commands.get_entity(animation_entity) {
+            animation_commands.despawn();
+        }
+    } else {
+        atlas.index += 1;
+        animation_transform.scale.x += 0.04;
+        animation_transform.scale.y += 0.04;
     }
 }
