@@ -9,6 +9,7 @@ impl Plugin for ExplosionManagerPlugin {
             Update,
             (
                 (listen_for_done_bombs, explode_bombs_on_direct_collision),
+                mark_bombs_in_explosion_as_exploded,
                 manage_bomb_explosion_side_effects,
             )
                 .chain()
@@ -21,11 +22,7 @@ fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    explode_in_contact_query: Query<(
-        &Transform,
-        Option<&Monster>,
-        Option<&BombTagForCollisionDetection>,
-    )>,
+    explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&BombTag>)>,
     mut bomb_query: Query<(&Transform, &mut Bomb)>,
     transform_query: Query<
         (
@@ -34,6 +31,7 @@ fn explode_bombs_on_direct_collision(
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
             Option<&Player>,
+            Option<&BombTag>,
         ),
         With<WorldBoundsWrapped>,
     >,
@@ -76,6 +74,7 @@ fn listen_for_done_bombs(
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
             Option<&Player>,
+            Option<&BombTag>,
         ),
         With<WorldBoundsWrapped>,
     >,
@@ -131,6 +130,7 @@ fn explode_bomb(
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
             Option<&Player>,
+            Option<&BombTag>,
         ),
         With<WorldBoundsWrapped>,
     >,
@@ -146,18 +146,25 @@ fn explode_bomb(
         maybe_affecting_timer_calculators,
         maybe_monster,
         maybe_player,
+        maybe_bomb,
     ) in transform_query
     {
         let distance_from_bomb = bomb_transform
             .translation
-            .distance(transform_in_radius.translation);
+            .truncate()
+            .distance(transform_in_radius.translation.truncate());
         if distance_from_bomb <= explosion_radius {
+            let done_event = determine_done_event(
+                transform_in_radius == bomb_transform,
+                maybe_bomb,
+                maybe_affecting_timer_calculators,
+            );
             knock_back_and_destroy(
                 timer_fire_request_writer,
+                done_event,
                 bomb_transform,
                 transform_in_radius,
                 entity_in_radius,
-                maybe_affecting_timer_calculators,
                 commands,
             );
             if maybe_monster.is_some() {
@@ -175,12 +182,29 @@ fn explode_bomb(
     });
 }
 
+fn determine_done_event(
+    is_self: bool,
+    maybe_bomb: Option<&BombTag>,
+    maybe_affecting_timer_calculators: Option<&AffectingTimerCalculators>,
+) -> TimerDoneEventType {
+    if maybe_bomb.is_some() && !is_self {
+        TimerDoneEventType::ExplodeInRadius(BOMB_EXPLOSION_RADIUS)
+    } else {
+        let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
+            DespawnPolicy::DespawnSelfAndAllThatAffectsIt
+        } else {
+            DespawnPolicy::DespawnSelf
+        };
+        TimerDoneEventType::DespawnAffectedEntities(despawn_policy)
+    }
+}
+
 fn knock_back_and_destroy(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    done_event_type: TimerDoneEventType,
     bomb_transform: &Transform,
     transform_in_radius: &Transform,
     entity_in_radius: Entity,
-    maybe_affecting_timer_calculators: Option<&AffectingTimerCalculators>,
     commands: &mut Commands,
 ) {
     let blast_move_calculator: Option<Entity> = if transform_in_radius == bomb_transform {
@@ -192,11 +216,6 @@ fn knock_back_and_destroy(
             commands,
         ))
     };
-    let despawn_policy = if maybe_affecting_timer_calculators.is_some() {
-        DespawnPolicy::DespawnSelfAndAllThatAffectsIt
-    } else {
-        DespawnPolicy::DespawnSelf
-    };
     timer_fire_request_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
             vec![TimerAffectedEntity {
@@ -205,7 +224,7 @@ fn knock_back_and_destroy(
             }],
             vec![TimeMultiplierId::GameTimeMultiplier],
             POST_BOMB_HIT_DESPAWN_TIME,
-            TimerDoneEventType::DespawnAffectedEntities(despawn_policy),
+            done_event_type,
         ),
         parent_sequence: None,
     });
@@ -234,15 +253,18 @@ fn move_due_to_blast_calculator(
         .id()
 }
 
-// fn explode_bombs_in_explosion(
-//NTS: don't forget to knock them back
-// ){
-//     for bomb in bomb_query {
-//         if let BombState::PostHeld = bomb.state {
-//             //do the thing
-//         }
-//     }
-// }
+fn mark_bombs_in_explosion_as_exploded(
+    mut explosions_listener: EventReader<BombExploded>,
+    mut bomb_query: Query<(&Transform, &mut Bomb)>,
+) {
+    for explosion in explosions_listener.read() {
+        for (bomb_transform, mut bomb) in &mut bomb_query {
+            if explosion.location.distance(bomb_transform.translation) <= BOMB_EXPLOSION_RADIUS {
+                bomb.state = BombState::Exploded;
+            }
+        }
+    }
+}
 
 fn manage_bomb_explosion_side_effects(
     mut explosions_listener: EventReader<BombExploded>,
