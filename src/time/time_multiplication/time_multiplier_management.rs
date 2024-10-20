@@ -23,6 +23,7 @@ fn initialize_time_multipliers(mut commands: Commands) {
         commands.spawn((
             time_multiplier_id.to_initial_properties(),
             AffectingTimerCalculators::default(),
+            DoNotDestroyOnRestart,
         ));
     }
 }

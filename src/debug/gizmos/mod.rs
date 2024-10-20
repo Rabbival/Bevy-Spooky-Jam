@@ -9,7 +9,9 @@ pub struct GizmosPlugin;
 impl Plugin for GizmosPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
+            #[cfg(debug_assertions)]
             PlayerMonsterCollisionGizmosPlugin,
+            #[cfg(debug_assertions)]
             RangeGizmosPlugin,
             RayGizmosPlugin,
         ))

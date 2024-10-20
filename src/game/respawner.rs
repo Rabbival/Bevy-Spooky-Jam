@@ -7,7 +7,13 @@ pub struct RespawnerPlugin;
 impl Plugin for RespawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_invisible_again_screen)
-            .add_systems(Update, show_again_and_respawn_world);
+            .add_systems(
+                Update,
+                (
+                    show_again_and_respawn_world,
+                    hide_again.in_set(GameRestartSystemSet::Spawning),
+                ),
+            );
     }
 }
 
@@ -30,6 +36,7 @@ fn spawn_invisible_again_screen(
             ),
             ..default()
         },
+        DoNotDestroyOnRestart,
         AffectingTimerCalculators::default(),
         AgainScreen,
     ));
@@ -56,15 +63,16 @@ fn spawn_invisible_again_screen(
         },
         AffectingTimerCalculators::default(),
         BestScoreTextUi,
+        DoNotDestroyOnRestart,
         AgainScreen,
     ));
 }
 
 fn show_again_and_respawn_world(
     mut game_over_listener: EventReader<GameEvent>,
+    mut timer_fire_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     again_screens: Query<(Entity, Option<&Sprite>, Option<&Text>), With<AgainScreen>>,
-    mut timer_fire_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
     for _game_over in read_no_field_variant!(game_over_listener, GameEvent::GameOver) {
@@ -79,25 +87,45 @@ fn show_again_and_respawn_world(
             }
             let fade_in_timer =
                 again_fade_timer(true, again_screen_entity, current_alpha, &mut commands);
-            let fade_out_timer =
-                again_fade_timer(false, again_screen_entity, current_alpha, &mut commands);
-            match TimerSequence::spawn_non_looping_sequence_and_fire_first_timer(
-                &mut timer_fire_writer,
-                &vec![fade_in_timer, fade_out_timer],
-                &mut commands,
-            ) {
-                Ok(sequence_entity) => {
-                    commands
-                        .entity(sequence_entity)
-                        .insert(DoNotDestroyOnRestart);
-                }
-                Err(sequence_error) => {
-                    print_error(sequence_error, vec![LogCategory::RequestNotFulfilled]);
-                }
-            }
+            timer_fire_writer.send(TimerFireRequest {
+                timer: fade_in_timer,
+                parent_sequence: None,
+            });
             time_multiplier_request_writer.send(SetTimeMultiplier {
                 multiplier_id: TimeMultiplierId::GameTimeMultiplier,
                 new_multiplier: MULTIPLIER_WHEN_SLOW_MOTION,
+                duration: AGAIN_SCREEN_FADE_TIME,
+            });
+        }
+    }
+}
+
+fn hide_again(
+    mut event_reader: EventReader<GameEvent>,
+    mut timer_fire_writer: EventWriter<TimerFireRequest>,
+    mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
+    again_screens: Query<(Entity, Option<&Sprite>, Option<&Text>), With<AgainScreen>>,
+    mut commands: Commands,
+) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
+        for (again_screen_entity, maybe_sprite, maybe_text) in &again_screens {
+            let current_alpha;
+            if let Some(sprite) = maybe_sprite {
+                current_alpha = sprite.color.alpha();
+            } else if let Some(text) = maybe_text {
+                current_alpha = text.sections[0].style.color.alpha();
+            } else {
+                continue;
+            }
+            let fade_out_timer =
+                again_fade_timer(false, again_screen_entity, current_alpha, &mut commands);
+            timer_fire_writer.send(TimerFireRequest {
+                timer: fade_out_timer,
+                parent_sequence: None,
+            });
+            time_multiplier_request_writer.send(SetTimeMultiplier {
+                multiplier_id: TimeMultiplierId::GameTimeMultiplier,
+                new_multiplier: 1.0,
                 duration: AGAIN_SCREEN_FADE_TIME,
             });
         }
