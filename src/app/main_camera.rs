@@ -21,6 +21,7 @@ fn spawn_camera(mut commands: Commands) {
         },
         RenderLayers::layer(0),
         AffectingTimerCalculators::default(),
+        DoNotDestroyOnRestart,
     ));
 }
 

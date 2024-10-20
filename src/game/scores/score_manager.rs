@@ -12,8 +12,8 @@ impl Plugin for ScoreManagerPlugin {
 }
 
 fn spawn_score_entities(mut commands: Commands) {
-    commands.spawn(CurrentGameScore::default());
-    commands.spawn(BestScoreSoFar::default());
+    commands.spawn((CurrentGameScore::default(), DoNotDestroyOnRestart));
+    commands.spawn((BestScoreSoFar::default(), DoNotDestroyOnRestart));
 }
 
 fn update_player_scoring(
