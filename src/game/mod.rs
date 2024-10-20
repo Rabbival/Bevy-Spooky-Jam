@@ -18,7 +18,6 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             PlayerPlugin,
             MonstersPlugin,
-            #[cfg(debug_assertions)]
             GizmosPlugin,
             BombsPlugin,
             ScorePlugin,

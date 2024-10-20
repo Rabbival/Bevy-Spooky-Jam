@@ -17,7 +17,7 @@ on:
 # Configure the release workflow by editing these values.
 env:
   # The base filename of the binary produced by `cargo build`.
-  cargo_build_binary_name: soul_bomb_monster_hunt
+  cargo_build_binary_name: main
 
   # The path to the assets directory.
   assets_path: assets
@@ -90,26 +90,26 @@ jobs:
             package_ext: .zip
             runner: ubuntu-latest
 
-#          - platform: linux
-#            targets: x86_64-unknown-linux-gnu
-#            profile: release-native
-#            features: bevy/wayland
-#            package_ext: .zip
-#            runner: ubuntu-latest
+          - platform: linux
+            targets: x86_64-unknown-linux-gnu
+            profile: release-native
+            features: bevy/wayland
+            package_ext: .zip
+            runner: ubuntu-latest
 
-#          - platform: windows
-#            targets: x86_64-pc-windows-msvc
-#            profile: release-native
-#            binary_ext: .exe
-#            package_ext: .zip
-#            runner: windows-latest
+          - platform: windows
+            targets: x86_64-pc-windows-msvc
+            profile: release-native
+            binary_ext: .exe
+            package_ext: .zip
+            runner: windows-latest
 
-#          - platform: macos
-#            targets: x86_64-apple-darwin aarch64-apple-darwin
-#            profile: release-native
-#            app_suffix: .app/Contents/MacOS
-#            package_ext: .dmg
-#            runner: macos-latest
+          - platform: macos
+            targets: x86_64-apple-darwin aarch64-apple-darwin
+            profile: release-native
+            app_suffix: .app/Contents/MacOS
+            package_ext: .dmg
+            runner: macos-latest
     runs-on: ${{ matrix.runner }}
     permissions:
       # Required to create a GitHub release: https://docs.github.com/en/rest/releases/releases#create-a-release
@@ -173,6 +173,7 @@ jobs:
         if: ${{ matrix.platform != 'web' }}
         run: |
           for target in ${{ matrix.targets }}; do
+            echo cargo build --locked --profile='${{ matrix.profile }}' --target="${target}" --no-default-features --features='${{ matrix.features }}'
             cargo build --locked --profile='${{ matrix.profile }}' --target="${target}" --no-default-features --features='${{ matrix.features }}'
             mv target/"${target}"/'${{ matrix.profile }}/${{ env.cargo_build_binary_name }}${{ matrix.binary_ext }}' tmp/binary/"${target}"'${{ matrix.binary_ext }}'
           done
