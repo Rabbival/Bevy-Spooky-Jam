@@ -49,7 +49,4 @@ fn print_by_config(log_message: String, config: PrintConfig) {
             BevyLogLevel::Info => info!(log_message),
         }
     }
-    if config.append_message_to_session_log {
-        append_to_game_session_log_file(log_message);
-    }
 }
