@@ -15,15 +15,23 @@ lazy_static! {
         BevyLogLevel::Info
     ];
     pub static ref ACTIVE_FUNCTIONALITY_OVERRIDES: Vec<FunctionalityOverride> = vec![
+        // #[cfg(debug_assertions)]
         // FunctionalityOverride::AlwaysSpawnBombsInMiddle,
+        // #[cfg(debug_assertions)]
         // FunctionalityOverride::PlayerMayCarryInfiniteBombs
+        // #[cfg(debug_assertions)]
         // FunctionalityOverride::AllBombsExplodeAfterOneSecond,
+        // #[cfg(debug_assertions)]
         // FunctionalityOverride::EnemiesDontMove,
         // #[cfg(debug_assertions)]
         // FunctionalityOverride::DontUpdateUI,
         // #[cfg(debug_assertions)]
         // FunctionalityOverride::SpawnOnlyOneEnemy,
+        #[cfg(debug_assertions)]
+        FunctionalityOverride::DontCheckMonsterColliders,
         // #[cfg(debug_assertions)]
-        // FunctionalityOverride::DontCheckMonsterColliders,
+        // FunctionalityOverride::MonstersNeverAttackOrFlee
+        // #[cfg(debug_assertions)]
+        // FunctionalityOverride::MonsterPathNeverChanges
     ];
 }

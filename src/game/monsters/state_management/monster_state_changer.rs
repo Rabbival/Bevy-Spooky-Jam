@@ -6,12 +6,16 @@ impl Plugin for MonsterStateChangerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (
-                update_monster_hearing_rings,
-                listen_for_monsters_done_spawning,
-            )
-                .chain()
-                .in_set(MonsterSystemSet::StateChanging),
+            if FunctionalityOverride::MonstersNeverAttackOrFlee.disabled() {
+                (
+                    update_monster_hearing_rings,
+                    listen_for_monsters_done_spawning,
+                )
+                    .chain()
+                    .in_set(MonsterSystemSet::StateChanging)
+            } else {
+                listen_for_monsters_done_spawning.in_set(MonsterSystemSet::StateChanging)
+            },
         );
     }
 }

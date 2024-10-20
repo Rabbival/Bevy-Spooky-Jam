@@ -37,7 +37,7 @@ fn listen_for_state_set(
                             &emitting_timer_parent_sequence_query,
                             &mut timer_fire_request_writer,
                             &mut commands,
-                            true,
+                            event.previous_state,
                         );
                         new_path_event_writer.send(MonsterStrayPathUpdated {
                             new_delta,
@@ -82,7 +82,7 @@ fn update_stray_path(
                     &emitting_timer_parent_sequence_query,
                     &mut timer_fire_request_writer,
                     &mut commands,
-                    false,
+                    monster.state,
                 );
                 new_path_event_writer.send(MonsterStrayPathUpdated {
                     new_delta,
@@ -102,8 +102,14 @@ fn replace_current_path_get_new_delta(
     emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
-    destroy_calculator: bool,
+    monster_previous_state: MonsterState,
 ) -> Vec2 {
+    let should_destroy_previous_calculator =
+        if let MonsterState::Chasing(_) | MonsterState::Fleeing(_) = monster_previous_state {
+            true
+        } else {
+            false
+        };
     let speed = if let MonsterState::Chasing(_) = monster.state {
         MONSTER_SPEED_WHEN_CHASING
     } else {
@@ -122,7 +128,7 @@ fn replace_current_path_get_new_delta(
         affecting_timer_calculators,
         emitting_timer_parent_sequence_query,
         commands,
-        destroy_calculator,
+        should_destroy_previous_calculator,
     ) {
         timer_fire_request_writer.send(TimerFireRequest {
             timer: EmittingTimer::new(

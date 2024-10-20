@@ -37,7 +37,7 @@ fn despawn_all_upon_restart(
     border_crossers_query: Query<Entity, With<WorldBoundsWrapped>>,
     border_non_crossers_query: Query<Entity, With<InWorldButNotBoundWrapped>>,
     timer_query: Query<(Entity, &EmittingTimer)>,
-    timer_sequence_query: Query<Entity, With<TimerSequence>>,
+    timer_sequence_query: Query<(Entity, &TimerSequence), Without<DoNotDestroyOnRestart>>,
     mut commands: Commands,
 ) {
     if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
@@ -69,12 +69,19 @@ fn despawn_all_upon_restart(
                 &mut commands,
             );
         }
-        for timer_sequence in &timer_sequence_query {
+        for (sequence_entity, timer_sequence) in &timer_sequence_query {
             despawn_recursive_notify_on_fail(
-                timer_sequence,
+                sequence_entity,
                 "timer sequence when pending restart",
                 &mut commands,
             );
+            for timer in timer_sequence.timers_in_order.iter() {
+                for calculator in timer.calculator_entities_iter() {
+                    if let Some(mut calculator_commands) = commands.get_entity(calculator) {
+                        calculator_commands.despawn();
+                    }
+                }
+            }
         }
     }
 }
