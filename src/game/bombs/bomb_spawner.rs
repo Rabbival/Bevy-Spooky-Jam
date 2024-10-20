@@ -97,7 +97,6 @@ fn try_spawning_a_bomb(
                 ..default()
             },
             AffectingTimerCalculators::default(),
-            WorldBoundsWrapped,
             bomb_component,
             BombTag,
         ))
@@ -168,6 +167,7 @@ fn listen_for_bombs_done_growing(
         {
             for affected_entity in done_event.affected_entities.affected_entities_iter() {
                 if let Ok(bomb) = bomb_query.get(affected_entity) {
+                    commands.entity(affected_entity).insert(WorldBoundsWrapped);
                     commands
                         .spawn((
                             Text2dBundle {

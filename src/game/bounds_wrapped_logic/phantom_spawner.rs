@@ -1,3 +1,5 @@
+use bevy_light_2d::light::PointLight2d;
+
 use crate::prelude::*;
 
 pub struct PhantomSpawnerPlugin;
@@ -22,6 +24,7 @@ fn attach_phantom_children_to_newborn_bounds_wrapped(
         ),
         Added<WorldBoundsWrapped>,
     >,
+    bomb_children_query: Query<(&Text, &PointLight2d), With<Parent>>,
     mut commands: Commands,
 ) {
     for (
@@ -38,7 +41,7 @@ fn attach_phantom_children_to_newborn_bounds_wrapped(
         let mut phantom_children = vec![];
         let locations_relative_to_parent =
             BoundsWrappedPhantom::relative_location_to_parent(transform.translation.truncate())
-                .map(|two_d_location| two_d_location.extend(transform.translation.z));
+                .map(|two_d_location| two_d_location.extend(0.0));
         for index in 0..BOUNDS_WRAPPED_PHANTOMS_PER_PARENT {
             if let Some(relative_location) = locations_relative_to_parent.get(index) {
                 let raw_child_entity =
@@ -49,6 +52,7 @@ fn attach_phantom_children_to_newborn_bounds_wrapped(
                     maybe_bomb,
                     maybe_monster,
                     maybe_children,
+                    &bomb_children_query,
                     &mut commands,
                 );
                 phantom_children.push(full_child_entity);
@@ -83,7 +87,8 @@ fn enrich_phantom_child(
     maybe_player: Option<&Player>,
     maybe_bomb: Option<&Bomb>,
     maybe_monster: Option<&Monster>,
-    maybe_children: Option<&Children>,
+    maybe_original_children: Option<&Children>,
+    bomb_children_query: &Query<(&Text, &PointLight2d), With<Parent>>,
     commands: &mut Commands,
 ) -> Entity {
     if let Some(player) = maybe_player {
@@ -94,6 +99,22 @@ fn enrich_phantom_child(
             .insert((bomb.clone(), BombTag));
     } else if let Some(monster) = maybe_monster {
         commands.entity(child_entity).insert(monster.clone());
+    }
+    if let Some(original_children) = maybe_original_children {
+        for original_child in original_children {
+            if let Ok((text, light)) = bomb_children_query.get(*original_child) {
+                let grandson = commands
+                    .spawn((
+                        Text2dBundle {
+                            text: text.clone(),
+                            ..default()
+                        },
+                        light.clone(),
+                    ))
+                    .id();
+                commands.entity(child_entity).add_child(grandson);
+            }
+        }
     }
     child_entity
 }
