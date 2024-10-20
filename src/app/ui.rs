@@ -39,26 +39,32 @@ fn spawn_ui(
     text_fonts_resource: ResMut<TextFonts>,
     mut commands: Commands,
 ) {
-    commands.spawn((SpriteBundle {
-        texture: image_fonts_resource.floor_image_handle.clone(),
-        ..default()
-    },));
-    let text_color = Color::srgba(0.9, 0.9, 0.9, 1.0);
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
-            color: Color::srgba(0.3, 0.3, 0.3, 1.0),
-            custom_size: Some(Vec2::new(WINDOW_SIZE_IN_PIXELS, TOP_UI_HEADER_BAR_HEIGHT)),
+    commands.spawn((
+        SpriteBundle {
+            texture: image_fonts_resource.floor_image_handle.clone(),
             ..default()
         },
-        transform: Transform::from_translation(
-            Vec2::new(
-                0.0,
-                (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
-            )
-            .extend(100.0),
-        ),
-        ..default()
-    });
+        DoNotDestroyOnRestart,
+    ));
+    let text_color = Color::srgba(0.9, 0.9, 0.9, 1.0);
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgba(0.3, 0.3, 0.3, 1.0),
+                custom_size: Some(Vec2::new(WINDOW_SIZE_IN_PIXELS, TOP_UI_HEADER_BAR_HEIGHT)),
+                ..default()
+            },
+            transform: Transform::from_translation(
+                Vec2::new(
+                    0.0,
+                    (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
+                )
+                .extend(100.0),
+            ),
+            ..default()
+        },
+        DoNotDestroyOnRestart,
+    ));
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
@@ -83,6 +89,7 @@ fn spawn_ui(
             ..default()
         },
         PlayerGameStopwatchUi { ..default() },
+        DoNotDestroyOnRestart,
     ));
     commands.spawn((
         Text2dBundle {
@@ -111,6 +118,7 @@ fn spawn_ui(
             ..default()
         },
         PlayerScoreTextUi,
+        DoNotDestroyOnRestart,
     ));
     commands.spawn((
         Text2dBundle {
@@ -139,6 +147,7 @@ fn spawn_ui(
             ..default()
         },
         BestScoreTextUi,
+        DoNotDestroyOnRestart,
     ));
 }
 

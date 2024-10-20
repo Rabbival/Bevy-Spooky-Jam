@@ -25,6 +25,7 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
             settings: PlaybackSettings::LOOP.with_volume(Volume::new(1.0)),
         },
         MusicLayer(1),
+        DoNotDestroyOnRestart,
         AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
     ));
     commands.spawn((
@@ -34,6 +35,7 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
         },
         MusicLayer(2),
         AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
+        DoNotDestroyOnRestart,
         AffectingTimerCalculators::default(),
     ));
 }
