@@ -37,7 +37,8 @@ fn despawn_all_upon_restart(
     border_crossers_query: Query<Entity, With<WorldBoundsWrapped>>,
     border_non_crossers_query: Query<Entity, With<InWorldButNotBoundWrapped>>,
     timer_query: Query<(Entity, &EmittingTimer)>,
-    timer_sequence_query: Query<Entity, With<TimerSequence>>,
+    timer_sequence_query: Query<(Entity, &TimerSequence), Without<DoNotDestroyOnRestart>>,
+    vec_3_calculators: Query<Entity, With<GoingEventValueCalculator<Vec3>>>,
     mut commands: Commands,
 ) {
     if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
@@ -57,11 +58,13 @@ fn despawn_all_upon_restart(
         }
         for (timer_entity, timer) in &timer_query {
             for calculator in timer.calculator_entities_iter() {
-                despawn_recursive_notify_on_fail(
-                    calculator,
-                    "calculator when pending restart",
-                    &mut commands,
-                );
+                if vec_3_calculators.get(calculator).is_err() {
+                    despawn_recursive_notify_on_fail(
+                        calculator,
+                        "calculator when pending restart",
+                        &mut commands,
+                    );
+                }
             }
             despawn_recursive_notify_on_fail(
                 timer_entity,
@@ -69,12 +72,28 @@ fn despawn_all_upon_restart(
                 &mut commands,
             );
         }
-        for timer_sequence in &timer_sequence_query {
+        for vec_3_calculator in &vec_3_calculators {
             despawn_recursive_notify_on_fail(
-                timer_sequence,
+                vec_3_calculator,
+                "vec3 calculator when pending restart",
+                &mut commands,
+            );
+        }
+        for (sequence_entity, timer_sequence) in &timer_sequence_query {
+            despawn_recursive_notify_on_fail(
+                sequence_entity,
                 "timer sequence when pending restart",
                 &mut commands,
             );
+            for timer in timer_sequence.timers_in_order.iter() {
+                for calculator in timer.calculator_entities_iter() {
+                    if vec_3_calculators.get(calculator).is_err() {
+                        if let Some(mut calculator_commands) = commands.get_entity(calculator) {
+                            calculator_commands.despawn();
+                        }
+                    }
+                }
+            }
         }
     }
 }

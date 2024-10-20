@@ -8,10 +8,10 @@ pub struct MonsterPathUpdatingPlugin;
 
 impl Plugin for MonsterPathUpdatingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((
-            MonsterStrayPathUpdaterPlugin,
-            MonsterStrayPathEnderPlugin,
-            MonsterMainPathInitiationPlugin,
-        ));
+        app.add_plugins(MonsterMainPathInitiationPlugin);
+
+        if FunctionalityOverride::MonsterPathNeverChanges.disabled() {
+            app.add_plugins((MonsterStrayPathUpdaterPlugin, MonsterStrayPathEnderPlugin));
+        }
     }
 }
