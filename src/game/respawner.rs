@@ -81,14 +81,19 @@ fn show_again_and_respawn_world(
                 again_fade_timer(true, again_screen_entity, current_alpha, &mut commands);
             let fade_out_timer =
                 again_fade_timer(false, again_screen_entity, current_alpha, &mut commands);
-            if let Err(sequence_error) =
-                TimerSequence::spawn_non_looping_sequence_and_fire_first_timer(
-                    &mut timer_fire_writer,
-                    &vec![fade_in_timer, fade_out_timer],
-                    &mut commands,
-                )
-            {
-                print_error(sequence_error, vec![LogCategory::RequestNotFulfilled]);
+            match TimerSequence::spawn_non_looping_sequence_and_fire_first_timer(
+                &mut timer_fire_writer,
+                &vec![fade_in_timer, fade_out_timer],
+                &mut commands,
+            ) {
+                Ok(sequence_entity) => {
+                    commands
+                        .entity(sequence_entity)
+                        .insert(DoNotDestroyOnRestart);
+                }
+                Err(sequence_error) => {
+                    print_error(sequence_error, vec![LogCategory::RequestNotFulfilled]);
+                }
             }
             time_multiplier_request_writer.send(SetTimeMultiplier {
                 multiplier_id: TimeMultiplierId::GameTimeMultiplier,

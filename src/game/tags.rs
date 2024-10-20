@@ -27,3 +27,6 @@ pub struct BestScoreTextUi;
 
 #[derive(Component)]
 pub struct AgainScreen;
+
+#[derive(Component)]
+pub struct DoNotDestroyOnRestart;
