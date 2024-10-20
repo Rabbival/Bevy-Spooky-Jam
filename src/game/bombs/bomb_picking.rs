@@ -73,7 +73,7 @@ fn try_getting_closest_bomb(
     let mut maybe_closest_bomb: Option<BombEntityAndDistance> = None;
     for (_, bomb_transform, _, bomb_entity) in bomb_query {
         let bomb_distance = player_location.distance(bomb_transform.translation);
-        if bomb_distance < PLAYER_BOMB_PICKING_RANGE + BOMB_SIZE {
+        if bomb_distance < PLAYER_BOMB_PICKING_RANGE + BOMB_FULL_SIZE {
             let bomb_properties = Some(BombEntityAndDistance {
                 bomb_entity,
                 bomb_distance,
@@ -154,7 +154,7 @@ fn pull_bomb_and_slow_down_time(
 }
 
 fn spawn_bomb_puller_calculator(bomb_transform: &Transform, commands: &mut Commands) -> Entity {
-    let bomb_spot_relative_to_player = -BOMB_SIZE * Vec3::ONE;
+    let bomb_spot_relative_to_player = -BOMB_FULL_SIZE * Vec3::ONE;
     commands
         .spawn(GoingEventValueCalculator::new(
             TimerCalculatorSetPolicy::IgnoreNewIfAssigned,

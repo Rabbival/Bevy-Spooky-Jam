@@ -5,7 +5,7 @@ pub const Z_LAYER_BOMB_EXPLOSION: f32 = 8.0;
 pub const Z_LAYER_FLOOR_HOLE: f32 = 7.0;
 
 pub const TIME_IT_TAKES_BOMB_TO_GROW: f32 = 0.3;
-pub const BOMB_SIZE: f32 = 24.0;
+pub const BOMB_FULL_SIZE: f32 = 50.0;
 pub const BOMB_SPAWN_SCALE: f32 = 0.01;
 
 pub const BOMB_MAX_TIME: usize = 8;

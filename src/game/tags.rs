@@ -9,9 +9,6 @@ pub struct BombTag;
 pub struct BombAffected;
 
 #[derive(Component, Debug)]
-pub struct WorldBoundsWrapped;
-
-#[derive(Component, Debug)]
 pub struct InWorldButNotBoundWrapped;
 
 #[derive(Component, Default)]
@@ -30,3 +27,6 @@ pub struct AgainScreen;
 
 #[derive(Component)]
 pub struct DoNotDestroyOnRestart;
+
+#[derive(Component, Debug)]
+pub struct WorldBoundsWrapped;

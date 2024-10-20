@@ -1,7 +1,8 @@
 pub const INITIAL_MONSTERS_AMOUNT: i32 = 3;
 pub const MONSTER_SPAWNING_ATTEMPTS: usize = 32;
 pub const MONSTER_SAFE_RADIUS: f32 = 32.0;
-pub const MONSTER_FULL_SIZE: f32 = 32.0;
+pub const MONSTER_SIZE_X: f32 = 80.0;
+pub const MONSTER_SIZE_Y: f32 = 50.0;
 pub const MONSTER_COLLIDER_RADIUS: f32 = 40.0;
 pub const Z_LAYER_MONSTER: f32 = 12.0;
 

@@ -89,18 +89,17 @@ fn try_spawning_a_bomb(
             SpriteBundle {
                 sprite: Sprite {
                     color: bomb_component.to_colors().unwrap().bomb,
-                    custom_size: Some(Vec2::new(50.0, 50.0)),
+                    custom_size: Some(Vec2::new(BOMB_SPAWN_SCALE, BOMB_SPAWN_SCALE)),
                     ..default()
                 },
                 texture: sprites_atlas_resource.pumpkin_grey_image_handle.clone(),
-                transform: Transform::from_translation(place_to_spawn_in)
-                    .with_scale(Vec3::ONE * BOMB_SPAWN_SCALE),
+                transform: Transform::from_translation(place_to_spawn_in),
                 ..default()
             },
             AffectingTimerCalculators::default(),
+            WorldBoundsWrapped,
             bomb_component,
             BombTag,
-            WorldBoundsWrapped,
         ))
         .id();
     timer_fire_request_writer.send(TimerFireRequest {
@@ -123,8 +122,8 @@ fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
         .spawn(GoingEventValueCalculator::new(
             TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
             ValueByInterpolation::from_goal_and_current(
-                Vec3::ONE * BOMB_SPAWN_SCALE,
-                Vec3::ONE,
+                Vec2::ONE * BOMB_SPAWN_SCALE,
+                Vec2::ONE * BOMB_FULL_SIZE,
                 Interpolator::default(),
             ),
             TimerGoingEventType::Scale,
@@ -140,7 +139,7 @@ fn try_finding_place_for_bomb(
     }
 
     let mut rng = rand::thread_rng();
-    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_SIZE * 2.0;
+    let as_far_as_a_bomb_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - BOMB_FULL_SIZE * 2.0;
     'bomb_spawning_loop: for _attempt in 0..BOMB_SPAWNING_ATTEMPTS {
         let vector = Vec3::new(
             rng.gen_range(-as_far_as_a_bomb_can_spawn..as_far_as_a_bomb_can_spawn),

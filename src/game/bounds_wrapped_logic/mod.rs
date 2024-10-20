@@ -1,9 +1,16 @@
 use crate::prelude::*;
 
-#[derive(Debug)]
-pub struct ClosestSecondVecIncludingBeyondScreen {
-    pub vec: Vec3,
-    pub distance: f32,
+pub mod bounds_wrapped_phantom;
+pub mod consts;
+pub mod phantom_manager;
+pub mod phantom_spawner;
+
+pub struct BoundsWrappedLogicPlugin;
+
+impl Plugin for BoundsWrappedLogicPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins((PhantomSpawnerPlugin, PhantomManagerPlugin));
+    }
 }
 
 pub fn calculate_reach_beyond_screen_border(original_translation: Vec3) -> Vec3 {

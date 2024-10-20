@@ -14,20 +14,22 @@ impl Plugin for MonsterStateChangeVisualizerPlugin {
 fn listen_to_state_changes(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
-    monsters_query: Query<(&Transform, &Sprite, Entity)>,
+    monsters_query: Query<(&Sprite, Entity)>,
     mut commands: Commands,
 ) {
     for request in monster_state_set_listener.read() {
         match monsters_query.get(request.monster) {
-            Ok((monster_transform, monster_sprite, monster_entity)) => {
-                determine_visualize_change_and_initiate_if_required(
-                    &mut timer_fire_request_writer,
-                    monster_entity,
-                    monster_transform.scale,
-                    monster_sprite.color.alpha(),
-                    request,
-                    &mut commands,
-                );
+            Ok((monster_sprite, monster_entity)) => {
+                if let Some(sprite_size) = monster_sprite.custom_size {
+                    determine_visualize_change_and_initiate_if_required(
+                        &mut timer_fire_request_writer,
+                        monster_entity,
+                        sprite_size,
+                        monster_sprite.color.alpha(),
+                        request,
+                        &mut commands,
+                    );
+                }
             }
             Err(_) => {
                 print_error(
@@ -42,7 +44,7 @@ fn listen_to_state_changes(
 fn determine_visualize_change_and_initiate_if_required(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     monster_entity: Entity,
-    monster_scale: Vec3,
+    monster_sprite_size: Vec2,
     monster_alpha: f32,
     state_change_event: &MonsterStateChanged,
     commands: &mut Commands,
@@ -51,7 +53,7 @@ fn determine_visualize_change_and_initiate_if_required(
     let mut maybe_alpha_changer = None;
     if should_apply_chase_visuals(state_change_event) {
         maybe_scaler = Some(spawn_chase_initiation_scale_calculator(
-            monster_scale,
+            monster_sprite_size,
             commands,
         ));
         maybe_alpha_changer = Some(spawn_chase_initiation_alpha_calculator(
@@ -59,7 +61,10 @@ fn determine_visualize_change_and_initiate_if_required(
             commands,
         ));
     } else if should_cancel_chase_visuals(state_change_event) {
-        maybe_scaler = Some(spawn_chase_cancel_scale_calculator(monster_scale, commands));
+        maybe_scaler = Some(spawn_chase_cancel_scale_calculator(
+            monster_sprite_size,
+            commands,
+        ));
         maybe_alpha_changer = Some(spawn_chase_cancel_alpha_calculator(monster_alpha, commands));
     }
     if let Some(scale_calculator) = maybe_scaler {
@@ -118,7 +123,7 @@ fn spawn_chase_initiation_alpha_calculator(
 }
 
 fn spawn_chase_initiation_scale_calculator(
-    monster_current_size: Vec3,
+    monster_current_size: Vec2,
     commands: &mut Commands,
 ) -> Entity {
     commands
@@ -126,7 +131,7 @@ fn spawn_chase_initiation_scale_calculator(
             TimerCalculatorSetPolicy::KeepNewTimer,
             ValueByInterpolation::from_goal_and_current(
                 monster_current_size,
-                MONSTER_SIZE_WHEN_CHASING * Vec3::ONE,
+                MONSTER_SIZE_WHEN_CHASING * Vec2::new(MONSTER_SIZE_X, MONSTER_SIZE_Y),
                 Interpolator::new(0.2),
             ),
             TimerGoingEventType::Scale,
@@ -152,7 +157,7 @@ fn spawn_chase_cancel_alpha_calculator(
 }
 
 fn spawn_chase_cancel_scale_calculator(
-    monster_current_size: Vec3,
+    monster_current_size: Vec2,
     commands: &mut Commands,
 ) -> Entity {
     commands
@@ -160,7 +165,7 @@ fn spawn_chase_cancel_scale_calculator(
             TimerCalculatorSetPolicy::KeepNewTimer,
             ValueByInterpolation::from_goal_and_current(
                 monster_current_size,
-                Vec3::ONE,
+                Vec2::new(MONSTER_SIZE_X, MONSTER_SIZE_Y),
                 Interpolator::new(2.0),
             ),
             TimerGoingEventType::Scale,

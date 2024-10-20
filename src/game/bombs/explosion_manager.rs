@@ -54,10 +54,10 @@ fn explode_bombs_on_direct_collision(
                         MONSTER_COLLIDER_RADIUS
                     }
                 } else {
-                    BOMB_SIZE
+                    BOMB_FULL_SIZE
                 };
                 if bomb_transform.translation.distance(transform.translation)
-                    <= BOMB_SIZE + radius_of_exploded
+                    <= BOMB_FULL_SIZE + radius_of_exploded
                 {
                     unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
                     bomb.state = BombState::Exploded;

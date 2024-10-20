@@ -85,8 +85,7 @@ fn try_spawning_a_monster(
     )?);
     let monster_component = Monster {
         hearing_ring_distance: rng.gen_range(
-            BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE
-                ..(BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE) * 2.0,
+            BOMB_EXPLOSION_RADIUS + MONSTER_SIZE_Y..(BOMB_EXPLOSION_RADIUS + MONSTER_SIZE_Y) * 2.0,
         ),
         state: MonsterState::Spawning,
         main_path: VecBasedArray::new(generate_initial_path_to_follow()),
@@ -98,7 +97,7 @@ fn try_spawning_a_monster(
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgba(1.0, 1.0, 1.0, 0.0),
-                custom_size: Some(Vec2::new(80.0, 50.0)),
+                custom_size: Some(Vec2::new(MONSTER_SIZE_X, MONSTER_SIZE_Y)),
                 ..default()
             },
             texture: sprites_atlas_resource.image_handle.clone(),
@@ -194,7 +193,7 @@ fn try_finding_place_for_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
 ) -> Result<Vec3, MonsterError> {
     let mut rng = rand::thread_rng();
-    let as_far_as_a_monster_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - MONSTER_FULL_SIZE * 2.0;
+    let as_far_as_a_monster_can_spawn = WINDOW_SIZE_IN_PIXELS / 2.0 - MONSTER_SIZE_Y * 2.0;
     'monster_spawning_loop: for _attempt in 0..MONSTER_SPAWNING_ATTEMPTS {
         let vector = Vec3::new(
             rng.gen_range(-as_far_as_a_monster_can_spawn..as_far_as_a_monster_can_spawn),
