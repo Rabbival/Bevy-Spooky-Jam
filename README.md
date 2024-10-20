@@ -1,5 +1,5 @@
-Soul Bomb Monster Hunt v0.1
-===========================
+Soul Bomb Monster Hunt v0.1.8
+=============================
 
 Soul Bomb Monster Hunt Bevy Spooky Jam entry.
 
