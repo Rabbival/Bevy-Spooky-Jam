@@ -29,9 +29,9 @@ lazy_static! {
         FunctionalityOverride::SpawnOnlyOneEnemy,
         #[cfg(debug_assertions)]
         FunctionalityOverride::DontCheckMonsterColliders,
-        #[cfg(debug_assertions)]
-        FunctionalityOverride::MonstersNeverAttackOrFlee,
-        #[cfg(debug_assertions)]
-        FunctionalityOverride::MonsterPathNeverChanges
+        // #[cfg(debug_assertions)]
+        // FunctionalityOverride::MonstersNeverAttackOrFlee,
+        // #[cfg(debug_assertions)]
+        // FunctionalityOverride::MonsterPathNeverChanges
     ];
 }

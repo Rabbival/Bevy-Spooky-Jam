@@ -11,7 +11,6 @@ pub mod bomb_throwing;
 pub mod bomb_ticker;
 pub mod consts;
 pub mod explosion_manager;
-
 pub struct BombsPlugin;
 
 impl Plugin for BombsPlugin {

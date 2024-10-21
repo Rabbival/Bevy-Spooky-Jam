@@ -1,5 +1,3 @@
-use bevy_light_2d::light::PointLight2d;
-
 use crate::prelude::*;
 
 pub struct PhantomSpawnerPlugin;
@@ -20,11 +18,10 @@ fn attach_phantom_children_to_newborn_bounds_wrapped(
             Option<&Player>,
             Option<&Bomb>,
             Option<&Monster>,
-            Option<&Children>,
+            Option<&TextureAtlas>,
         ),
         Added<WorldBoundsWrapped>,
     >,
-    bomb_children_query: Query<(&Text, &PointLight2d), With<Parent>>,
     mut commands: Commands,
 ) {
     for (
@@ -35,7 +32,7 @@ fn attach_phantom_children_to_newborn_bounds_wrapped(
         maybe_player,
         maybe_bomb,
         maybe_monster,
-        maybe_children,
+        maybe_texture_atlas,
     ) in &newborn_wrapped_query
     {
         let mut phantom_children = vec![];
@@ -51,8 +48,7 @@ fn attach_phantom_children_to_newborn_bounds_wrapped(
                     maybe_player,
                     maybe_bomb,
                     maybe_monster,
-                    maybe_children,
-                    &bomb_children_query,
+                    maybe_texture_atlas,
                     &mut commands,
                 );
                 phantom_children.push(full_child_entity);
@@ -78,6 +74,7 @@ fn spawn_phantom_child(
                 transform: Transform::from_translation(*location_relative_to_parent),
                 ..default()
             },
+            AffectingTimerCalculators::default(),
         ))
         .id()
 }
@@ -87,8 +84,7 @@ fn enrich_phantom_child(
     maybe_player: Option<&Player>,
     maybe_bomb: Option<&Bomb>,
     maybe_monster: Option<&Monster>,
-    maybe_original_children: Option<&Children>,
-    bomb_children_query: &Query<(&Text, &PointLight2d), With<Parent>>,
+    maybe_texture_atlas: Option<&TextureAtlas>,
     commands: &mut Commands,
 ) -> Entity {
     if let Some(player) = maybe_player {
@@ -100,21 +96,8 @@ fn enrich_phantom_child(
     } else if let Some(monster) = maybe_monster {
         commands.entity(child_entity).insert(monster.clone());
     }
-    if let Some(original_children) = maybe_original_children {
-        for original_child in original_children {
-            if let Ok((text, light)) = bomb_children_query.get(*original_child) {
-                let grandson = commands
-                    .spawn((
-                        Text2dBundle {
-                            text: text.clone(),
-                            ..default()
-                        },
-                        light.clone(),
-                    ))
-                    .id();
-                commands.entity(child_entity).add_child(grandson);
-            }
-        }
+    if let Some(atlas) = maybe_texture_atlas {
+        commands.entity(child_entity).insert(atlas.clone());
     }
     child_entity
 }

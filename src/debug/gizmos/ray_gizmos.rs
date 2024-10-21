@@ -12,7 +12,7 @@ impl Plugin for RayGizmosPlugin {
 
 fn draw_held_bomb_path_preview(
     mut gizmos: Gizmos,
-    bomb_query: Query<(&GlobalTransform, &Bomb)>,
+    bomb_query: Query<(&GlobalTransform, &Bomb), Without<BoundsWrappedPhantom>>,
     cursor: Res<CursorWorldPosition>,
 ) {
     for (bomb_transform, bomb) in &bomb_query {

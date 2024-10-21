@@ -18,7 +18,7 @@ impl Plugin for CustomAnimationPlugin {
             ScaleChangePlugin,
             ColorChangePlugin,
             FrameChangePlugin,
-            DynamicLightManagerPlugin,
+            // DynamicLightManagerPlugin,
             BombExplosionAnimationPlugin,
         ));
     }

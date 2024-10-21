@@ -14,6 +14,7 @@ impl Plugin for BombSpawnerPlugin {
                 (
                     listen_for_bomb_spawning_requests,
                     listen_for_bombs_done_growing,
+                    listen_for_phantom_bomb_creation,
                 )
                     .in_set(TickingSystemSet::PostTicking),
                 respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Spawning),
@@ -99,8 +100,32 @@ fn try_spawning_a_bomb(
             AffectingTimerCalculators::default(),
             bomb_component,
             BombTag,
+            WorldBoundsWrapped,
         ))
         .id();
+    fire_bomb_size_change_timer(timer_fire_request_writer, newborn_bomb, commands);
+    Ok(())
+}
+
+fn listen_for_phantom_bomb_creation(
+    mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
+    newborn_phantom_bombs: Query<Entity, (With<Bomb>, Added<BoundsWrappedPhantom>)>,
+    mut commands: Commands,
+) {
+    for newborn_phantom in &newborn_phantom_bombs {
+        fire_bomb_size_change_timer(
+            &mut timer_fire_request_writer,
+            newborn_phantom,
+            &mut commands,
+        );
+    }
+}
+
+fn fire_bomb_size_change_timer(
+    timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    newborn_bomb: Entity,
+    commands: &mut Commands,
+) {
     timer_fire_request_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
             vec![TimerAffectedEntity {
@@ -113,7 +138,6 @@ fn try_spawning_a_bomb(
         ),
         parent_sequence: None,
     });
-    Ok(())
 }
 
 fn spawn_bomb_size_change_calculator(commands: &mut Commands) -> Entity {
@@ -167,7 +191,6 @@ fn listen_for_bombs_done_growing(
         {
             for affected_entity in done_event.affected_entities.affected_entities_iter() {
                 if let Ok(bomb) = bomb_query.get(affected_entity) {
-                    commands.entity(affected_entity).insert(WorldBoundsWrapped);
                     commands
                         .spawn((
                             Text2dBundle {

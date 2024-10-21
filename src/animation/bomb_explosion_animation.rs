@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use rand::Rng;
 
 #[derive(Component)]
 pub struct AnimationConfig {
@@ -39,28 +38,48 @@ fn listen_for_exploded_bombs(
     mut commands: Commands,
 ) {
     for explosion in explosions_listener.read() {
-        let mut rng = rand::thread_rng();
-        let animation_config = AnimationConfig::new(0, 60, BOMB_EXPLOSION_ANIMATION_FPS);
-        commands.spawn((
-            SpriteBundle {
-                texture: bomb_explosion_sprites_atlas_resource.image_handle.clone(),
-                transform: Transform::from_xyz(
-                    explosion.location.x,
-                    explosion.location.y,
-                    Z_LAYER_BOMB_EXPLOSION,
-                )
-                .with_rotation(Quat::from_rotation_z(rng.gen_range(0.0..360.0)))
-                .with_scale(Vec3::new(2.5, 2.5, 0.0)),
+        let relative_locations_to_bomb =
+            BoundsWrappedPhantom::relative_location_to_parent(explosion.location.truncate());
+        let mut relative_locations_as_vec = Vec::from(relative_locations_to_bomb);
+        relative_locations_as_vec.push(Vec2::ZERO);
+        for location in relative_locations_as_vec
+            .iter()
+            .map(|relative| explosion.location.truncate() + *relative)
+        {
+            spawn_explosion_animation(
+                location,
+                &bomb_explosion_sprites_atlas_resource,
+                &mut commands,
+            );
+        }
+    }
+}
+
+fn spawn_explosion_animation(
+    location_to_spawn_in: Vec2,
+    bomb_explosion_sprites_atlas_resource: &Res<BombExplosionSpritesAtlas>,
+    commands: &mut Commands,
+) {
+    let animation_config = AnimationConfig::new(0, 60, BOMB_EXPLOSION_ANIMATION_FPS);
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(250.0, 250.0)),
                 ..default()
             },
-            TextureAtlas {
-                layout: bomb_explosion_sprites_atlas_resource.atlas_handle.clone(),
-                index: animation_config.first_sprite_index,
-            },
-            animation_config,
-            WorldBoundsWrapped,
-        ));
-    }
+            texture: bomb_explosion_sprites_atlas_resource.image_handle.clone(),
+            transform: Transform::from_translation(
+                location_to_spawn_in.extend(Z_LAYER_BOMB_EXPLOSION),
+            ),
+            ..default()
+        },
+        TextureAtlas {
+            layout: bomb_explosion_sprites_atlas_resource.atlas_handle.clone(),
+            index: animation_config.first_sprite_index,
+        },
+        animation_config,
+        WorldBoundsWrapped,
+    ));
 }
 
 fn update_explosion_animations(

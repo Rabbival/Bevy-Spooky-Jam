@@ -26,17 +26,14 @@ fn explode_bombs_on_direct_collision(
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
     explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&BombTag>)>,
     mut bomb_query: Query<(&Transform, &mut Bomb)>,
-    transform_query: Query<
-        (
-            &Transform,
-            Entity,
-            Option<&AffectingTimerCalculators>,
-            Option<&Monster>,
-            Option<&Player>,
-            Option<&BombTag>,
-        ),
-        With<WorldBoundsWrapped>,
-    >,
+    transform_query: Query<(
+        &Transform,
+        Entity,
+        Option<&AffectingTimerCalculators>,
+        Option<&Monster>,
+        Option<&Player>,
+        Option<&BombTag>,
+    )>,
     explosion_affected_query: Query<&Transform, With<BombAffected>>,
     mut commands: Commands,
 ) {
@@ -82,17 +79,14 @@ fn listen_for_done_bombs(
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
     mut bomb_query: Query<(&Transform, &mut Bomb)>,
-    transform_query: Query<
-        (
-            &Transform,
-            Entity,
-            Option<&AffectingTimerCalculators>,
-            Option<&Monster>,
-            Option<&Player>,
-            Option<&BombTag>,
-        ),
-        With<WorldBoundsWrapped>,
-    >,
+    transform_query: Query<(
+        &Transform,
+        Entity,
+        Option<&AffectingTimerCalculators>,
+        Option<&Monster>,
+        Option<&Player>,
+        Option<&BombTag>,
+    )>,
     explosion_affected_query: Query<&Transform, With<BombAffected>>,
     mut commands: Commands,
 ) {
@@ -140,17 +134,14 @@ fn unslow_time_if_was_held(
 fn explode_bomb(
     bomb_transform: &Transform,
     explosion_radius: f32,
-    transform_query: &Query<
-        (
-            &Transform,
-            Entity,
-            Option<&AffectingTimerCalculators>,
-            Option<&Monster>,
-            Option<&Player>,
-            Option<&BombTag>,
-        ),
-        With<WorldBoundsWrapped>,
-    >,
+    transform_query: &Query<(
+        &Transform,
+        Entity,
+        Option<&AffectingTimerCalculators>,
+        Option<&Monster>,
+        Option<&Player>,
+        Option<&BombTag>,
+    )>,
     explosion_affected_query: &Query<&Transform, With<BombAffected>>,
     bomb_exploded_event_writer: &mut EventWriter<BombExploded>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
@@ -326,7 +317,7 @@ fn manage_bomb_explosion_side_effects(
                 ),
                 ..default()
             },
-            InWorldButNotBoundWrapped,
+            WorldBoundsWrapped,
         ));
 
         if exploded_bomb.monster_hit_count > 0 {

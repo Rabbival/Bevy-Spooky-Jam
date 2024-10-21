@@ -38,7 +38,13 @@ fn spawn_initial_monster(
     mut event_writer: EventWriter<TimerFireRequest>,
     mut commands: Commands,
 ) {
-    let inital_spawn_spot = Vec3::new(0.0, WINDOW_SIZE_IN_PIXELS * 3.0 / 8.0, Z_LAYER_MONSTER);
+    //DEBUG
+    // Original: Vec3::new(0.0, WINDOW_SIZE_IN_PIXELS * 3.0 / 8.0, Z_LAYER_MONSTER);
+    let inital_spawn_spot = Vec3::new(
+        WINDOW_SIZE_IN_PIXELS / 2.0 - 4.0,
+        WINDOW_SIZE_IN_PIXELS / 2.0 - 4.0,
+        Z_LAYER_MONSTER,
+    );
     if let Err(monster_error) = try_spawning_a_monster(
         &transforms_not_to_spawn_next_to,
         &mut sprites_atlas_resource,

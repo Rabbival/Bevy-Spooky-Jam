@@ -14,7 +14,7 @@ impl Plugin for MonsterStateChangeVisualizerPlugin {
 fn listen_to_state_changes(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
-    monsters_query: Query<(&Sprite, Entity)>,
+    monsters_query: Query<(&Sprite, Entity), With<Monster>>,
     mut commands: Commands,
 ) {
     for request in monster_state_set_listener.read() {
