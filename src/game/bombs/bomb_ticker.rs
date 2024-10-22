@@ -1,8 +1,5 @@
-use std::num::ParseIntError;
-
-use bevy_light_2d::light::PointLight2d;
-
 use crate::prelude::*;
+use std::num::ParseIntError;
 
 pub struct BombTickerPlugin;
 
@@ -18,7 +15,7 @@ impl Plugin for BombTickerPlugin {
 fn listen_for_bomb_tick_update(
     mut timer_going_event_reader: EventReader<TimerGoingEvent<f32>>,
     mut bomb_query: Query<(&mut Bomb, &mut Sprite)>,
-    mut text_query: Query<(&mut Text, &mut PointLight2d, &Parent)>,
+    mut text_query: Query<(&mut Text, &Parent)>,
     mut sounds_event_writer: EventWriter<SoundEvent>,
 ) {
     for timer_going_event in timer_going_event_reader.read() {
@@ -60,11 +57,11 @@ fn tick_bomb_and_update_text(
     bomb_sprite: &mut Sprite,
     time_delta: f32,
     bomb_entity: Entity,
-    text_query: &mut Query<(&mut Text, &mut PointLight2d, &Parent)>,
+    text_query: &mut Query<(&mut Text, &Parent)>,
     sounds_event_writer: &mut EventWriter<SoundEvent>,
 ) -> Result<(), ParseIntError> {
     bomb.time_until_explosion += time_delta;
-    for (mut text, mut text_light, text_parent) in text_query {
+    for (mut text, text_parent) in text_query {
         if text_parent.get() == bomb_entity {
             let text_value: usize = text.sections[0].value.parse()?;
             let ceiled_time_until_explosion = bomb.time_until_explosion.ceil() as usize;
@@ -76,7 +73,6 @@ fn tick_bomb_and_update_text(
                     bomb.about_to_explode = true;
                     if let Some(bomb_colors) = bomb.to_colors() {
                         text.sections[0].style.color = bomb_colors.text;
-                        text_light.color = bomb_colors.text;
                         bomb_sprite.color = bomb_colors.bomb;
                     }
                 }

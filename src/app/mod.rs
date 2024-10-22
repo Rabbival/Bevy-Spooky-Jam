@@ -1,7 +1,6 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 use crate::prelude::*;
-use bevy_light_2d::prelude::*;
 use std::env;
 
 pub mod assets_loader;
@@ -22,7 +21,7 @@ pub fn main() {
     let mut app = App::new();
     app
         //bevy basics
-        .add_plugins((ScreenSetupPlugin, Light2dPlugin))
+        .add_plugins(ScreenSetupPlugin)
         //costume
         .add_plugins((
             SystemSetsPlugin,
