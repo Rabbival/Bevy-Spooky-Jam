@@ -17,7 +17,7 @@ $ cd soul-bomb-monster-hunt
 $ cargo run --release
 ```
 
-#### WASM notes
+#### WASM compilations
 
 ```bash
 $ rustup target install wasm32-unknown-unknown
