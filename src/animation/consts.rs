@@ -1,0 +1,1 @@
+pub const BOMB_EXPLOSION_ANIMATION_FPS: u32 = 120;

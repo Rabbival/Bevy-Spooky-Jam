@@ -37,10 +37,13 @@ fn listen_for_bomb_tick_update(
                     &mut text_query,
                     &mut sounds_event_writer,
                 ) {
-                    print_error(
-                        BombError::CouldntParseTimerIntoInteger,
-                        vec![LogCategory::RequestNotFulfilled],
-                    );
+                    if let BombState::Exploded = bomb.state {
+                    } else {
+                        print_error(
+                            BombError::CouldntParseTimerIntoInteger,
+                            vec![LogCategory::RequestNotFulfilled],
+                        );
+                    }
                 }
             } else {
                 print_error(
@@ -77,12 +80,13 @@ fn tick_bomb_and_update_text(
                         bomb_sprite.color = bomb_colors.bomb;
                     }
                 }
-                if bomb.about_to_explode {
-                    if ceiled_time_until_explosion < text_value && 0 < ceiled_time_until_explosion {
-                        sounds_event_writer.send(SoundEvent::BombTickEvent(
-                            1.0 - (ceiled_time_until_explosion as f32 * 0.08),
-                        ));
-                    }
+                if bomb.about_to_explode
+                    && ceiled_time_until_explosion < text_value
+                    && 0 < ceiled_time_until_explosion
+                {
+                    sounds_event_writer.send(SoundEvent::BombTickEvent(
+                        1.0 - (ceiled_time_until_explosion as f32 * 0.08),
+                    ));
                 }
             }
         }

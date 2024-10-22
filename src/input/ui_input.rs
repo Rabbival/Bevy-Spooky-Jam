@@ -13,10 +13,13 @@ impl Plugin for UiInputHandlerPlugin {
 }
 
 fn spawn_ui_input_listener(ui_input_map: Res<UiInputMap>, mut commands: Commands) {
-    commands.spawn(InputManagerBundle::<UiAction> {
-        action_state: ActionState::default(),
-        input_map: ui_input_map.0.clone(),
-    });
+    commands.spawn((
+        InputManagerBundle::<UiAction> {
+            action_state: ActionState::default(),
+            input_map: ui_input_map.0.clone(),
+        },
+        DoNotDestroyOnRestart,
+    ));
 }
 
 fn listen_for_ui_just_pressed_controls(

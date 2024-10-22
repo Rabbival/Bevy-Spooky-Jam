@@ -3,7 +3,7 @@ use crate::prelude::*;
 #[derive(Event, Debug, Clone, Copy, PartialEq)]
 pub enum GameEvent {
     RestartGame,
-    PauseGame,
+    GameOver,
     DebugKeyPressed,
 }
 

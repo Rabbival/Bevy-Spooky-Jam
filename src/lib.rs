@@ -8,7 +8,6 @@ mod debug;
 pub mod ecs;
 pub mod game;
 mod input;
-mod os_access;
 pub mod time;
 mod trait_unions;
 
@@ -20,8 +19,9 @@ extern crate lazy_static;
 
 pub mod prelude {
     pub use crate::animation::{
-        color_change::*, dynamic_light_manager::*, frame_change::*, frame_sequence::*,
-        scale_change::*, translation_change::*, CustomAnimationPlugin,
+        bomb_explosion_animation::*, color_change::*, consts::*, dynamic_light_manager::*,
+        frame_change::*, frame_sequence::*, scale_change::*, translation_change::*,
+        CustomAnimationPlugin,
     };
     pub use crate::app::{
         assets_loader::*, consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*,
@@ -46,8 +46,7 @@ pub mod prelude {
     };
     pub use crate::debug::{
         consts::*,
-        enums::{bevy_log_level::*, functionality_override::*, log_category::*, os_access_log::*},
-        game_session_log::*,
+        enums::{bevy_log_level::*, functionality_override::*, log_category::*},
         gizmos::{
             player_monster_collision_gizmos::*, range_gizmos::*, ray_gizmos::*, GizmosPlugin,
         },
@@ -94,7 +93,8 @@ pub mod prelude {
             consts::*, player_event_channel::*, player_monster_collision_detection::*,
             player_movement::*, player_spawner::*, tags::*, PlayerPlugin,
         },
-        scores::{score_event_channel::*, score_manager::*, ScorePlugin},
+        respawner::*,
+        scores::{components::*, score_event_channel::*, score_manager::*, ScorePlugin},
         tags::*,
         GamePlugin,
     };
@@ -105,13 +105,6 @@ pub mod prelude {
         player_input::*,
         ui_input::*,
         InputPlugin,
-    };
-    pub use crate::os_access::{
-        enums::{folder_to_access::*, system_file_type::*},
-        folder_access::*,
-        os_access_error::*,
-        system_file_name::*,
-        text_file_access::*,
     };
     pub use crate::time::{
         affecting_timer_calculators_management::{

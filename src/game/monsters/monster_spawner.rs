@@ -7,7 +7,7 @@ impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_initial_monster).add_systems(
             Update,
-            respawn_monsters_on_game_restart.in_set(GameRestartSystemSet::Respawning),
+            respawn_monsters_on_game_restart.in_set(GameRestartSystemSet::Spawning),
         );
         if FunctionalityOverride::SpawnOnlyOneEnemy.disabled() {
             app.add_systems(Update, listen_for_monster_spawning_requests);
@@ -22,14 +22,13 @@ fn respawn_monsters_on_game_restart(
     event_writer: EventWriter<TimerFireRequest>,
     commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
         spawn_initial_monster(
             transforms_not_to_spawn_next_to,
             sprites_atlas_resource,
             event_writer,
             commands,
         );
-        break;
     }
 }
 
@@ -81,13 +80,14 @@ fn try_spawning_a_monster(
     override_spawning_spot: Option<Vec3>,
 ) -> Result<(), MonsterError> {
     let mut rng = rand::thread_rng();
-    let fraction_window_size = WINDOW_SIZE_IN_PIXELS / 6.0;
     let place_to_spawn_in = override_spawning_spot.unwrap_or(try_finding_place_for_monster(
         transforms_not_to_spawn_next_to,
     )?);
     let monster_component = Monster {
-        hearing_ring_distance: rng
-            .gen_range(fraction_window_size - 15.0..fraction_window_size + 75.0),
+        hearing_ring_distance: rng.gen_range(
+            BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE
+                ..(BOMB_EXPLOSION_RADIUS + MONSTER_FULL_SIZE) * 2.0,
+        ),
         state: MonsterState::Spawning,
         main_path: VecBasedArray::new(generate_initial_path_to_follow()),
         path_timer_sequence: None,

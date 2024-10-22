@@ -8,7 +8,7 @@ impl Plugin for PlayerSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player).add_systems(
             Update,
-            respawn_player_on_game_restart.in_set(GameRestartSystemSet::Respawning),
+            respawn_player_on_game_restart.in_set(GameRestartSystemSet::Spawning),
         );
     }
 }
@@ -20,9 +20,8 @@ fn respawn_player_on_game_restart(
     player_input_map: Res<PlayerInputMap>,
     commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
         spawn_player(meshes, materials, player_input_map, commands);
-        break;
     }
 }
 
@@ -46,10 +45,7 @@ fn spawn_player(
             input_map,
         },
         AffectingTimerCalculators::default(),
-        Player {
-            score: 0,
-            ..default()
-        },
+        Player::default(),
         WorldBoundsWrapped,
         PlayerMonsterCollider::new(PLAYER_COLLIDER_RADIUS),
     ));

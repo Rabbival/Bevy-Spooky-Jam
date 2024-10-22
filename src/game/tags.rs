@@ -1,10 +1,18 @@
 use crate::prelude::*;
-use std::time::Duration;
 
 use bevy::time::Stopwatch;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
+pub struct BombTag;
+
+#[derive(Component, Debug)]
+pub struct BombAffected;
+
+#[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
+
+#[derive(Component, Debug)]
+pub struct InWorldButNotBoundWrapped;
 
 #[derive(Component, Default)]
 pub struct PlayerGameStopwatchUi {
@@ -15,10 +23,10 @@ pub struct PlayerGameStopwatchUi {
 pub struct PlayerScoreTextUi;
 
 #[derive(Component, Default)]
-pub struct LeaderboardScoreTextUi;
+pub struct BestScoreTextUi;
 
-#[derive(Component, Default)]
-pub struct WorldChampionshipLeaderboardScoring {
-    pub elapsed: Duration,
-    pub hi_score: u32,
-}
+#[derive(Component)]
+pub struct AgainScreen;
+
+#[derive(Component)]
+pub struct DoNotDestroyOnRestart;

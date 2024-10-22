@@ -4,49 +4,47 @@ pub struct GameEventHandlerPlugin;
 
 impl Plugin for GameEventHandlerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            despawn_all_upon_restart.in_set(GameRestartSystemSet::Despawning),
-        );
+        app.add_systems(PreStartup, tag_all_prestartup_entities_with_destorynt)
+            .add_systems(
+                Update,
+                (
+                    listen_for_done_timers_with_game_events
+                        .in_set(GameRestartSystemSet::ScreenDoneFadingListening),
+                    despawn_all_upon_restart.in_set(GameRestartSystemSet::Despawning),
+                ),
+            );
+    }
+}
+
+fn tag_all_prestartup_entities_with_destorynt(all_entities: Query<Entity>, mut commands: Commands) {
+    for entity in &all_entities {
+        commands.entity(entity).insert(DoNotDestroyOnRestart);
+    }
+}
+
+fn listen_for_done_timers_with_game_events(
+    mut timer_done_listener: EventReader<TimerDoneEvent>,
+    mut game_event_writer: EventWriter<GameEvent>,
+) {
+    for done_timer in timer_done_listener.read() {
+        if let TimerDoneEventType::GameEvent(game_event) = done_timer.event_type {
+            game_event_writer.send(game_event);
+        }
     }
 }
 
 fn despawn_all_upon_restart(
     mut event_reader: EventReader<GameEvent>,
-    border_crossers_query: Query<Entity, With<WorldBoundsWrapped>>,
-    timer_query: Query<(Entity, &EmittingTimer)>,
-    timer_sequence_query: Query<Entity, With<TimerSequence>>,
+    entities_to_destroy: Query<Entity, Without<DoNotDestroyOnRestart>>,
     mut commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
-        for border_crosser in &border_crossers_query {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
+        for doomed_entity in &entities_to_destroy {
             despawn_recursive_notify_on_fail(
-                border_crosser,
-                "border crosser when pending restart",
+                doomed_entity,
+                "entity when pending restart",
                 &mut commands,
             );
         }
-        for (timer_entity, timer) in &timer_query {
-            for calculator in timer.calculator_entities_iter() {
-                despawn_recursive_notify_on_fail(
-                    calculator,
-                    "calculator when pending restart",
-                    &mut commands,
-                );
-            }
-            despawn_recursive_notify_on_fail(
-                timer_entity,
-                "timer when pending restart",
-                &mut commands,
-            );
-        }
-        for timer_sequence in &timer_sequence_query {
-            despawn_recursive_notify_on_fail(
-                timer_sequence,
-                "timer sequence when pending restart",
-                &mut commands,
-            );
-        }
-        break;
     }
 }

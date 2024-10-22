@@ -72,7 +72,6 @@ fn bombs_and_monsters_sounds_event_listener(
                     speed: sound_assets_resource.sound_speed,
                     ..default()
                 },
-                ..default()
             },
             AffectingTimeMultiplier(SOUND_TIME_MULTIPLIER_ID),
         ));

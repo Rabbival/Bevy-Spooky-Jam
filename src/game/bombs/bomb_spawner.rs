@@ -16,7 +16,7 @@ impl Plugin for BombSpawnerPlugin {
                     listen_for_bombs_done_growing,
                 )
                     .in_set(TickingSystemSet::PostTicking),
-                respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Respawning),
+                respawn_initial_bomb_on_game_restart.in_set(GameRestartSystemSet::Spawning),
             ),
         );
     }
@@ -27,16 +27,17 @@ fn respawn_initial_bomb_on_game_restart(
     timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     sprites_atlas_resource: ResMut<SpritesAtlas>,
+    bombs_query: Query<&Bomb>,
     commands: Commands,
 ) {
-    for _restart_event in read_no_field_variant!(event_reader, GameEvent::RestartGame) {
+    if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
         spawn_initial_bombs(
             timer_fire_request_writer,
             transforms_not_to_spawn_next_to,
             sprites_atlas_resource,
+            bombs_query,
             commands,
         );
-        break;
     }
 }
 
@@ -44,12 +45,14 @@ fn spawn_initial_bombs(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    bombs_query: Query<&Bomb>,
     mut commands: Commands,
 ) {
     if let Err(bomb_error) = try_spawning_a_bomb(
         &mut timer_fire_request_writer,
         &transforms_not_to_spawn_next_to,
         &mut sprites_atlas_resource,
+        &bombs_query,
         &mut commands,
     ) {
         print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
@@ -61,6 +64,7 @@ fn listen_for_bomb_spawning_requests(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    bombs_query: Query<&Bomb>,
     mut commands: Commands,
 ) {
     for done_event in timer_done_event_reader.read() {
@@ -69,6 +73,7 @@ fn listen_for_bomb_spawning_requests(
                 &mut timer_fire_request_writer,
                 &transforms_not_to_spawn_next_to,
                 &mut sprites_atlas_resource,
+                &bombs_query,
                 &mut commands,
             ) {
                 print_warning(bomb_error, vec![LogCategory::RequestNotFulfilled]);
@@ -81,8 +86,12 @@ fn try_spawning_a_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
+    bombs_query: &Query<&Bomb>,
     commands: &mut Commands,
 ) -> Result<(), BombError> {
+    if bombs_query.iter().count() >= MAX_BOMB_COUNT {
+        return Ok(());
+    }
     let place_to_spawn_in = try_finding_place_for_bomb(transforms_not_to_spawn_next_to)?;
     let bomb_component = Bomb::default();
     let newborn_bomb = commands
@@ -100,6 +109,7 @@ fn try_spawning_a_bomb(
             },
             AffectingTimerCalculators::default(),
             bomb_component,
+            BombTag,
             WorldBoundsWrapped,
         ))
         .id();
@@ -184,7 +194,7 @@ fn listen_for_bombs_done_growing(
                                 ..default()
                             },
                             PointLight2d {
-                                color: Color::from(bomb.to_colors().unwrap().text),
+                                color: bomb.to_colors().unwrap().text,
                                 radius: BOMB_EXPLOSION_RADIUS,
                                 ..default()
                             },

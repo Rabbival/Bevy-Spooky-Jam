@@ -3,4 +3,5 @@ pub enum BombState {
     PreHeld,
     Held,
     PostHeld,
+    Exploded,
 }
