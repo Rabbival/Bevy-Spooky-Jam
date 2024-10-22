@@ -1,4 +1,4 @@
-Soul Bomb Monster Hunt v0.2.1
+Soul Bomb Monster Hunt v0.2.2
 =============================
 
 Soul Bomb Monster Hunt Bevy Spooky Jam entry.
@@ -20,7 +20,10 @@ $ cargo run --release
 #### WASM notes
 
 ```bash
-$ cargo run --target wasm32-unknown-unknown -- DISABLE_OUTPUT_LOG_FILE
+$ rustup target install wasm32-unknown-unknown
+$ cargo install wasm-server-runner
+$ export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-server-runner
+$ cargo run --target wasm32-unknown-unknown
 ```
 
 ### Game instructions
