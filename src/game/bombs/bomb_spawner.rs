@@ -1,5 +1,4 @@
 use bevy::sprite::*;
-use bevy_light_2d::prelude::PointLight2d;
 use rand::Rng;
 
 use crate::{prelude::*, read_no_field_variant};
@@ -191,11 +190,6 @@ fn listen_for_bombs_done_growing(
                                     },
                                 ),
                                 transform: Transform::from_translation(Vec3::new(2.0, -2.0, 1.0)),
-                                ..default()
-                            },
-                            PointLight2d {
-                                color: bomb.to_colors().unwrap().text,
-                                radius: BOMB_EXPLOSION_RADIUS,
                                 ..default()
                             },
                         ))

@@ -1,5 +1,3 @@
-use bevy_light_2d::light::PointLight2d;
-
 use crate::prelude::*;
 
 pub struct MonsterStateChangeVisualizerPlugin;
@@ -16,18 +14,17 @@ impl Plugin for MonsterStateChangeVisualizerPlugin {
 fn listen_to_state_changes(
     mut monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
-    monsters_query: Query<(&Transform, &Sprite, &PointLight2d, Entity)>,
+    monsters_query: Query<(&Transform, &Sprite, Entity)>,
     mut commands: Commands,
 ) {
     for request in monster_state_set_listener.read() {
         match monsters_query.get(request.monster) {
-            Ok((monster_transform, monster_sprite, monster_light, monster_entity)) => {
+            Ok((monster_transform, monster_sprite, monster_entity)) => {
                 determine_visualize_change_and_initiate_if_required(
                     &mut timer_fire_request_writer,
                     monster_entity,
                     monster_transform.scale,
                     monster_sprite.color.alpha(),
-                    monster_light,
                     request,
                     &mut commands,
                 );
@@ -47,13 +44,12 @@ fn determine_visualize_change_and_initiate_if_required(
     monster_entity: Entity,
     monster_scale: Vec3,
     monster_alpha: f32,
-    monster_light: &PointLight2d,
     state_change_event: &MonsterStateChanged,
     commands: &mut Commands,
 ) {
     let mut maybe_scaler = None;
     let mut maybe_alpha_changer = None;
-    let mut maybe_light_changer = None;
+    let maybe_light_changer = None;
     if should_apply_chase_visuals(state_change_event) {
         maybe_scaler = Some(spawn_chase_initiation_scale_calculator(
             monster_scale,
@@ -63,17 +59,9 @@ fn determine_visualize_change_and_initiate_if_required(
             monster_alpha,
             commands,
         ));
-        maybe_light_changer = Some(spawn_chase_initiation_light_intensity_calculator(
-            monster_light,
-            commands,
-        ));
     } else if should_cancel_chase_visuals(state_change_event) {
         maybe_scaler = Some(spawn_chase_cancel_scale_calculator(monster_scale, commands));
         maybe_alpha_changer = Some(spawn_chase_cancel_alpha_calculator(monster_alpha, commands));
-        maybe_light_changer = Some(spawn_chase_cancel_light_intensity_calculator(
-            monster_light,
-            commands,
-        ));
     }
     if let Some(scale_calculator) = maybe_scaler {
         if let Some(alpha_calculator) = maybe_alpha_changer {
@@ -155,23 +143,6 @@ fn spawn_chase_initiation_scale_calculator(
         .id()
 }
 
-fn spawn_chase_initiation_light_intensity_calculator(
-    light: &PointLight2d,
-    commands: &mut Commands,
-) -> Entity {
-    commands
-        .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::KeepNewTimer,
-            ValueByInterpolation::from_goal_and_current(
-                light.intensity,
-                MONSTER_LIGHT_INTENSITY_CHASING,
-                Interpolator::new(0.1),
-            ),
-            TimerGoingEventType::SetLightIntensity,
-        ))
-        .id()
-}
-
 fn spawn_chase_cancel_alpha_calculator(
     monster_current_alpha: f32,
     commands: &mut Commands,
@@ -202,23 +173,6 @@ fn spawn_chase_cancel_scale_calculator(
                 Interpolator::new(2.0),
             ),
             TimerGoingEventType::Scale,
-        ))
-        .id()
-}
-
-fn spawn_chase_cancel_light_intensity_calculator(
-    light: &PointLight2d,
-    commands: &mut Commands,
-) -> Entity {
-    commands
-        .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::KeepNewTimer,
-            ValueByInterpolation::from_goal_and_current(
-                light.intensity,
-                MONSTER_LIGHT_INTENSITY_NORMAL,
-                Interpolator::new(1.0),
-            ),
-            TimerGoingEventType::SetLightIntensity,
         ))
         .id()
 }
