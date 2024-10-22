@@ -18,7 +18,7 @@ impl Plugin for RespawnerPlugin {
 }
 
 fn spawn_invisible_again_screen(
-    images: ResMut<SpritesAtlas>,
+    images: ResMut<StaticImageHandles>,
     text_fonts_resource: ResMut<TextFonts>,
     mut commands: Commands,
 ) {
@@ -46,7 +46,7 @@ fn spawn_invisible_again_screen(
                 "Hi  Score: 0000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
-                    font_size: 100.0,
+                    font_size: 80.0,
                     color: Color::srgba(0.9, 0.9, 0.9, 0.0),
                 },
             )
@@ -56,13 +56,39 @@ fn spawn_invisible_again_screen(
             },
             transform: Transform::from_translation(Vec3::new(
                 0.0,
-                -(WINDOW_SIZE_IN_PIXELS / 2.0) + TOP_UI_HEADER_BAR_HEIGHT,
+                -(WINDOW_SIZE_IN_PIXELS * 4.0 / 10.0) + TOP_UI_HEADER_BAR_HEIGHT,
                 CAMERA_Z_LAYER - 9.0,
             )),
             ..default()
         },
         AffectingTimerCalculators::default(),
         BestScoreTextUi,
+        DoNotDestroyOnRestart,
+        AgainScreen,
+    ));
+    commands.spawn((
+        Text2dBundle {
+            text: Text::from_section(
+                "Longest: ",
+                TextStyle {
+                    font: text_fonts_resource.kenny_high_square_handle.clone(),
+                    font_size: 80.0,
+                    color: Color::srgba(0.9, 0.9, 0.9, 0.0),
+                },
+            )
+            .with_justify(JustifyText::Left),
+            text_2d_bounds: Text2dBounds {
+                size: Vec2::new(WINDOW_SIZE_IN_PIXELS, WINDOW_SIZE_IN_PIXELS / 4.0),
+            },
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                -(WINDOW_SIZE_IN_PIXELS * 4.0 / 10.0) - TOP_UI_HEADER_BAR_HEIGHT / 2.0,
+                CAMERA_Z_LAYER - 9.0,
+            )),
+            ..default()
+        },
+        AffectingTimerCalculators::default(),
+        LongestSurvivedUi,
         DoNotDestroyOnRestart,
         AgainScreen,
     ));

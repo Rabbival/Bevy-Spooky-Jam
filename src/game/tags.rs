@@ -25,6 +25,9 @@ pub struct PlayerScoreTextUi;
 #[derive(Component, Default)]
 pub struct BestScoreTextUi;
 
+#[derive(Component, Default)]
+pub struct LongestSurvivedUi;
+
 #[derive(Component)]
 pub struct AgainScreen;
 
