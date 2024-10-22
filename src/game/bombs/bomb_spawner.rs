@@ -179,20 +179,18 @@ fn listen_for_bombs_done_growing(
             for affected_entity in done_event.affected_entities.affected_entities_iter() {
                 if let Ok(bomb) = bomb_query.get(affected_entity) {
                     commands
-                        .spawn((
-                            Text2dBundle {
-                                text: Text::from_section(
-                                    format!("{:?}", bomb.full_duration),
-                                    TextStyle {
-                                        font: text_fonts_resource.kenny_pixel_handle.clone(),
-                                        font_size: BOMB_TIME_LEFT_FONT_SIZE,
-                                        color: bomb.to_colors().unwrap().text,
-                                    },
-                                ),
-                                transform: Transform::from_translation(Vec3::new(2.0, -2.0, 1.0)),
-                                ..default()
-                            },
-                        ))
+                        .spawn((Text2dBundle {
+                            text: Text::from_section(
+                                format!("{:?}", bomb.full_duration),
+                                TextStyle {
+                                    font: text_fonts_resource.kenny_pixel_handle.clone(),
+                                    font_size: BOMB_TIME_LEFT_FONT_SIZE,
+                                    color: bomb.to_colors().unwrap().text,
+                                },
+                            ),
+                            transform: Transform::from_translation(Vec3::new(2.0, -2.0, 1.0)),
+                            ..default()
+                        },))
                         .set_parent(affected_entity);
                 }
             }

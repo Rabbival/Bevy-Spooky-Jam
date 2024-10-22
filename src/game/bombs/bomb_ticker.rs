@@ -1,5 +1,5 @@
-use std::num::ParseIntError;
 use crate::prelude::*;
+use std::num::ParseIntError;
 
 pub struct BombTickerPlugin;
 
