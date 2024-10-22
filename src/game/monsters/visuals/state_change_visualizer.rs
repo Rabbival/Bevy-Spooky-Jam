@@ -49,7 +49,6 @@ fn determine_visualize_change_and_initiate_if_required(
 ) {
     let mut maybe_scaler = None;
     let mut maybe_alpha_changer = None;
-    let maybe_light_changer = None;
     if should_apply_chase_visuals(state_change_event) {
         maybe_scaler = Some(spawn_chase_initiation_scale_calculator(
             monster_scale,
@@ -65,15 +64,12 @@ fn determine_visualize_change_and_initiate_if_required(
     }
     if let Some(scale_calculator) = maybe_scaler {
         if let Some(alpha_calculator) = maybe_alpha_changer {
-            if let Some(light_calculator) = maybe_light_changer {
-                fire_state_change_visualizer(
-                    timer_fire_request_writer,
-                    monster_entity,
-                    alpha_calculator,
-                    scale_calculator,
-                    light_calculator,
-                );
-            }
+            fire_state_change_visualizer(
+                timer_fire_request_writer,
+                monster_entity,
+                alpha_calculator,
+                scale_calculator,
+            );
         }
     }
 }
@@ -83,7 +79,6 @@ fn fire_state_change_visualizer(
     monster_entity: Entity,
     alpha_calculator: Entity,
     scale_calculator: Entity,
-    light_calculator: Entity,
 ) {
     timer_fire_request_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
@@ -95,10 +90,6 @@ fn fire_state_change_visualizer(
                 TimerAffectedEntity {
                     affected_entity: monster_entity,
                     value_calculator_entity: Some(scale_calculator),
-                },
-                TimerAffectedEntity {
-                    affected_entity: monster_entity,
-                    value_calculator_entity: Some(light_calculator),
                 },
             ],
             vec![TimeMultiplierId::GameTimeMultiplier],
