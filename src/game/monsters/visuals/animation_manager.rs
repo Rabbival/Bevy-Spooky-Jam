@@ -173,7 +173,7 @@ fn spawn_and_fire_animation_timer_sequence(
     monster_entity: Entity,
     commands: &mut Commands,
 ) -> Result<Entity, TimerSequenceError> {
-    let initial_fram_index = heading_direction.to_monster_initial_frame_index();
+    let initial_fram_index = heading_direction.to_initial_frame_index();
     let mut frame_vec = vec![];
     for index_offset in [0, 9, 18, 9] {
         frame_vec.push(initial_fram_index + index_offset);

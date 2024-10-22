@@ -1,4 +1,6 @@
 use crate::{prelude::*, read_no_field_variant};
+use bevy::color::palettes::css::PLUM;
+use bevy_light_2d::light::PointLight2d;
 use rand::{rngs::ThreadRng, Rng};
 
 pub struct MonsterSpawnerPlugin;
@@ -18,7 +20,7 @@ impl Plugin for MonsterSpawnerPlugin {
 fn respawn_monsters_on_game_restart(
     mut event_reader: EventReader<GameEvent>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    sprites_atlas_resource: ResMut<SpritesAtlas>,
+    sprites_atlas_resource: ResMut<MonsterSpritesAtlas>,
     event_writer: EventWriter<TimerFireRequest>,
     monsters_query: Query<&Monster>,
     commands: Commands,
@@ -36,7 +38,7 @@ fn respawn_monsters_on_game_restart(
 
 fn spawn_initial_monster(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    mut sprites_atlas_resource: ResMut<MonsterSpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
     monsters_query: Query<&Monster>,
     mut commands: Commands,
@@ -57,7 +59,7 @@ fn spawn_initial_monster(
 fn listen_for_monster_spawning_requests(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    mut sprites_atlas_resource: ResMut<MonsterSpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
     monsters_query: Query<&Monster>,
     mut commands: Commands,
@@ -80,7 +82,7 @@ fn listen_for_monster_spawning_requests(
 
 fn try_spawning_a_monster(
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
+    sprites_atlas_resource: &mut ResMut<MonsterSpritesAtlas>,
     event_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
     override_spawning_spot: Option<Vec3>,
@@ -119,10 +121,16 @@ fn try_spawning_a_monster(
             layout: sprites_atlas_resource.atlas_handle.clone(),
             index: monster_component
                 .heading_direction_by_index(0)
-                .to_monster_initial_frame_index(),
+                .to_initial_frame_index(),
         },
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
+        PointLight2d {
+            color: Color::from(PLUM),
+            radius: MONSTER_LIGHT_RADIUS,
+            intensity: MONSTER_LIGHT_INTENSITY_NORMAL,
+            ..default()
+        },
     ));
     spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())

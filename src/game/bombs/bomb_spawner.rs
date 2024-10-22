@@ -26,7 +26,7 @@ fn respawn_initial_bomb_on_game_restart(
     mut event_reader: EventReader<GameEvent>,
     timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    sprites_atlas_resource: ResMut<SpritesAtlas>,
+    sprites_atlas_resource: ResMut<StaticImageHandles>,
     bombs_query: Query<&Bomb>,
     commands: Commands,
 ) {
@@ -44,7 +44,7 @@ fn respawn_initial_bomb_on_game_restart(
 fn spawn_initial_bombs(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    mut sprites_atlas_resource: ResMut<StaticImageHandles>,
     bombs_query: Query<&Bomb>,
     mut commands: Commands,
 ) {
@@ -63,7 +63,7 @@ fn listen_for_bomb_spawning_requests(
     mut timer_done_event_reader: EventReader<TimerDoneEvent>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    mut sprites_atlas_resource: ResMut<SpritesAtlas>,
+    mut sprites_atlas_resource: ResMut<StaticImageHandles>,
     bombs_query: Query<&Bomb>,
     mut commands: Commands,
 ) {
@@ -85,7 +85,7 @@ fn listen_for_bomb_spawning_requests(
 fn try_spawning_a_bomb(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     transforms_not_to_spawn_next_to: &Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
-    sprites_atlas_resource: &mut ResMut<SpritesAtlas>,
+    sprites_atlas_resource: &mut ResMut<StaticImageHandles>,
     bombs_query: &Query<&Bomb>,
     commands: &mut Commands,
 ) -> Result<(), BombError> {

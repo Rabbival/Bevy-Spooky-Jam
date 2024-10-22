@@ -24,7 +24,7 @@ impl Plugin for UiPlugin {
 }
 
 fn spawn_ui(
-    image_fonts_resource: ResMut<SpritesAtlas>,
+    image_fonts_resource: ResMut<StaticImageHandles>,
     text_fonts_resource: ResMut<TextFonts>,
     mut commands: Commands,
 ) {

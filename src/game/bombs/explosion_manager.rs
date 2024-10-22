@@ -311,7 +311,7 @@ fn manage_bomb_explosion_side_effects(
     mut sounds_event_writer: EventWriter<SoundEvent>,
     mut update_player_score_event_writer: EventWriter<AppendToPlayerScoreEvent>,
     mut game_event_writer: EventWriter<GameEvent>,
-    sprites_atlas_resource: Res<SpritesAtlas>,
+    sprites_atlas_resource: Res<StaticImageHandles>,
     mut commands: Commands,
 ) {
     for exploded_bomb in explosions_listener.read() {

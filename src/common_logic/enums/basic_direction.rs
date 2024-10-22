@@ -26,7 +26,7 @@ impl BasicDirection {
         Self::index_to_dir(rounded).unwrap()
     }
 
-    pub fn to_monster_initial_frame_index(&self) -> usize {
+    pub fn to_initial_frame_index(&self) -> usize {
         match self {
             Self::DownLeft => 6,
             Self::Down => 7,

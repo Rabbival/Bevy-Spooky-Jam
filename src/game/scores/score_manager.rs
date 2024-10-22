@@ -6,8 +6,10 @@ pub struct ScoreManagerPlugin;
 
 impl Plugin for ScoreManagerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_score_entities)
-            .add_systems(Update, (update_player_scoring, listen_for_game_over_events));
+        app.add_systems(Startup, spawn_score_entities).add_systems(
+            Update,
+            (update_player_scoring, listen_for_game_over_events).chain(),
+        );
     }
 }
 

@@ -16,6 +16,7 @@ pub enum TimerGoingEventType {
     BombCountdown,
     SetAlpha,
     SetMusicVolume,
+    SetLightIntensity,
 }
 
 plugin_for_implementors_of_trait!(TimerGoingEventPlugin, Numeric);
