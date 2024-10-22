@@ -1,4 +1,6 @@
 use crate::{prelude::*, read_no_field_variant};
+use bevy::color::palettes::css::PLUM;
+use bevy_light_2d::light::PointLight2d;
 use rand::{rngs::ThreadRng, Rng};
 
 pub struct MonsterSpawnerPlugin;
@@ -123,6 +125,12 @@ fn try_spawning_a_monster(
         },
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
+        PointLight2d {
+            color: Color::from(PLUM),
+            radius: MONSTER_LIGHT_RADIUS,
+            intensity: MONSTER_LIGHT_INTENSITY_NORMAL,
+            ..default()
+        },
     ));
     spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())
