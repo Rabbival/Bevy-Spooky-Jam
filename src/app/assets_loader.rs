@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 
-//PLAYER SPRITE SHEET DETAILS
-//Total: 189px w * 258px h
-// Cell: 63px * 86px
+#[derive(Resource, Default)]
+pub struct PlayerSpritesAtlas {
+    pub atlas_handle: Handle<TextureAtlasLayout>,
+    pub image_handle: Handle<Image>,
+}
 
 #[derive(Resource, Default)]
 pub struct BombExplosionSpritesAtlas {
@@ -11,9 +13,13 @@ pub struct BombExplosionSpritesAtlas {
 }
 
 #[derive(Resource, Default)]
-pub struct SpritesAtlas {
+pub struct MonsterSpritesAtlas {
     pub atlas_handle: Handle<TextureAtlasLayout>,
     pub image_handle: Handle<Image>,
+}
+
+#[derive(Resource, Default)]
+pub struct StaticImageHandles {
     pub pumpkin_image_handle: Handle<Image>,
     pub pumpkin_grey_image_handle: Handle<Image>,
     pub floor_image_handle: Handle<Image>,
@@ -67,27 +73,58 @@ fn sprites_atlas_setup(
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     mut commands: Commands,
 ) {
-    // bomb explosion
-    let bomb_explosion_image_handle = asset_server.load("images/explosion_sprites_sheet.png");
-    let bomb_explosion_texture_atlas =
-        TextureAtlasLayout::from_grid(UVec2::new(100, 100), 8, 8, None, None);
-    let bomb_explosion_texture_atlas_handle = texture_atlases.add(bomb_explosion_texture_atlas);
-    commands.insert_resource(BombExplosionSpritesAtlas {
-        atlas_handle: bomb_explosion_texture_atlas_handle,
-        image_handle: bomb_explosion_image_handle,
-    });
-    // bato-san
-    let image_handle = asset_server.load("images/sprites_sheet.png");
-    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(180, 107), 3, 9, None, None);
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
-    commands.insert_resource(SpritesAtlas {
-        atlas_handle: texture_atlas_handle,
-        image_handle,
+    setup_bomb_explosion_atlas(&asset_server, &mut texture_atlases, &mut commands);
+    setup_monster_atlas(&asset_server, &mut texture_atlases, &mut commands);
+    setup_player_atlas(&asset_server, &mut texture_atlases, &mut commands);
+    commands.insert_resource(StaticImageHandles {
         pumpkin_image_handle: asset_server.load("images/pumpkin.png"),
         pumpkin_grey_image_handle: asset_server.load("images/pumpkinGreyed.png"),
         floor_image_handle: asset_server.load("images/full_floor.png"),
         floor_hole_handle: asset_server.load("images/floor_hole.png"),
         again_screen_handle: asset_server.load("images/again.png"),
+    });
+}
+
+fn setup_bomb_explosion_atlas(
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    commands: &mut Commands,
+) {
+    let image_handle = asset_server.load("images/explosion_sprites_sheet.png");
+    let bomb_explosion_texture_atlas =
+        TextureAtlasLayout::from_grid(UVec2::new(100, 100), 8, 8, None, None);
+    let atlas_handle = texture_atlases.add(bomb_explosion_texture_atlas);
+    commands.insert_resource(BombExplosionSpritesAtlas {
+        atlas_handle,
+        image_handle,
+    });
+}
+
+fn setup_monster_atlas(
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    commands: &mut Commands,
+) {
+    let image_handle = asset_server.load("images/sprites_sheet.png");
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(180, 107), 3, 9, None, None);
+    let atlas_handle = texture_atlases.add(texture_atlas);
+    commands.insert_resource(MonsterSpritesAtlas {
+        atlas_handle,
+        image_handle,
+    });
+}
+
+fn setup_player_atlas(
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+    commands: &mut Commands,
+) {
+    let image_handle = asset_server.load("images/phantom_spritesheet.png");
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(63, 86), 3, 3, None, None);
+    let atlas_handle = texture_atlases.add(texture_atlas);
+    commands.insert_resource(PlayerSpritesAtlas {
+        atlas_handle,
+        image_handle,
     });
 }
 

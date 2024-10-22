@@ -18,7 +18,7 @@ impl Plugin for RespawnerPlugin {
 }
 
 fn spawn_invisible_again_screen(
-    images: ResMut<SpritesAtlas>,
+    images: ResMut<StaticImageHandles>,
     text_fonts_resource: ResMut<TextFonts>,
     mut commands: Commands,
 ) {
