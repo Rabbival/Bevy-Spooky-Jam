@@ -1,5 +1,4 @@
 use bevy_light_2d::light::PointLight2d;
-use rand::Rng;
 
 use crate::prelude::*;
 
@@ -9,15 +8,30 @@ impl Plugin for DynamicLightManagerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            candle_light_bomb_effect.in_set(TickingSystemSet::PostTicking),
+            set_light_intensity.in_set(TickingSystemSet::PostTicking),
         );
     }
 }
 
-fn candle_light_bomb_effect(mut bomb_point_light_query: Query<&mut PointLight2d>) {
-    let mut rng = rand::thread_rng();
-    for mut bomb in bomb_point_light_query.iter_mut() {
-        bomb.intensity = rng.gen_range(0.0..3.0);
-        bomb.falloff = rng.gen_range(0.0..1.0);
+fn set_light_intensity(
+    mut event_reader: EventReader<TimerGoingEvent<f32>>,
+    mut lights: Query<&mut PointLight2d>,
+) {
+    for event_from_timer in event_reader.read() {
+        if let TimerGoingEventType::SetLightIntensity = event_from_timer.event_type {
+            match lights.get_mut(event_from_timer.entity) {
+                Ok(mut light) => {
+                    light.intensity += event_from_timer.value_delta;
+                }
+                Err(_) => {
+                    print_error(
+                        EntityError::EntityNotInQuery(
+                            "couldn't fetch light from query on light intensity update function",
+                        ),
+                        vec![LogCategory::RequestNotFulfilled],
+                    );
+                }
+            }
+        }
     }
 }

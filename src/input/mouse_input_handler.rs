@@ -24,11 +24,11 @@ fn update_cursor_in_game_world(
     let (camera, transform) = single_else_return!(camera);
 
     if let Some(screen_position) = window.cursor_position() {
-        let world_position = camera
+        let maybe_world_position = camera
             .viewport_to_world(transform, screen_position)
-            .unwrap()
-            .origin
-            .truncate();
-        cursor.0 = world_position;
+            .map(|ray| ray.origin.truncate());
+        if let Some(world_position) = maybe_world_position {
+            cursor.0 = world_position;
+        }
     }
 }

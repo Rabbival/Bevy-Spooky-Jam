@@ -1,7 +1,5 @@
 use crate::{prelude::*, read_no_field_variant};
 
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
-
 pub struct PlayerSpawnerPlugin;
 
 impl Plugin for PlayerSpawnerPlugin {
@@ -15,30 +13,35 @@ impl Plugin for PlayerSpawnerPlugin {
 
 fn respawn_player_on_game_restart(
     mut event_reader: EventReader<GameEvent>,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: Res<PlayerSpritesAtlas>,
     player_input_map: Res<PlayerInputMap>,
     commands: Commands,
 ) {
     if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
-        spawn_player(meshes, materials, player_input_map, commands);
+        spawn_player(sprites_atlas_resource, player_input_map, commands);
     }
 }
 
 fn spawn_player(
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    sprites_atlas_resource: Res<PlayerSpritesAtlas>,
     player_input_map: Res<PlayerInputMap>,
     mut commands: Commands,
 ) {
     let input_map = player_input_map.0.clone();
     commands.spawn((
-        // TODO add StateScoped(AppState::Game),
-        MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Capsule2d::new(10.0, 20.0))),
-            material: materials.add(Color::srgb(0.3, 0.9, 0.3)),
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgba(1.0, 1.0, 1.0, 1.0),
+                custom_size: Some(Vec2::new(36.0, 48.0)),
+                ..default()
+            },
+            texture: sprites_atlas_resource.image_handle.clone(),
             transform: Transform::from_xyz(0.0, 0.0, Z_LAYER_PLAYER),
             ..default()
+        },
+        TextureAtlas {
+            layout: sprites_atlas_resource.atlas_handle.clone(),
+            index: 1,
         },
         InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
