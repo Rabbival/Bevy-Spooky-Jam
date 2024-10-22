@@ -79,7 +79,7 @@ fn sprites_atlas_setup(
     commands.insert_resource(StaticImageHandles {
         pumpkin_image_handle: asset_server.load("images/pumpkin.png"),
         pumpkin_grey_image_handle: asset_server.load("images/pumpkinGreyed.png"),
-        floor_image_handle: asset_server.load("images/full_floor.png"),
+        floor_image_handle: asset_server.load("images/AlternativeBackground.png"),
         floor_hole_handle: asset_server.load("images/floor_hole.png"),
         again_screen_handle: asset_server.load("images/again.png"),
     });

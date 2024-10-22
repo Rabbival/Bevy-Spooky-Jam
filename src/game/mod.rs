@@ -17,7 +17,7 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             PlayerPlugin,
             MonstersPlugin,
-            GizmosPlugin,
+            // GizmosPlugin,
             BombsPlugin,
             ScorePlugin,
             GameEventPlugin,
