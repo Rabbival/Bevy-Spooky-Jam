@@ -1,7 +1,6 @@
 use crate::prelude::*;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
-use bevy_light_2d::light::PointLight2d;
 
 pub struct ExplosionManagerPlugin;
 
@@ -281,7 +280,7 @@ fn move_due_to_blast_calculator(
 fn mark_bombs_in_explosion_as_exploded(
     mut explosions_listener: EventReader<BombExploded>,
     mut bomb_query: Query<(&Transform, &mut Bomb, &mut Sprite, Entity)>,
-    mut text_query: Query<(&mut Text, &mut PointLight2d, &Parent)>,
+    mut text_query: Query<(&mut Text, &Parent)>,
 ) {
     for explosion in explosions_listener.read() {
         for (bomb_transform, mut bomb, mut bomb_sprite, bomb_entity) in &mut bomb_query {
@@ -291,12 +290,11 @@ fn mark_bombs_in_explosion_as_exploded(
                 }
                 bomb.state = BombState::Exploded;
                 bomb.about_to_explode = true;
-                for (mut text, mut text_light, text_parent) in &mut text_query {
+                for (mut text, text_parent) in &mut text_query {
                     if text_parent.get() == bomb_entity {
                         text.sections[0].value = String::from("!");
                         if let Some(bomb_colors) = bomb.to_colors() {
                             text.sections[0].style.color = bomb_colors.text;
-                            text_light.color = bomb_colors.text;
                             bomb_sprite.color = bomb_colors.bomb;
                         }
                     }
