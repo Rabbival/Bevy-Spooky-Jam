@@ -1,4 +1,4 @@
-use crate::{prelude::*, read_no_field_variant};
+use crate::prelude::*;
 
 use bevy::text::Text2dBounds;
 use bevy::time::Stopwatch;
@@ -16,20 +16,9 @@ impl Plugin for UiPlugin {
                     update_player_game_stopwatch,
                     update_player_scoring,
                     update_high_score,
-                    reset_timer_when_resetting_game,
+                    update_longest_run_text,
                 ),
             );
-        }
-    }
-}
-
-fn reset_timer_when_resetting_game(
-    mut game_event_listener: EventReader<GameEvent>,
-    mut stopwatch_query: Query<&mut PlayerGameStopwatchUi>,
-) {
-    for _restart_request in read_no_field_variant!(game_event_listener, GameEvent::RestartGame) {
-        for mut stopwatch in &mut stopwatch_query {
-            stopwatch.timer.reset();
         }
     }
 }
@@ -155,9 +144,21 @@ fn update_player_game_stopwatch(
     mut player_game_stopwatch_text_query: Query<(&mut Text, &mut PlayerGameStopwatchUi)>,
     time: Res<Time>,
 ) {
-    for (mut text, mut stopwatch) in player_game_stopwatch_text_query.iter_mut() {
+    for (mut text, mut stopwatch) in &mut player_game_stopwatch_text_query {
         stopwatch.timer.tick(time.delta());
         text.sections[0].value = get_elapsed_secs_as_a_formatted_string(stopwatch.timer.clone());
+    }
+}
+
+fn update_longest_run_text(
+    changed_longest_run_query: Query<&LongestSurvivedSoFar, Changed<LongestSurvivedSoFar>>,
+    mut longest_run_text_query: Query<&mut Text, With<LongestSurvivedUi>>,
+) {
+    for longest_run_time in &changed_longest_run_query {
+        for mut longest_run_text in &mut longest_run_text_query {
+            longest_run_text.sections[0].value =
+                format!("Longest: {:0>4} sec", longest_run_time.0.to_string());
+        }
     }
 }
 

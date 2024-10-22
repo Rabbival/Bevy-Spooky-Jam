@@ -1,5 +1,9 @@
 use bevy::prelude::*;
 
+//PLAYER SPRITE SHEET DETAILS
+//Total: 189px w * 258px h
+// Cell: 63px * 86px
+
 #[derive(Resource, Default)]
 pub struct BombExplosionSpritesAtlas {
     pub atlas_handle: Handle<TextureAtlasLayout>,

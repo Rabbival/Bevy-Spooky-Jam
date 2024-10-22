@@ -24,4 +24,4 @@ pub const BOMB_SPAWN_INITIAL_INTERVAL: f32 = 5.0;
 pub const BOMB_SPAWN_INTERVAL_DELTA: f32 = 0.3;
 pub const BOMB_SPAWN_MINIMAL_INTERVAL: f32 = 1.4;
 
-pub const MAX_BOMB_COUNT: usize = 22;
+pub const MAX_BOMB_COUNT: usize = 20;

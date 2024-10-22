@@ -22,4 +22,4 @@ pub const MONSTER_SPAWN_INITIAL_INTERVAL: f32 = 4.0;
 pub const MONSTER_SPAWN_INTERVAL_DELTA: f32 = 0.3;
 pub const MONSTER_SPAWN_MINIMAL_INTERVAL: f32 = 1.3;
 
-pub const MAX_MONSTER_COUNT: usize = 22;
+pub const MAX_MONSTER_COUNT: usize = 18;

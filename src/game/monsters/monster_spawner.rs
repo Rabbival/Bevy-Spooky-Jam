@@ -20,6 +20,7 @@ fn respawn_monsters_on_game_restart(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     sprites_atlas_resource: ResMut<SpritesAtlas>,
     event_writer: EventWriter<TimerFireRequest>,
+    monsters_query: Query<&Monster>,
     commands: Commands,
 ) {
     if read_no_field_variant!(event_reader, GameEvent::RestartGame).count() > 0 {
@@ -27,6 +28,7 @@ fn respawn_monsters_on_game_restart(
             transforms_not_to_spawn_next_to,
             sprites_atlas_resource,
             event_writer,
+            monsters_query,
             commands,
         );
     }
@@ -36,6 +38,7 @@ fn spawn_initial_monster(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
+    monsters_query: Query<&Monster>,
     mut commands: Commands,
 ) {
     let inital_spawn_spot = Vec3::new(0.0, WINDOW_SIZE_IN_PIXELS * 3.0 / 8.0, Z_LAYER_MONSTER);
@@ -45,6 +48,7 @@ fn spawn_initial_monster(
         &mut event_writer,
         &mut commands,
         Some(inital_spawn_spot),
+        &monsters_query,
     ) {
         print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
     }
@@ -55,6 +59,7 @@ fn listen_for_monster_spawning_requests(
     transforms_not_to_spawn_next_to: Query<&Transform, Or<(With<Player>, With<Bomb>)>>,
     mut sprites_atlas_resource: ResMut<SpritesAtlas>,
     mut event_writer: EventWriter<TimerFireRequest>,
+    monsters_query: Query<&Monster>,
     mut commands: Commands,
 ) {
     for done_event in timer_done_event_reader.read() {
@@ -65,6 +70,7 @@ fn listen_for_monster_spawning_requests(
                 &mut event_writer,
                 &mut commands,
                 None,
+                &monsters_query,
             ) {
                 print_warning(monster_error, vec![LogCategory::RequestNotFulfilled]);
             }
@@ -78,7 +84,11 @@ fn try_spawning_a_monster(
     event_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
     override_spawning_spot: Option<Vec3>,
+    monsters_query: &Query<&Monster>,
 ) -> Result<(), MonsterError> {
+    if monsters_query.iter().count() >= MAX_MONSTER_COUNT {
+        return Ok(());
+    }
     let mut rng = rand::thread_rng();
     let place_to_spawn_in = override_spawning_spot.unwrap_or(try_finding_place_for_monster(
         transforms_not_to_spawn_next_to,
