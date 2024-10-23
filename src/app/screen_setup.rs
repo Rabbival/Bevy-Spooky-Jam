@@ -18,6 +18,10 @@ impl Plugin for ScreenSetupPlugin {
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
+                        title: "Soul Bomb Monster Hunt".to_string(),
+                        canvas: Some("#bevy".to_string()),
+                        fit_canvas_to_parent: true,
+                        prevent_default_event_handling: true,
                         resolution: WindowResolution::new(
                             WINDOW_SIZE_IN_PIXELS,
                             WINDOW_SIZE_IN_PIXELS + TOP_UI_HEADER_BAR_HEIGHT,
