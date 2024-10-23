@@ -172,13 +172,13 @@ fn destroy_current_path_timer_and_calculator(
 ) -> Result<TimerParentSequence, MonsterError> {
     let direct_line_mover_type = &TimerGoingEventType::Move(MovementType::InDirectLine);
     match affecting_timer_calculators.get(direct_line_mover_type) {
-        Some(direct_line_movers) => {
-            for timer_and_calculator in direct_line_movers {
-                if let Ok(parent_sequence) =
-                    emitting_timer_parent_sequence_query.get(timer_and_calculator.timer)
-                {
-                    if let Some(timer_sequence) = monster.path_timer_sequence {
-                        if timer_sequence == parent_sequence.parent_sequence {
+        Some(direct_line_movers) => match monster.path_timer_sequence {
+            Some(monster_assigned_path_sequence) => {
+                for timer_and_calculator in direct_line_movers {
+                    if let Ok(parent_sequence) =
+                        emitting_timer_parent_sequence_query.get(timer_and_calculator.timer)
+                    {
+                        if monster_assigned_path_sequence == parent_sequence.parent_sequence {
                             if destroy_calculator {
                                 despawn_recursive_notify_on_fail(
                                     timer_and_calculator.value_calculator,
@@ -197,9 +197,14 @@ fn destroy_current_path_timer_and_calculator(
                         }
                     }
                 }
+                if direct_line_movers.iter().count() > 0 {
+                    Err(MonsterError::NoMovementTimerHadTheListedPathParentSequence)
+                } else {
+                    Err(MonsterError::NoMovementAffectingTimerFound)
+                }
             }
-            Err(MonsterError::NoMovementTimerHadTheListedPathParentSequence)
-        }
+            None => Err(MonsterError::MonsterHasNoPathTimerSequenceAssigned),
+        },
         None => Err(MonsterError::NoMovementAffectingTimerFound),
     }
 }

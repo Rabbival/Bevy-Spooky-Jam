@@ -78,14 +78,14 @@ fn despawn_stray_path_timer_and_get_done_event(
 ) -> Result<TimerDoneEvent, MonsterError> {
     let direct_line_mover_type = &TimerGoingEventType::Move(MovementType::InDirectLine);
     match affecting_timer_calculators.get(direct_line_mover_type) {
-        Some(direct_line_movers) => {
-            for timer_and_calculator in direct_line_movers {
-                let timer_entity = timer_and_calculator.timer;
-                if let Ok((timer, parent_sequence)) =
-                    emitting_timer_with_parent_sequence_query.get(timer_and_calculator.timer)
-                {
-                    if let Some(timer_sequence) = monster.path_timer_sequence {
-                        if timer_sequence == parent_sequence.parent_sequence {
+        Some(direct_line_movers) => match monster.path_timer_sequence {
+            Some(monster_current_path_sequence) => {
+                for timer_and_calculator in direct_line_movers {
+                    let timer_entity = timer_and_calculator.timer;
+                    if let Ok((timer, parent_sequence)) =
+                        emitting_timer_with_parent_sequence_query.get(timer_and_calculator.timer)
+                    {
+                        if monster_current_path_sequence == parent_sequence.parent_sequence {
                             despawn_recursive_notify_on_fail(
                                 timer_and_calculator.timer,
                                 "timer when changing monster state",
@@ -108,9 +108,14 @@ fn despawn_stray_path_timer_and_get_done_event(
                         print_info("Found a movement timer with a parent sequence for monster, but it wasn't the one listed as path sequence in its struct", vec![LogCategory::Monster]);
                     }
                 }
+                if direct_line_movers.iter().count() > 0 {
+                    Err(MonsterError::NoMovementTimerHadTheListedPathParentSequence)
+                } else {
+                    Err(MonsterError::NoMovementAffectingTimerFound)
+                }
             }
-            Err(MonsterError::NoMovementTimerHadTheListedPathParentSequence)
-        }
+            None => Err(MonsterError::MonsterHasNoPathTimerSequenceAssigned),
+        },
         None => Err(MonsterError::NoMovementAffectingTimerFound),
     }
 }

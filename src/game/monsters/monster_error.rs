@@ -9,6 +9,7 @@ pub enum MonsterError {
     NoPathSequenceFoundOnStateChange(MonsterState),
     NoMovementAffectingTimerFound,
     NoMovementTimerHadTheListedPathParentSequence,
+    MonsterHasNoPathTimerSequenceAssigned,
 }
 
 impl Display for MonsterError {
@@ -31,13 +32,19 @@ impl Display for MonsterError {
                 )
             }
             Self::NoMovementAffectingTimerFound => {
-                write!(f, "No affecting movement affecting timer was found")
+                write!(
+                    f,
+                    "Monster has no path timer listed in its affecting timers"
+                )
             }
             Self::NoMovementTimerHadTheListedPathParentSequence => {
                 write!(
                     f,
                     "Found movement affecting timers, but none has the sequence listed in the monster's struct"
                 )
+            }
+            Self::MonsterHasNoPathTimerSequenceAssigned => {
+                write!(f, "Monster path sequence entity is None")
             }
         }
     }
