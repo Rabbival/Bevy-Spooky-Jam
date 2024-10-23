@@ -1,12 +1,16 @@
 use crate::prelude::*;
+use crate::single_mut_else_return;
 
 use bevy::text::Text2dBounds;
+use reqwest::Error;
+use tokio::runtime::Runtime;
+use serde::Deserialize;
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_ui);
+        app.add_systems(Startup, (spawn_ui, make_request));
 
         if FunctionalityOverride::DontUpdateUI.disabled() {
             app.add_systems(
@@ -19,6 +23,38 @@ impl Plugin for UiPlugin {
                 ),
             );
         }
+    }
+}
+
+#[derive(Deserialize)]
+struct Placeholder {
+    id: u32,
+    title: String,
+    body: String,
+}
+
+async fn fetch_data() -> Result<Placeholder, Error> {
+    let response = reqwest::get("https://jsonplaceholder.typicode.com/posts/100")
+        .await?
+        .json::<Placeholder>()
+        .await?;
+    Ok(response)
+}
+
+fn make_request(mut best_score_query: Query<&mut BestScoreSoFar>,) {
+    // Create a tokio runtime since Bevy is not async
+    let rt = Runtime::new().unwrap();
+    println!("before");
+    let mut best_score = single_mut_else_return!(best_score_query);
+    println!("after");
+
+    // Run the async function in the tokio runtime
+    match rt.block_on(fetch_data()) {
+        Ok(data) => {
+            println!("Response: {}", data.id);
+            best_score.0 = data.id;
+        },
+        Err(e) => println!("Error: {}", e),
     }
 }
 
