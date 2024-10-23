@@ -27,8 +27,8 @@ lazy_static! {
         // FunctionalityOverride::DontUpdateUI,
         // #[cfg(debug_assertions)]
         // FunctionalityOverride::SpawnOnlyOneEnemy,
-        #[cfg(debug_assertions)]
-        FunctionalityOverride::DontCheckMonsterColliders,
+        // #[cfg(debug_assertions)]
+        // FunctionalityOverride::DontCheckMonsterColliders,
         // #[cfg(debug_assertions)]
         // FunctionalityOverride::MonstersNeverAttackOrFlee
         // #[cfg(debug_assertions)]
