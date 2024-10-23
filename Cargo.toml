@@ -1,6 +1,6 @@
 [package]
 name = "soul_bomb_monster_hunt"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 
 [dependencies]
