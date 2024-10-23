@@ -6,7 +6,6 @@ pub enum FunctionalityOverride {
     PlayerMayCarryInfiniteBombs,
     AllBombsExplodeAfterOneSecond,
     EnemiesDontMove,
-    SpawnOnlyOneEnemy,
     DontUpdateUI,
     DontCheckMonsterColliders,
     MonstersNeverAttackOrFlee,

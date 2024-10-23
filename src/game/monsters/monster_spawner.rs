@@ -7,11 +7,11 @@ impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_initial_monster).add_systems(
             Update,
-            respawn_monsters_on_game_restart.in_set(GameRestartSystemSet::Spawning),
+            (
+                respawn_monsters_on_game_restart.in_set(GameRestartSystemSet::Spawning),
+                listen_for_monster_spawning_requests,
+            ),
         );
-        if FunctionalityOverride::SpawnOnlyOneEnemy.disabled() {
-            app.add_systems(Update, listen_for_monster_spawning_requests);
-        }
     }
 }
 

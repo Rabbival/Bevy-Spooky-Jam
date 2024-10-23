@@ -8,7 +8,7 @@ impl Plugin for TimerFiringPlugin {
             Update,
             (
                 listen_for_emitting_timer_firing_requests,
-                clear_calculators_if_part_of_looping_sequence,
+                reset_calculators_if_part_of_looping_sequence,
             )
                 .in_set(TickingSystemSet::PreTickingEarlyPreperations),
         );
@@ -47,7 +47,7 @@ pub fn listen_for_emitting_timer_firing_requests(
     }
 }
 
-pub fn clear_calculators_if_part_of_looping_sequence(
+pub fn reset_calculators_if_part_of_looping_sequence(
     mut event_reader: EventReader<TimerFireRequest>,
     mut calculator_event_channel_writer: EventWriter<ValueCalculatorRequest>,
     timer_sequence_query: Query<&TimerSequence>,

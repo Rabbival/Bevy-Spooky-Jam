@@ -7,6 +7,9 @@ pub enum MonsterError {
     CouldntFindAPlaceToSpawnMonsterIn,
     TimerSequenceError(TimerSequenceError),
     NoPathSequenceFoundOnStateChange(MonsterState),
+    NoMovementAffectingTimerFound,
+    NoMovementTimerHadTheListedPathParentSequence,
+    MonsterHasNoPathTimerSequenceAssigned,
 }
 
 impl Display for MonsterError {
@@ -27,6 +30,21 @@ impl Display for MonsterError {
                     "Tried to manipulate path when changing to state {:?} but no path sequence was found",
                     next_state
                 )
+            }
+            Self::NoMovementAffectingTimerFound => {
+                write!(
+                    f,
+                    "Monster has no movement timer listed in its affecting timers"
+                )
+            }
+            Self::NoMovementTimerHadTheListedPathParentSequence => {
+                write!(
+                    f,
+                    "Found movement affecting timers, but none has the sequence listed in the monster's struct"
+                )
+            }
+            Self::MonsterHasNoPathTimerSequenceAssigned => {
+                write!(f, "Monster path sequence entity is None")
             }
         }
     }
