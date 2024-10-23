@@ -28,7 +28,7 @@ fn listen_for_state_set(
                     event.next_state
                 {
                     if let Ok(target_transform) = transforms.get(target_entity) {
-                        let new_delta = replace_current_path_get_new_delta(
+                        match replace_current_path_get_new_delta(
                             target_transform.translation,
                             monster,
                             monster_entity,
@@ -38,11 +38,20 @@ fn listen_for_state_set(
                             &mut timer_fire_request_writer,
                             &mut commands,
                             event.previous_state,
-                        );
-                        new_path_event_writer.send(MonsterStrayPathUpdated {
-                            new_delta,
-                            monster_entity,
-                        });
+                        ) {
+                            Ok(new_delta) => {
+                                new_path_event_writer.send(MonsterStrayPathUpdated {
+                                    new_delta,
+                                    monster_entity,
+                                });
+                            }
+                            Err(monster_error) => {
+                                print_error(
+                                    monster_error,
+                                    vec![LogCategory::RequestNotFulfilled, LogCategory::Monster],
+                                );
+                            }
+                        }
                     }
                 }
             }
@@ -73,7 +82,7 @@ fn update_stray_path(
             monster.state
         {
             if let Ok(target_transform) = just_changed_transforms.get(target_entity) {
-                let new_delta = replace_current_path_get_new_delta(
+                match replace_current_path_get_new_delta(
                     target_transform.translation,
                     monster,
                     monster_entity,
@@ -83,11 +92,20 @@ fn update_stray_path(
                     &mut timer_fire_request_writer,
                     &mut commands,
                     monster.state,
-                );
-                new_path_event_writer.send(MonsterStrayPathUpdated {
-                    new_delta,
-                    monster_entity,
-                });
+                ) {
+                    Ok(new_delta) => {
+                        new_path_event_writer.send(MonsterStrayPathUpdated {
+                            new_delta,
+                            monster_entity,
+                        });
+                    }
+                    Err(monster_error) => {
+                        print_error(
+                            monster_error,
+                            vec![LogCategory::RequestNotFulfilled, LogCategory::Monster],
+                        );
+                    }
+                }
             }
         }
     }
@@ -103,7 +121,7 @@ fn replace_current_path_get_new_delta(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
     monster_previous_state: MonsterState,
-) -> Vec2 {
+) -> Result<Vec2, MonsterError> {
     let should_destroy_previous_calculator =
         if let MonsterState::Chasing(_) | MonsterState::Fleeing(_) = monster_previous_state {
             true
@@ -123,27 +141,26 @@ fn replace_current_path_get_new_delta(
     };
     let new_path_calculator =
         spawn_monster_move_calculator(monster_location, location_to_move_towards, commands);
-    if let Some(path_timer_parent_sequence) = destroy_current_path_timer_and_calculator(
+    let path_timer_parent_sequence = destroy_current_path_timer_and_calculator(
         monster,
         affecting_timer_calculators,
         emitting_timer_parent_sequence_query,
         commands,
         should_destroy_previous_calculator,
-    ) {
-        timer_fire_request_writer.send(TimerFireRequest {
-            timer: EmittingTimer::new(
-                vec![TimerAffectedEntity {
-                    affected_entity: monster_entity,
-                    value_calculator_entity: Some(new_path_calculator),
-                }],
-                vec![TimeMultiplierId::GameTimeMultiplier],
-                location_to_move_towards.distance(monster_location) / speed,
-                TimerDoneEventType::SetAnimationCycleByPathParentSequence,
-            ),
-            parent_sequence: Some(path_timer_parent_sequence),
-        });
-    }
-    (location_to_move_towards - monster_location).truncate()
+    )?;
+    timer_fire_request_writer.send(TimerFireRequest {
+        timer: EmittingTimer::new(
+            vec![TimerAffectedEntity {
+                affected_entity: monster_entity,
+                value_calculator_entity: Some(new_path_calculator),
+            }],
+            vec![TimeMultiplierId::GameTimeMultiplier],
+            location_to_move_towards.distance(monster_location) / speed,
+            TimerDoneEventType::SetAnimationCycleByPathParentSequence,
+        ),
+        parent_sequence: Some(path_timer_parent_sequence),
+    });
+    Ok((location_to_move_towards - monster_location).truncate())
 }
 
 fn destroy_current_path_timer_and_calculator(
@@ -152,36 +169,39 @@ fn destroy_current_path_timer_and_calculator(
     emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
     commands: &mut Commands,
     destroy_calculator: bool,
-) -> Option<TimerParentSequence> {
+) -> Result<TimerParentSequence, MonsterError> {
     let direct_line_mover_type = &TimerGoingEventType::Move(MovementType::InDirectLine);
-    if let Some(direct_line_movers) = affecting_timer_calculators.get(direct_line_mover_type) {
-        for timer_and_calculator in direct_line_movers {
-            if let Ok(parent_sequence) =
-                emitting_timer_parent_sequence_query.get(timer_and_calculator.timer)
-            {
-                if let Some(timer_sequence) = monster.path_timer_sequence {
-                    if timer_sequence == parent_sequence.parent_sequence {
-                        if destroy_calculator {
+    match affecting_timer_calculators.get(direct_line_mover_type) {
+        Some(direct_line_movers) => {
+            for timer_and_calculator in direct_line_movers {
+                if let Ok(parent_sequence) =
+                    emitting_timer_parent_sequence_query.get(timer_and_calculator.timer)
+                {
+                    if let Some(timer_sequence) = monster.path_timer_sequence {
+                        if timer_sequence == parent_sequence.parent_sequence {
+                            if destroy_calculator {
+                                despawn_recursive_notify_on_fail(
+                                    timer_and_calculator.value_calculator,
+                                    "timer calculator when changing monster state",
+                                    commands,
+                                );
+                            }
                             despawn_recursive_notify_on_fail(
-                                timer_and_calculator.value_calculator,
-                                "timer calculator when changing monster state",
+                                timer_and_calculator.timer,
+                                "timer when changing monster state",
                                 commands,
                             );
+                            affecting_timer_calculators
+                                .remove(direct_line_mover_type, timer_and_calculator.timer);
+                            return Ok(*parent_sequence);
                         }
-                        despawn_recursive_notify_on_fail(
-                            timer_and_calculator.timer,
-                            "timer when changing monster state",
-                            commands,
-                        );
-                        affecting_timer_calculators
-                            .remove(direct_line_mover_type, timer_and_calculator.timer);
-                        return Some(*parent_sequence);
                     }
                 }
             }
+            Err(MonsterError::NoMovementTimerHadTheListedPathParentSequence)
         }
+        None => Err(MonsterError::NoMovementAffectingTimerFound),
     }
-    None
 }
 
 fn spawn_monster_move_calculator(

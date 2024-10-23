@@ -6,6 +6,7 @@ lazy_static! {
     pub static ref LOG_CATEGORYS_TO_PRINT: Vec<LogCategory> = vec![
         LogCategory::Crucial,
         LogCategory::RequestNotFulfilled,
+        LogCategory::Monster
     ];
     pub static ref LOG_CATEGORYS_TO_APPEND_TO_SESSION_LOG: Vec<LogCategory> =
         vec![LogCategory::Crucial];
@@ -25,12 +26,12 @@ lazy_static! {
         // FunctionalityOverride::EnemiesDontMove,
         // #[cfg(debug_assertions)]
         // FunctionalityOverride::DontUpdateUI,
+        #[cfg(debug_assertions)]
+        FunctionalityOverride::SpawnOnlyOneEnemy,
+        #[cfg(debug_assertions)]
+        FunctionalityOverride::DontCheckMonsterColliders,
         // #[cfg(debug_assertions)]
-        // FunctionalityOverride::SpawnOnlyOneEnemy,
-        // #[cfg(debug_assertions)]
-        // FunctionalityOverride::DontCheckMonsterColliders,
-        // #[cfg(debug_assertions)]
-        // FunctionalityOverride::MonstersNeverAttackOrFlee
+        // FunctionalityOverride::MonstersNeverAttackOrFlee,
         // #[cfg(debug_assertions)]
         // FunctionalityOverride::MonsterPathNeverChanges
     ];
