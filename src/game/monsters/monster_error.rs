@@ -34,7 +34,7 @@ impl Display for MonsterError {
             Self::NoMovementAffectingTimerFound => {
                 write!(
                     f,
-                    "Monster has no path timer listed in its affecting timers"
+                    "Monster has no movement timer listed in its affecting timers"
                 )
             }
             Self::NoMovementTimerHadTheListedPathParentSequence => {

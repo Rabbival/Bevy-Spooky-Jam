@@ -6,7 +6,7 @@ impl Plugin for MonsterStrayPathUpdaterPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (update_stray_path, listen_for_state_set)
+            (listen_for_state_set, update_stray_path)
                 .in_set(MonsterSystemSet::PathAndVisualUpdating),
         );
     }
@@ -68,6 +68,7 @@ fn listen_for_state_set(
 }
 
 fn update_stray_path(
+    monster_state_set_listener: EventReader<MonsterStateChanged>,
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut new_path_event_writer: EventWriter<MonsterStrayPathUpdated>,
     just_changed_transforms: Query<&Transform, Changed<Transform>>,
@@ -75,6 +76,9 @@ fn update_stray_path(
     emitting_timer_parent_sequence_query: Query<&TimerParentSequence, With<EmittingTimer>>,
     mut commands: Commands,
 ) {
+    if monster_state_set_listener.len() > 0 {
+        return;
+    }
     for (monster_entity, monster, monster_transform, mut affecting_timer_calculators) in
         &mut monsters_query
     {

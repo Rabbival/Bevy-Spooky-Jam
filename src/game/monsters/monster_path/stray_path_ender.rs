@@ -19,7 +19,7 @@ fn end_stray_path_when_back_to_idle(
     mut commands: Commands,
 ) {
     for event in monster_state_set_listener.read() {
-        if let MonsterState::Spawning = event.previous_state {
+        if let MonsterState::Spawning | MonsterState::Idle = event.previous_state {
             continue;
         }
         if let MonsterState::Idle = event.next_state {
