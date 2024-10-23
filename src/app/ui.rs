@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
 use bevy::text::Text2dBounds;
-use bevy::time::Stopwatch;
 
 pub struct UiPlugin;
 
@@ -146,7 +145,7 @@ fn update_player_game_stopwatch(
 ) {
     for (mut text, mut stopwatch) in &mut player_game_stopwatch_text_query {
         stopwatch.timer.tick(time.delta());
-        text.sections[0].value = get_elapsed_secs_as_a_formatted_string(stopwatch.timer.clone());
+        text.sections[0].value = seconds_elapsed_to_pretty_string(stopwatch.timer.elapsed_secs());
     }
 }
 
@@ -157,7 +156,7 @@ fn update_longest_run_text(
     for longest_run_time in &changed_longest_run_query {
         for mut longest_run_text in &mut longest_run_text_query {
             longest_run_text.sections[0].value =
-                format!("Longest: {:0>4} sec", longest_run_time.0.to_string());
+                String::from("Longest: ") + &seconds_elapsed_to_pretty_string(longest_run_time.0);
         }
     }
 }
@@ -186,14 +185,8 @@ fn update_high_score(
     }
 }
 
-fn get_elapsed_secs_as_a_formatted_string(timer: Stopwatch) -> String {
-    let minutes = (timer.elapsed_secs() / 60.0) as i32;
-    let seconds = (timer.elapsed_secs() % 60.0) as i32;
-    let milliseconds = (timer.elapsed_secs().fract() * 100.0) as i32;
-    format!(
-        "{:0>2}'{:0>2}''{:0>2}",
-        minutes.to_string(),
-        seconds.to_string(),
-        milliseconds.to_string()
-    )
+fn seconds_elapsed_to_pretty_string(seconds_elapsed: f32) -> String {
+    let minutes = (seconds_elapsed / 60.0) as i32;
+    let seconds = (seconds_elapsed % 60.0) as i32;
+    format!("{:0>2} : {:0>2}", minutes.to_string(), seconds.to_string())
 }
