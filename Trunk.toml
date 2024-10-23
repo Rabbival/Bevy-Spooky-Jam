@@ -7,7 +7,7 @@ dist = "target/trunk"
 public_url = "./"
 
 [copy]
-"assets" = "dist/assets"
+"assets" = "web/assets"
 
 [serve]
 # Required in order to receive 404s for missing assets, which is what Bevy expects.
