@@ -1,0 +1,1 @@
+pub const BOUNDS_WRAPPED_PHANTOMS_PER_PARENT: usize = 3;
