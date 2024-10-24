@@ -193,7 +193,7 @@ fn spawn_alpha_change_calculator(commands: &mut Commands) -> Entity {
             ValueByInterpolation::from_goal_and_current(
                 0.0,
                 MONSTER_FADED_ALPHA,
-                Interpolator::default(),
+                Interpolator::new(0.65),
             ),
             TimerGoingEventType::SetAlpha,
         ))
