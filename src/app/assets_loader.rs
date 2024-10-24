@@ -81,7 +81,7 @@ fn sprites_atlas_setup(
         pumpkin_grey_image_handle: asset_server.load("images/pumpkinGreyed.png"),
         floor_image_handle: asset_server.load("images/AlternativeBackground.png"),
         floor_hole_handle: asset_server.load("images/floor_hole.png"),
-        again_screen_handle: asset_server.load("images/again.png"),
+        again_screen_handle: asset_server.load("images/Again2.png"),
     });
 }
 
