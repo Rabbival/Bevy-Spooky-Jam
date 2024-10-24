@@ -4,8 +4,9 @@ version = "0.3.2"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.14.2", features = ["webgl2"] }
+bevy = "0.14.2"
 bevy_light_2d = "0.4.1"
+bevy_mod_reqwest = "0.16"
 lazy_static = "1.4.0"
 leafwing-input-manager = "0.15.1"
 # Compile low-severity logs out of native builds for performance.
@@ -14,11 +15,9 @@ log = { version = "0.4", features = [
     "release_max_level_warn",
 ] }
 rand = "0.8.5"
-reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1.0.197", features = ["derive"] }
 strum = "0.26.3"
 strum_macros = "0.26.4"
-tokio = { version = "1", features = ["full"] }
 tracing = { version = "0.1", features = [
     "max_level_debug",
     "release_max_level_warn",

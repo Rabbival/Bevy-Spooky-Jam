@@ -1,9 +1,7 @@
 use crate::prelude::*;
-use crate::single_mut_else_return;
 
 use bevy::text::Text2dBounds;
-use reqwest::Error;
-use tokio::runtime::Runtime;
+use bevy_mod_reqwest::*;
 use serde::Deserialize;
 
 pub struct UiPlugin;
@@ -33,29 +31,32 @@ struct Placeholder {
     body: String,
 }
 
-async fn fetch_data() -> Result<Placeholder, Error> {
-    let response = reqwest::get("https://jsonplaceholder.typicode.com/posts/100")
-        .await?
-        .json::<Placeholder>()
-        .await?;
-    Ok(response)
-}
-
-fn make_request(mut best_score_query: Query<&mut BestScoreSoFar>,) {
-    // Create a tokio runtime since Bevy is not async
-    let rt = Runtime::new().unwrap();
+fn make_request(
+    mut client: BevyReqwest,
+    mut best_score_query: Query<&mut BestScoreSoFar>,
+) {
     println!("before");
-    let mut best_score = single_mut_else_return!(best_score_query);
-    println!("after");
+    //let mut best_score = single_mut_else_return!(best_score_query);
+    //println!("after");
+    let url = "https://jsonplaceholder.typicode.com/posts/100";
+    let reqwest_request = client.get(url).build().unwrap();
 
-    // Run the async function in the tokio runtime
-    match rt.block_on(fetch_data()) {
-        Ok(data) => {
-            println!("Response: {}", data.id);
-            best_score.0 = data.id;
-        },
-        Err(e) => println!("Error: {}", e),
-    }
+    client
+        // Sends the created http request
+        .send(reqwest_request)
+        // The response from the http request can be reached using an observersystem
+        .on_response(|trigger: Trigger<ReqwestResponseEvent>| {
+            let response = trigger.event();
+            let data = response.as_str();
+            let status = response.status();
+            // let headers = req.response_headers();
+            bevy::log::info!("code: {status}, data: {data:?}");
+        })
+        // In case of request error, it can be reached using an observersystem
+        .on_error(|trigger: Trigger<ReqwestErrorEvent>| {
+            let e = &trigger.event().0;
+            bevy::log::info!("error: {e:?}");
+        });
 }
 
 fn spawn_ui(
