@@ -43,7 +43,7 @@ impl Bomb {
         } else {
             match self.state {
                 BombState::PreHeld => Some(BombAndTextColors {
-                    bomb: Color::from(WHITE),
+                    bomb: Color::from(Srgba::rgb(0.7, 0.0, 0.8)),
                     text: Color::from(SILVER),
                 }),
                 BombState::Held => Some(BombAndTextColors {

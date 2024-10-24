@@ -1,12 +1,14 @@
 [package]
 name = "soul_bomb_monster_hunt"
-version = "0.2.4"
+version = "0.2.5"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.14.2", features = ["wayland", "webgl2"] }
+bevy = { version = "0.14.2", features = ["webgl2"] }
+bevy_light_2d = "0.4.1"
 lazy_static = "1.4.0"
 leafwing-input-manager = "0.15.1"
+# Compile low-severity logs out of native builds for performance.
 log = { version = "0.4", features = [
     "max_level_debug",
     "release_max_level_warn",

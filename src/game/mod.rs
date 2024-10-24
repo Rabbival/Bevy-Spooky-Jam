@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 pub mod bombs;
+pub mod bounds_wrapped_logic;
 pub mod consts;
 pub mod event_channels;
 pub mod game_event_handler;
@@ -23,6 +24,7 @@ impl Plugin for GamePlugin {
             GameEventPlugin,
             GameEventHandlerPlugin,
             RespawnerPlugin,
+            BoundsWrappedLogicPlugin,
         ));
     }
 }

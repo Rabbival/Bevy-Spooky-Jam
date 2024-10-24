@@ -19,8 +19,9 @@ extern crate lazy_static;
 
 pub mod prelude {
     pub use crate::animation::{
-        bomb_explosion_animation::*, color_change::*, consts::*, frame_change::*,
-        frame_sequence::*, scale_change::*, translation_change::*, CustomAnimationPlugin,
+        bomb_explosion_animation::*, color_change::*, consts::*, dynamic_light_manager::*,
+        frame_change::*, frame_sequence::*, scale_change::*, translation_change::*,
+        CustomAnimationPlugin,
     };
     pub use crate::app::{
         assets_loader::*, consts::*, generic_plugins::*, main, main_camera::*, screen_setup::*,
@@ -32,7 +33,6 @@ pub mod prelude {
     };
     pub use crate::common_logic::{
         argument_validation::*,
-        beyond_screen_border::*,
         enums::basic_direction::*,
         float_calculations::*,
         interpolation::{interpolator::*, value_by_interpolation::*},
@@ -66,6 +66,10 @@ pub mod prelude {
             bomb::*, bomb_error::*, bomb_events::*, bomb_picking::*, bomb_spawner::*,
             bomb_spawning_sequence_manager::*, bomb_state::*, bomb_throwing::*, bomb_ticker::*,
             consts::*, explosion_manager::*, BombsPlugin,
+        },
+        bounds_wrapped_logic::{
+            bounds_wrapped_phantom::*, calculate_reach_beyond_screen_border, consts::*,
+            phantom_manager::*, phantom_spawner::*, BoundsWrappedLogicPlugin,
         },
         consts::*,
         event_channels::*,

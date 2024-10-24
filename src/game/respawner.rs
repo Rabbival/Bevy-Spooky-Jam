@@ -26,6 +26,7 @@ fn spawn_invisible_again_screen(
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgba(0.96, 0.96, 0.96, 0.0),
+                custom_size: Some(Vec2::new(800.0, 860.0)),
                 ..default()
             },
             texture: images.again_screen_handle.clone(),
@@ -192,10 +193,10 @@ fn spawn_again_fade_calculator(
                 ValueByInterpolation::from_goal_and_current(
                     current_alpha,
                     1.0,
-                    Interpolator::new(0.1),
+                    Interpolator::new(0.05),
                 )
             } else {
-                ValueByInterpolation::from_goal_and_current(1.0, 0.0, Interpolator::new(10.0))
+                ValueByInterpolation::from_goal_and_current(1.0, 0.0, Interpolator::new(20.0))
             },
             TimerGoingEventType::SetAlpha,
         ))

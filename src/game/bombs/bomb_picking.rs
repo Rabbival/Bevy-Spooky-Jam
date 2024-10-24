@@ -1,3 +1,5 @@
+use bevy_light_2d::light::PointLight2d;
+
 use crate::{prelude::*, read_no_field_variant};
 
 #[derive(Debug, Clone, Copy)]
@@ -191,7 +193,7 @@ fn bomb_countdown_calculator(bomb: &Bomb, commands: &mut Commands) -> Entity {
 fn update_bomb_text_color_after_pick(
     mut player_request_listener: EventReader<PlayerRequest>,
     player_query: Query<&Player>,
-    mut text_query: Query<(&mut Text, &Parent)>,
+    mut text_query: Query<(&mut Text, &mut PointLight2d, &Parent)>,
     bomb_query: Query<&Bomb>,
 ) {
     for _bomb_throw_request in
@@ -200,10 +202,11 @@ fn update_bomb_text_color_after_pick(
         for player in &player_query {
             if let Some(bomb_entity) = player.held_bomb {
                 if let Ok(bomb) = bomb_query.get(bomb_entity) {
-                    for (mut text, text_parent_entity) in &mut text_query {
+                    for (mut text, mut light, text_parent_entity) in &mut text_query {
                         if text_parent_entity.get() == bomb_entity {
                             if let Some(bomb_state_colors) = bomb.to_colors() {
                                 text.sections[0].style.color = bomb_state_colors.text;
+                                light.color = bomb_state_colors.text;
                             }
                         }
                     }

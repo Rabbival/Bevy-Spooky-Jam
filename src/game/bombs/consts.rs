@@ -8,7 +8,7 @@ pub const TIME_IT_TAKES_BOMB_TO_GROW: f32 = 0.3;
 pub const BOMB_SIZE: f32 = 24.0;
 pub const BOMB_SPAWN_SCALE: f32 = 0.01;
 
-pub const BOMB_MAX_TIME: usize = 8;
+pub const BOMB_MAX_TIME: usize = 7;
 pub const BOMB_MIN_TIME: usize = 4;
 
 pub const BOMB_TIME_LEFT_FONT_SIZE: f32 = 26.0;
@@ -25,3 +25,6 @@ pub const BOMB_SPAWN_INTERVAL_DELTA: f32 = 0.3;
 pub const BOMB_SPAWN_MINIMAL_INTERVAL: f32 = 1.4;
 
 pub const MAX_BOMB_COUNT: usize = 20;
+
+pub const BOMB_NORMAL_LIGHT_INTENSITY: f32 = 1.0;
+pub const BOMB_ABOUT_TO_EXPLODE_LIGHT_INTENSITY: f32 = 6.0;
