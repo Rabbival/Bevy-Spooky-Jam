@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::color::palettes::css::{DARK_ORANGE, RED, SILVER, WHITE, YELLOW};
+use bevy::color::palettes::css::{DARK_ORANGE, PURPLE, RED, SILVER, WHITE, YELLOW};
 use rand::Rng;
 
 #[derive(Component, Debug, PartialEq, Clone, Copy)]
@@ -43,7 +43,7 @@ impl Bomb {
         } else {
             match self.state {
                 BombState::PreHeld => Some(BombAndTextColors {
-                    bomb: Color::from(WHITE),
+                    bomb: Color::from(Srgba::rgb(0.7, 0.0, 0.8)),
                     text: Color::from(SILVER),
                 }),
                 BombState::Held => Some(BombAndTextColors {
