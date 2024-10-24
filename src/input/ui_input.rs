@@ -23,7 +23,7 @@ fn spawn_ui_input_listener(ui_input_map: Res<UiInputMap>, mut commands: Commands
 }
 
 fn listen_for_ui_just_pressed_controls(
-    mut app_exit_event_writer: EventWriter<AppExit>,
+    // mut app_exit_event_writer: EventWriter<AppExit>,
     mut game_event_writer: EventWriter<GameEvent>,
     mut player_query: Query<&ActionState<UiAction>>,
 ) {
@@ -31,8 +31,7 @@ fn listen_for_ui_just_pressed_controls(
         for action in action_map.get_just_pressed() {
             match action {
                 UiAction::CloseGame => {
-                    #[cfg(not(target_arch = "wasm32"))]
-                    app_exit_event_writer.send(AppExit::Success);
+                    // app_exit_event_writer.send(AppExit::Success);
                 }
                 #[cfg(debug_assertions)]
                 UiAction::DebugKey => {
