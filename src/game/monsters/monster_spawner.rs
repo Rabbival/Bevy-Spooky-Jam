@@ -1,6 +1,4 @@
 use crate::{prelude::*, read_no_field_variant};
-use bevy::color::palettes::css::PLUM;
-use bevy_light_2d::light::PointLight2d;
 use rand::{rngs::ThreadRng, Rng};
 
 pub struct MonsterSpawnerPlugin;
@@ -9,11 +7,11 @@ impl Plugin for MonsterSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_initial_monster).add_systems(
             Update,
-            respawn_monsters_on_game_restart.in_set(GameRestartSystemSet::Spawning),
+            (
+                respawn_monsters_on_game_restart.in_set(GameRestartSystemSet::Spawning),
+                listen_for_monster_spawning_requests,
+            ),
         );
-        if FunctionalityOverride::SpawnOnlyOneEnemy.disabled() {
-            app.add_systems(Update, listen_for_monster_spawning_requests);
-        }
     }
 }
 
@@ -125,12 +123,6 @@ fn try_spawning_a_monster(
         },
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
-        PointLight2d {
-            color: Color::from(PLUM),
-            radius: MONSTER_LIGHT_RADIUS,
-            intensity: MONSTER_LIGHT_INTENSITY_NORMAL,
-            ..default()
-        },
     ));
     spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())

@@ -1,10 +1,10 @@
 [package]
 name = "soul_bomb_monster_hunt"
-version = "0.1.9"
+version = "0.2.3"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.14.2", features = ["wayland"] }
+bevy = { version = "0.14.2", features = ["wayland", "webgl2"] }
 # bevy-trait-query = "0.5.1"
 strum = "0.26.3"
 strum_macros = "0.26.4"
@@ -12,7 +12,6 @@ rand = "0.8.5"
 lazy_static = "1.4.0"
 serde = { version = "1.0.197", features = ["derive"] }
 leafwing-input-manager = "0.15.1"
-bevy_light_2d = "0.4.0"
 # Compile low-severity logs out of native builds for performance.
 log = { version = "0.4", features = [
     "max_level_debug",
