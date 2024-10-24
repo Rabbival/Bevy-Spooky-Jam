@@ -32,7 +32,7 @@ fn spawn_player(
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgba(1.0, 1.0, 1.0, 1.0),
-                custom_size: Some(Vec2::new(42.0, 56.0)),
+                custom_size: Some(Vec2::new(48.0, 64.0)),
                 ..default()
             },
             texture: sprites_atlas_resource.image_handle.clone(),
