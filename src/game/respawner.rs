@@ -26,6 +26,7 @@ fn spawn_invisible_again_screen(
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgba(0.96, 0.96, 0.96, 0.0),
+                custom_size: Some(Vec2::new(800.0, 860.0)),
                 ..default()
             },
             texture: images.again_screen_handle.clone(),

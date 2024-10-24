@@ -81,7 +81,7 @@ fn sprites_atlas_setup(
         pumpkin_grey_image_handle: asset_server.load("images/pumpkinGreyed.png"),
         floor_image_handle: asset_server.load("images/AlternativeBackground.png"),
         floor_hole_handle: asset_server.load("images/floor_hole.png"),
-        again_screen_handle: asset_server.load("images/again.png"),
+        again_screen_handle: asset_server.load("images/Again2.png"),
     });
 }
 
@@ -106,7 +106,7 @@ fn setup_monster_atlas(
     commands: &mut Commands,
 ) {
     let image_handle = asset_server.load("images/bat_spritesheet_hi_res.png");
-    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(180, 107), 3, 9, None, None);
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(190, 107), 3, 9, None, None);
     let atlas_handle = texture_atlases.add(texture_atlas);
     commands.insert_resource(MonsterSpritesAtlas {
         atlas_handle,
