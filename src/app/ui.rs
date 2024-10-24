@@ -1,14 +1,14 @@
-use crate::prelude::*;
+use crate::{prelude::*, single_mut_else_return};
 
 use bevy::text::Text2dBounds;
 use bevy_mod_reqwest::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_ui, make_request));
+        app.add_systems(PostStartUp, (spawn_ui, make_test_request));
 
         if FunctionalityOverride::DontUpdateUI.disabled() {
             app.add_systems(
@@ -24,20 +24,20 @@ impl Plugin for UiPlugin {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Placeholder {
-    id: u32,
+    pub id: u32,
     title: String,
     body: String,
 }
 
-fn make_request(
+fn make_test_request(
     mut client: BevyReqwest,
-    mut best_score_query: Query<&mut BestScoreSoFar>,
+    mut best_score_so_far_query: Query<&mut BestScoreSoFar>,
 ) {
     println!("before");
-    //let mut best_score = single_mut_else_return!(best_score_query);
-    //println!("after");
+    let mut best_score = single_mut_else_return!(best_score_so_far_query);
+    println!("after");
     let url = "https://jsonplaceholder.typicode.com/posts/100";
     let reqwest_request = client.get(url).build().unwrap();
 
@@ -49,8 +49,12 @@ fn make_request(
             let response = trigger.event();
             let data = response.as_str();
             let status = response.status();
+            let json = response.deserialize_json::<Placeholder>();
             // let headers = req.response_headers();
-            bevy::log::info!("code: {status}, data: {data:?}");
+            let id = json.unwrap().id;
+            best_score.0 = id as u32;
+            bevy::log::info!("code: {status:?}, data: {data:?}");
+            bevy::log::info!("id: {id}");
         })
         // In case of request error, it can be reached using an observersystem
         .on_error(|trigger: Trigger<ReqwestErrorEvent>| {
