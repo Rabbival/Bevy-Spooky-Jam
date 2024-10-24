@@ -33,9 +33,6 @@ fn listen_for_ui_just_pressed_controls(
                 UiAction::CloseGame => {
                     app_exit_event_writer.send(AppExit::Success);
                 }
-                UiAction::RestartGame => {
-                    game_event_writer.send(GameEvent::RestartGame);
-                }
                 #[cfg(debug_assertions)]
                 UiAction::DebugKey => {
                     game_event_writer.send(GameEvent::DebugKeyPressed);
