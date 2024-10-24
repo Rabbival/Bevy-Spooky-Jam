@@ -105,7 +105,7 @@ fn setup_monster_atlas(
     texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
     commands: &mut Commands,
 ) {
-    let image_handle = asset_server.load("images/sprites_sheet.png");
+    let image_handle = asset_server.load("images/bat_spritesheet_hi_res.png");
     let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(180, 107), 3, 9, None, None);
     let atlas_handle = texture_atlases.add(texture_atlas);
     commands.insert_resource(MonsterSpritesAtlas {
