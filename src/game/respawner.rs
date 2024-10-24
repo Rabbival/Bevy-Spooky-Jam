@@ -193,10 +193,10 @@ fn spawn_again_fade_calculator(
                 ValueByInterpolation::from_goal_and_current(
                     current_alpha,
                     1.0,
-                    Interpolator::new(0.1),
+                    Interpolator::new(0.05),
                 )
             } else {
-                ValueByInterpolation::from_goal_and_current(1.0, 0.0, Interpolator::new(10.0))
+                ValueByInterpolation::from_goal_and_current(1.0, 0.0, Interpolator::new(20.0))
             },
             TimerGoingEventType::SetAlpha,
         ))
