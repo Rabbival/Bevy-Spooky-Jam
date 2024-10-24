@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::color::palettes::css::{DARK_ORANGE, PURPLE, RED, SILVER, WHITE, YELLOW};
+use bevy::color::palettes::css::{DARK_ORANGE, RED, SILVER, WHITE, YELLOW};
 use rand::Rng;
 
 #[derive(Component, Debug, PartialEq, Clone, Copy)]
