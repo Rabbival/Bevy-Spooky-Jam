@@ -188,5 +188,11 @@ fn update_high_score(
 fn seconds_elapsed_to_pretty_string(seconds_elapsed: f32) -> String {
     let minutes = (seconds_elapsed / 60.0) as i32;
     let seconds = (seconds_elapsed % 60.0) as i32;
-    format!("{:0>2} : {:0>2}", minutes.to_string(), seconds.to_string())
+    let milliseconds = (seconds_elapsed.fract() * 100.0) as i32;
+    format!(
+        "{:0>2}'{:0>2}''{:0>2}",
+        minutes.to_string(),
+        seconds.to_string(),
+        milliseconds.to_string()
+    )
 }
