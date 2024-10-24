@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bevy::color::palettes::css::DARK_GRAY;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_light_2d::light::PointLight2d;
@@ -324,6 +325,10 @@ fn manage_bomb_explosion_side_effects(
                     exploded_bomb.location.y,
                     Z_LAYER_FLOOR_HOLE,
                 ),
+                sprite: Sprite {
+                    color: Color::from(DARK_GRAY),
+                    ..default()
+                },
                 ..default()
             },
             InWorldButNotBoundWrapped,
