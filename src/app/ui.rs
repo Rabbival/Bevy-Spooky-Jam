@@ -1,4 +1,4 @@
-use crate::{prelude::*, single_mut_else_return};
+use crate::prelude::*;
 
 use bevy::text::Text2dBounds;
 use bevy_mod_reqwest::*;
@@ -8,7 +8,7 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartUp, (spawn_ui, make_test_request));
+        app.add_systems(PostStartup, (spawn_ui, make_test_request));
 
         if FunctionalityOverride::DontUpdateUI.disabled() {
             app.add_systems(
@@ -36,7 +36,7 @@ fn make_test_request(
     mut best_score_so_far_query: Query<&mut BestScoreSoFar>,
 ) {
     println!("before");
-    let mut best_score = single_mut_else_return!(best_score_so_far_query);
+    let mut best_score = best_score_so_far_query.get_single_mut();
     println!("after");
     let url = "https://jsonplaceholder.typicode.com/posts/100";
     let reqwest_request = client.get(url).build().unwrap();
@@ -45,16 +45,24 @@ fn make_test_request(
         // Sends the created http request
         .send(reqwest_request)
         // The response from the http request can be reached using an observersystem
-        .on_response(|trigger: Trigger<ReqwestResponseEvent>| {
+        .on_response(move |trigger: Trigger<ReqwestResponseEvent>| {
             let response = trigger.event();
             let data = response.as_str();
             let status = response.status();
-            let json = response.deserialize_json::<Placeholder>();
+            //let json = response.deserialize_json::<Placeholder>();
             // let headers = req.response_headers();
-            let id = json.unwrap().id;
-            best_score.0 = id as u32;
-            bevy::log::info!("code: {status:?}, data: {data:?}");
-            bevy::log::info!("id: {id}");
+            match response.deserialize_json::<Placeholder>() {
+                Ok(json) => {
+                    // Update the best score with the ID from the response
+                    //best_score.unwrap().0 = json.id as u32;
+                    bevy::log::info!("Status: {status:?}, Data: {data:?}");
+
+                }
+                Err(e) => {
+                    bevy::log::info!("Failed to deserialize JSON: {e:?}");
+                }
+            }
+
         })
         // In case of request error, it can be reached using an observersystem
         .on_error(|trigger: Trigger<ReqwestErrorEvent>| {
