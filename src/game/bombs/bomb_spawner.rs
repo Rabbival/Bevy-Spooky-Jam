@@ -1,4 +1,5 @@
 use bevy::sprite::*;
+use bevy_light_2d::light::PointLight2d;
 use rand::Rng;
 
 use crate::{prelude::*, read_no_field_variant};
@@ -179,18 +180,26 @@ fn listen_for_bombs_done_growing(
                 if let Ok(bomb) = bomb_query.get(affected_entity) {
                     commands.entity(affected_entity).insert(BombTag); //Ensuring no collision before fully spawned
                     commands
-                        .spawn((Text2dBundle {
-                            text: Text::from_section(
-                                format!("{:?}", bomb.full_duration),
-                                TextStyle {
-                                    font: text_fonts_resource.kenny_pixel_handle.clone(),
-                                    font_size: BOMB_TIME_LEFT_FONT_SIZE,
-                                    color: bomb.to_colors().unwrap().text,
-                                },
-                            ),
-                            transform: Transform::from_translation(Vec3::new(2.0, -2.0, 1.0)),
-                            ..default()
-                        },))
+                        .spawn((
+                            Text2dBundle {
+                                text: Text::from_section(
+                                    format!("{:?}", bomb.full_duration),
+                                    TextStyle {
+                                        font: text_fonts_resource.kenny_pixel_handle.clone(),
+                                        font_size: BOMB_TIME_LEFT_FONT_SIZE,
+                                        color: bomb.to_colors().unwrap().text,
+                                    },
+                                ),
+                                transform: Transform::from_translation(Vec3::new(2.0, -2.0, 1.0)),
+                                ..default()
+                            },
+                            PointLight2d {
+                                color: bomb.to_colors().unwrap().text,
+                                radius: BOMB_EXPLOSION_RADIUS,
+                                intensity: 3.0,
+                                ..default()
+                            },
+                        ))
                         .set_parent(affected_entity);
                 }
             }
