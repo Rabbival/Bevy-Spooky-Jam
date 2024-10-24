@@ -1,4 +1,6 @@
 use crate::{prelude::*, read_no_field_variant};
+use bevy::color::palettes::css::BLUE;
+use bevy_light_2d::light::PointLight2d;
 use rand::{rngs::ThreadRng, Rng};
 
 pub struct MonsterSpawnerPlugin;
@@ -121,6 +123,13 @@ fn try_spawning_a_monster(
                 .heading_direction_by_index(0)
                 .to_initial_frame_index(),
         },
+        PointLight2d {
+            color: Color::from(BLUE),
+            radius: monster_component.hearing_ring_distance * 1.4,
+            intensity: 0.0,
+            falloff: MONSTER_LIGHT_FALLOFF,
+            ..default()
+        },
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
     ));
@@ -172,12 +181,19 @@ fn spawn_grace_period_timer(
     commands: &mut Commands,
 ) {
     let alpha_change_calculator = spawn_alpha_change_calculator(commands);
+    let light_intensifier_calculator = spawn_light_intensifier_calculator(commands);
     event_writer.send(TimerFireRequest {
         timer: EmittingTimer::new(
-            vec![TimerAffectedEntity {
-                affected_entity: newborn_monster,
-                value_calculator_entity: Some(alpha_change_calculator),
-            }],
+            vec![
+                TimerAffectedEntity {
+                    affected_entity: newborn_monster,
+                    value_calculator_entity: Some(alpha_change_calculator),
+                },
+                TimerAffectedEntity {
+                    affected_entity: newborn_monster,
+                    value_calculator_entity: Some(light_intensifier_calculator),
+                },
+            ],
             vec![TimeMultiplierId::GameTimeMultiplier],
             TIME_IT_TAKES_MONSTERS_TO_SPAWN,
             TimerDoneEventType::DeclareSpawnDone,
@@ -196,6 +212,20 @@ fn spawn_alpha_change_calculator(commands: &mut Commands) -> Entity {
                 Interpolator::new(0.65),
             ),
             TimerGoingEventType::SetAlpha,
+        ))
+        .id()
+}
+
+fn spawn_light_intensifier_calculator(commands: &mut Commands) -> Entity {
+    commands
+        .spawn(GoingEventValueCalculator::new(
+            TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
+            ValueByInterpolation::from_goal_and_current(
+                0.0,
+                MONSTER_LIGHT_INTENSITY_NORMAL,
+                Interpolator::new(0.65),
+            ),
+            TimerGoingEventType::SetLightIntensity,
         ))
         .id()
 }
