@@ -21,6 +21,7 @@ impl Plugin for PlayerInputMapPlugin {
                     ),
                     (PlayerAction::Move(BasicDirection::Down), KeyCode::KeyS),
                     (PlayerAction::Move(BasicDirection::Down), KeyCode::ArrowDown),
+                    (PlayerAction::BombInteraction, KeyCode::Space),
                 ])
                 .with(PlayerAction::BombInteraction, MouseButton::Left),
             ));
