@@ -28,16 +28,18 @@ $ cargo run --target wasm32-unknown-unknown -- DISABLE_OUTPUT_LOG_FILE
 
 #### Goal
 
-When near a bomb, press left mouse button to pick it up. When held, aim the bomb, then release it.
+
+Try to kill as many monsters as possible, and survive as long as you can.
 
 Monsters can't see you, but they can hear you, so don't get too close. Luckily for you, picking up a soul bomb slows your perception of time, so you'll have an easier time aiming them!
 
-Try to kill as many monsters as possible. Good luck!
+Good luck!
 
 #### Controls
 
-* press <kbd>A</kbd> or arrow <kbd>LEFT</kbd> to move player left
-* press <kbd>D</kbd> or arrow <kbd>RIGHT</kbd> to move player right
-* press <kbd>W</kbd> or arrow <kbd>UP</kbd> to move player up
-* press <kbd>S</kbd> or arrow <kbd>DOWN</kbd> to move player down
-* press <kbd>LEFT MOUSE BUTTON</kbd> to pickup, hold, and throw a pumpkin bomb aiming to cursor pointer
+* Press <kbd>A</kbd> or arrow <kbd>LEFT</kbd> to move player left
+* Press <kbd>D</kbd> or arrow <kbd>RIGHT</kbd> to move player right
+* Press <kbd>W</kbd> or arrow <kbd>UP</kbd> to move player up
+* Press <kbd>S</kbd> or arrow <kbd>DOWN</kbd> to move player down
+* Press <kbd>LEFT MOUSE BUTTON</kbd> to pickup, hold, and throw a soul bomb aiming to cursor pointer
+  * You may also press <kbd>Spacebar</kbd> to pickup, and hold a soul bomb aiming to cursor pointer
