@@ -196,7 +196,7 @@ fn listen_for_bombs_done_growing(
                             PointLight2d {
                                 color: bomb.to_colors().unwrap().text,
                                 radius: BOMB_EXPLOSION_RADIUS,
-                                intensity: 3.0,
+                                intensity: BOMB_NORMAL_LIGHT_INTENSITY,
                                 ..default()
                             },
                         ))

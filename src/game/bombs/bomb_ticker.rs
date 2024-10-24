@@ -75,7 +75,8 @@ fn tick_bomb_and_update_text(
                     bomb.about_to_explode = true;
                     if let Some(bomb_colors) = bomb.to_colors() {
                         text.sections[0].style.color = bomb_colors.text;
-                        light.color = bomb_colors.text;
+                        light.color = bomb_colors.bomb;
+                        light.intensity = BOMB_ABOUT_TO_EXPLODE_LIGHT_INTENSITY;
                         bomb_sprite.color = bomb_colors.bomb;
                     }
                 }
