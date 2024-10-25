@@ -26,7 +26,7 @@ fn listen_for_scale_update_requests(
                         EntityError::EntityNotInQuery(
                             "couldn't fetch transform from query on scale update function",
                         ),
-                        vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
+                        vec![LogCategory::RequestNotFulfilled],
                     );
                 }
             }
