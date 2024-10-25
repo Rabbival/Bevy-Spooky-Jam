@@ -2,6 +2,7 @@ Soul Bomb Monster Hunt v0.3.1
 =============================
 
 Soul Bomb Monster Hunt Bevy Spooky Jam entry.
+
 A link to the game's itch page: https://rabbival.itch.io/soul-bomb-monster-hunt-bevy-spooky-jam-entry
 
 ### Installation requirements
