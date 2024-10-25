@@ -27,10 +27,11 @@ fn explode_bombs_on_direct_collision(
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
     explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&BombTag>)>,
     mut bomb_query: Query<(&Transform, &mut Bomb)>,
-    transform_query: Query<
+    mut transform_query: Query<
         (
             &Transform,
             Entity,
+            &mut BombAffected,
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
             Option<&Player>,
@@ -38,7 +39,6 @@ fn explode_bombs_on_direct_collision(
         ),
         With<WorldBoundsWrapped>,
     >,
-    explosion_affected_query: Query<&Transform, With<BombAffected>>,
     mut commands: Commands,
 ) {
     for (bomb_transform, mut bomb) in &mut bomb_query {
@@ -65,8 +65,7 @@ fn explode_bombs_on_direct_collision(
                     explode_bomb(
                         bomb_transform,
                         bomb.explosion_radius,
-                        &transform_query,
-                        &explosion_affected_query,
+                        &mut transform_query,
                         &mut bomb_exploded_event_writer,
                         &mut timer_fire_request_writer,
                         &mut commands,
@@ -83,10 +82,11 @@ fn listen_for_done_bombs(
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
     mut bomb_query: Query<(&Transform, &mut Bomb)>,
-    transform_query: Query<
+    mut transform_query: Query<
         (
             &Transform,
             Entity,
+            &mut BombAffected,
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
             Option<&Player>,
@@ -94,7 +94,6 @@ fn listen_for_done_bombs(
         ),
         With<WorldBoundsWrapped>,
     >,
-    explosion_affected_query: Query<&Transform, With<BombAffected>>,
     mut commands: Commands,
 ) {
     for done_timer in timer_done_reader.read() {
@@ -105,8 +104,7 @@ fn listen_for_done_bombs(
                     explode_bomb(
                         bomb_transform,
                         explosion_radius,
-                        &transform_query,
-                        &explosion_affected_query,
+                        &mut transform_query,
                         &mut bomb_exploded_event_writer,
                         &mut timer_fire_request_writer,
                         &mut commands,
@@ -141,10 +139,11 @@ fn unslow_time_if_was_held(
 fn explode_bomb(
     bomb_transform: &Transform,
     explosion_radius: f32,
-    transform_query: &Query<
+    transform_query: &mut Query<
         (
             &Transform,
             Entity,
+            &mut BombAffected,
             Option<&AffectingTimerCalculators>,
             Option<&Monster>,
             Option<&Player>,
@@ -152,7 +151,6 @@ fn explode_bomb(
         ),
         With<WorldBoundsWrapped>,
     >,
-    explosion_affected_query: &Query<&Transform, With<BombAffected>>,
     bomb_exploded_event_writer: &mut EventWriter<BombExploded>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
     commands: &mut Commands,
@@ -162,14 +160,15 @@ fn explode_bomb(
     for (
         transform_in_radius,
         entity_in_radius,
+        mut bomb_affected_component,
         maybe_affecting_timer_calculators,
         maybe_monster,
         maybe_player,
         maybe_bomb,
     ) in transform_query
     {
-        if let Ok(bomb_affected_transform) = explosion_affected_query.get(entity_in_radius) {
-            if *bomb_affected_transform == *bomb_transform {
+        if bomb_affected_component.currently_affected_by_bomb {
+            if *transform_in_radius == *bomb_transform {
                 commands.entity(entity_in_radius).despawn_recursive();
             }
             continue;
@@ -179,15 +178,15 @@ fn explode_bomb(
             .truncate()
             .distance(transform_in_radius.translation.truncate());
         if distance_from_bomb <= explosion_radius {
-            commands.entity(entity_in_radius).insert(BombAffected);
-            let done_event = determine_done_event(
+            bomb_affected_component.currently_affected_by_bomb = true;
+            let done_event_type = determine_done_event_type(
                 transform_in_radius == bomb_transform,
                 maybe_bomb,
                 maybe_affecting_timer_calculators,
             );
             knock_back_and_destroy(
                 timer_fire_request_writer,
-                done_event,
+                done_event_type,
                 bomb_transform,
                 transform_in_radius,
                 entity_in_radius,
@@ -208,7 +207,7 @@ fn explode_bomb(
     });
 }
 
-fn determine_done_event(
+fn determine_done_event_type(
     is_self: bool,
     maybe_bomb: Option<&BombTag>,
     maybe_affecting_timer_calculators: Option<&AffectingTimerCalculators>,

@@ -22,7 +22,7 @@ macro_rules! single_else_return {
             Err(error) => {
                 print_error(
                     format!("error getting single {:?}: {}", $query, error),
-                    vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
+                    vec![LogCategory::RequestNotFulfilled],
                 );
                 return;
             }
@@ -38,7 +38,7 @@ macro_rules! single_mut_else_return {
             Err(error) => {
                 print_error(
                     format!("error getting single mut {:?}: {}", $query, error),
-                    vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
+                    vec![LogCategory::RequestNotFulfilled],
                 );
                 return;
             }
@@ -59,7 +59,7 @@ macro_rules! get_entity_else_return {
                         "couldn't fetch entity of type {} from query",
                         type_name
                     )),
-                    vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
+                    vec![LogCategory::RequestNotFulfilled],
                 );
                 return;
             }
@@ -80,7 +80,7 @@ macro_rules! get_mut_entity_else_return {
                         "couldn't fetch entity of type {} from query (mut)",
                         type_name
                     )),
-                    vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
+                    vec![LogCategory::RequestNotFulfilled],
                 );
                 return;
             }
