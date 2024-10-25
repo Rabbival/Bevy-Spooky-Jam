@@ -36,7 +36,7 @@ fn listen_for_color_update_requests(
                         EntityError::EntityNotInQuery(
                             "couldn't fetch colorable from query on alpha change function",
                         ),
-                        vec![LogCategory::Crucial, LogCategory::RequestNotFulfilled],
+                        vec![LogCategory::RequestNotFulfilled],
                     );
                 }
             }

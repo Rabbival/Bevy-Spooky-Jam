@@ -85,8 +85,10 @@ fn despawn_all_that_affect(
     commands: &mut Commands,
 ) {
     for (timer_entity, timer, maybe_parent) in timer_query {
+        let mut timer_affects_entity = false;
         for timer_affected_entity in timer.affected_entities.iter() {
             if timer_affected_entity.affected_entity == affected_entity {
+                timer_affects_entity = true;
                 if let Some(calculator) = timer_affected_entity.value_calculator_entity {
                     despawn_recursive_notify_on_fail(
                         calculator,
@@ -94,18 +96,20 @@ fn despawn_all_that_affect(
                         commands,
                     );
                 }
-                despawn_recursive_notify_on_fail(timer_entity, "timer on late despawn", commands);
-                if let Some(parent_sequence) = maybe_parent {
-                    if timer_sequences_query
-                        .get(parent_sequence.parent_sequence)
-                        .is_ok()
-                    {
-                        despawn_recursive_notify_on_fail(
-                            parent_sequence.parent_sequence,
-                            "timer parent sequence on late despawn",
-                            commands,
-                        );
-                    }
+            }
+        }
+        if timer_affects_entity {
+            despawn_recursive_notify_on_fail(timer_entity, "timer on late despawn", commands);
+            if let Some(parent_sequence) = maybe_parent {
+                if timer_sequences_query
+                    .get(parent_sequence.parent_sequence)
+                    .is_ok()
+                {
+                    despawn_recursive_notify_on_fail(
+                        parent_sequence.parent_sequence,
+                        "timer parent sequence on late despawn",
+                        commands,
+                    );
                 }
             }
         }
