@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 use bevy::text::Text2dBounds;
+use bevy_light_2d::prelude::{LightOccluder2d, LightOccluder2dShape};
 
 pub struct UiPlugin;
 
@@ -50,6 +51,11 @@ fn spawn_ui(
                 .extend(100.0),
             ),
             ..default()
+        },
+        LightOccluder2d {
+            shape: LightOccluder2dShape::Rectangle {
+                half_size: Vec2::new(WINDOW_SIZE_IN_PIXELS / 2.0, TOP_UI_HEADER_BAR_HEIGHT / 2.0),
+            },
         },
         DoNotDestroyOnRestart,
     ));
