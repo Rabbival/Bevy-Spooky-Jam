@@ -130,6 +130,7 @@ fn try_spawning_a_monster(
             falloff: MONSTER_LIGHT_FALLOFF,
             ..default()
         },
+        BombAffected::default(),
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
     ));

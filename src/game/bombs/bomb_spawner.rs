@@ -110,6 +110,7 @@ fn try_spawning_a_bomb(
             AffectingTimerCalculators::default(),
             bomb_component,
             WorldBoundsWrapped,
+            BombAffected::default(),
         ))
         .id();
     timer_fire_request_writer.send(TimerFireRequest {

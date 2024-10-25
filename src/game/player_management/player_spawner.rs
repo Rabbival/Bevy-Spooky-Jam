@@ -49,6 +49,7 @@ fn spawn_player(
         },
         AffectingTimerCalculators::default(),
         Player::default(),
+        BombAffected::default(),
         WorldBoundsWrapped,
         PlayerMonsterCollider::new(PLAYER_COLLIDER_RADIUS),
     ));
