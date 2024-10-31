@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.14.2", features = ["webgl2"] }
 # bevy-trait-query = "0.5.1"
+bevy_mod_raycast = "0.18.0"
 strum = "0.26.3"
 strum_macros = "0.26.4"
 rand = "0.8.5"
