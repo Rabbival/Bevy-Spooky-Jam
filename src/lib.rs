@@ -63,9 +63,9 @@ pub mod prelude {
     };
     pub use crate::game::{
         bombs::{
-            bomb::*, bomb_error::*, bomb_events::*, bomb_picking::*, bomb_spawner::*,
-            bomb_spawning_sequence_manager::*, bomb_state::*, bomb_throwing::*, bomb_ticker::*,
-            consts::*, explosion_manager::*, tags::*, BombsPlugin,
+            bomb::*, bomb_error::*, bomb_events::*, bomb_explosion_previewer::*, bomb_picking::*,
+            bomb_spawner::*, bomb_spawning_sequence_manager::*, bomb_state::*, bomb_throwing::*,
+            bomb_ticker::*, consts::*, explosion_manager::*, tags::*, BombsPlugin,
         },
         bounds_wrapped_logic::{
             bounds_wrapped_phantom::*, calculate_reach_beyond_screen_border, consts::*,
