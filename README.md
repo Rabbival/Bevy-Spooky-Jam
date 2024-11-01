@@ -5,30 +5,7 @@ Soul Bomb Monster Hunt Bevy Spooky Jam entry.
 
 A link to the game's itch page: https://rabbival.itch.io/soul-bomb-monster-hunt-bevy-spooky-jam-entry
 
-### Installation requirements
-
-* Git ≥ v2.0
-* Rust ≥ v1.8
-* Cargo ≥ v1.80
-
-### Installation instructions
-
-```bash
-$ git clone git@github.com:Rabbival/Bevy-Spooky-Jam.git soul-bomb-monster-hunt
-$ cd soul-bomb-monster-hunt
-$ cargo run --release
-```
-
-#### WASM notes
-
-```bash
-$ cargo run --target wasm32-unknown-unknown -- DISABLE_OUTPUT_LOG_FILE
-```
-
-### Game instructions
-
 #### Goal
-
 
 Try to kill as many monsters as possible, and survive as long as you can.
 
@@ -44,3 +21,8 @@ Good luck!
 * Press <kbd>S</kbd> or arrow <kbd>DOWN</kbd> to move player down
 * Press <kbd>LEFT MOUSE BUTTON</kbd> to pickup, hold, and throw a soul bomb aiming to cursor pointer
   * You may also press <kbd>Spacebar</kbd> to pickup, and hold a soul bomb aiming to cursor pointer
+
+#### Some Cool Things We Did
+* The game is very modular, meaning that it can be turned into a very different-feeling game in about a minute of coding
+  * This is also due to the fact we use decoupled tweening with my timer system: https://github.com/Rabbival/Playground
+* Enemies are smart but can still be overcome- they'd run from the closest-to-explosion bomb they hear but would risk their life and ignore all bombs if they hear the player

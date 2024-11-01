@@ -157,7 +157,7 @@ fn spawn_bomb_puller_calculator(bomb_transform: &Transform, commands: &mut Comma
     let bomb_spot_relative_to_player = -BOMB_SIZE * Vec3::ONE;
     commands
         .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::IgnoreNewIfAssigned,
+            TimerCalculatorSetPolicy::KeepNewTimer,
             ValueByInterpolation::from_goal_and_current(
                 Vec3::new(
                     bomb_transform.translation.x,
