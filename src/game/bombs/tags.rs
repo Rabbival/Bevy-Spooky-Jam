@@ -1,3 +1,5 @@
+use bevy::math::bounding::BoundingCircle;
+
 use crate::prelude::*;
 
 #[derive(Component, Debug)]
@@ -9,4 +11,9 @@ pub struct BombAffected {
 }
 
 #[derive(Component, Debug)]
-pub struct BombPreviewedExplosionLocation;
+pub struct BombExplosionPreview;
+
+#[derive(Component, Debug)]
+pub struct ExplodeInContact {
+    pub bounding_circle: BoundingCircle,
+}
