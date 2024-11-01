@@ -25,8 +25,8 @@ fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&BombTag>)>,
-    mut bomb_query: Query<(&Transform, &mut Bomb)>,
+    explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&BombTag>, Entity)>,
+    mut bomb_query: Query<(&GlobalTransform, &mut Bomb, Entity)>,
     mut transform_query: Query<
         (
             &Transform,
@@ -41,11 +41,10 @@ fn explode_bombs_on_direct_collision(
     >,
     mut commands: Commands,
 ) {
-    for (bomb_transform, mut bomb) in &mut bomb_query {
+    for (bomb_transform, mut bomb, bomb_entity) in &mut bomb_query {
         if let BombState::PostHeld = bomb.state {
-            for (transform, maybe_monster, maybe_bomb) in &explode_in_contact_query {
-                if bomb_transform == transform || (maybe_monster.is_none() && maybe_bomb.is_none())
-                {
+            for (transform, maybe_monster, maybe_bomb, entity) in &explode_in_contact_query {
+                if bomb_entity == entity || (maybe_monster.is_none() && maybe_bomb.is_none()) {
                     continue;
                 }
                 let radius_of_exploded = if let Some(monster) = maybe_monster {
@@ -57,12 +56,13 @@ fn explode_bombs_on_direct_collision(
                 } else {
                     BOMB_SIZE
                 };
-                if bomb_transform.translation.distance(transform.translation)
+                if bomb_transform.translation().distance(transform.translation)
                     <= BOMB_SIZE + radius_of_exploded
                 {
                     unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
                     bomb.state = BombState::Exploded;
                     explode_bomb(
+                        bomb_entity,
                         bomb_transform,
                         bomb.explosion_radius,
                         &mut transform_query,
@@ -81,7 +81,7 @@ fn listen_for_done_bombs(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    mut bomb_query: Query<(&Transform, &mut Bomb)>,
+    mut bomb_query: Query<(&GlobalTransform, &mut Bomb, Entity)>,
     mut transform_query: Query<
         (
             &Transform,
@@ -99,9 +99,12 @@ fn listen_for_done_bombs(
     for done_timer in timer_done_reader.read() {
         if let TimerDoneEventType::ExplodeInRadius(explosion_radius) = done_timer.event_type {
             for affected_entity in done_timer.affected_entities.affected_entities_iter() {
-                if let Ok((bomb_transform, mut bomb)) = bomb_query.get_mut(affected_entity) {
+                if let Ok((bomb_transform, mut bomb, bomb_entity)) =
+                    bomb_query.get_mut(affected_entity)
+                {
                     unslow_time_if_was_held(&mut time_multiplier_request_writer, &bomb);
                     explode_bomb(
+                        bomb_entity,
                         bomb_transform,
                         explosion_radius,
                         &mut transform_query,
@@ -137,7 +140,8 @@ fn unslow_time_if_was_held(
 }
 
 fn explode_bomb(
-    bomb_transform: &Transform,
+    exploding_bomb_entity: Entity,
+    bomb_transform: &GlobalTransform,
     explosion_radius: f32,
     transform_query: &mut Query<
         (
@@ -168,26 +172,27 @@ fn explode_bomb(
     ) in transform_query
     {
         if bomb_affected_component.currently_affected_by_bomb {
-            if *transform_in_radius == *bomb_transform {
+            if entity_in_radius == exploding_bomb_entity {
                 commands.entity(entity_in_radius).despawn_recursive();
             }
             continue;
         }
         let distance_from_bomb = bomb_transform
-            .translation
+            .translation()
             .truncate()
             .distance(transform_in_radius.translation.truncate());
         if distance_from_bomb <= explosion_radius {
             bomb_affected_component.currently_affected_by_bomb = true;
             let done_event_type = determine_done_event_type(
-                transform_in_radius == bomb_transform,
+                entity_in_radius == exploding_bomb_entity,
                 maybe_bomb,
                 maybe_affecting_timer_calculators,
             );
             knock_back_and_destroy(
                 timer_fire_request_writer,
+                exploding_bomb_entity,
                 done_event_type,
-                bomb_transform,
+                bomb_transform.translation(),
                 transform_in_radius,
                 entity_in_radius,
                 commands,
@@ -201,7 +206,7 @@ fn explode_bomb(
         }
     }
     bomb_exploded_event_writer.send(BombExploded {
-        location: bomb_transform.translation,
+        location: bomb_transform.translation(),
         monster_hit_count: monsters_in_explosion,
         hit_player: player_caught_in_explosion,
     });
@@ -226,17 +231,18 @@ fn determine_done_event_type(
 
 fn knock_back_and_destroy(
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    exploding_bomb_entity: Entity,
     done_event_type: TimerDoneEventType,
-    bomb_transform: &Transform,
+    exploding_bomb_location: Vec3,
     transform_in_radius: &Transform,
     entity_in_radius: Entity,
     commands: &mut Commands,
 ) {
-    let blast_move_calculator: Option<Entity> = if transform_in_radius == bomb_transform {
+    let blast_move_calculator: Option<Entity> = if entity_in_radius == exploding_bomb_entity {
         None
     } else {
         Some(move_due_to_blast_calculator(
-            bomb_transform,
+            exploding_bomb_location,
             transform_in_radius,
             commands,
         ))
@@ -256,12 +262,11 @@ fn knock_back_and_destroy(
 }
 
 fn move_due_to_blast_calculator(
-    bomb_transform: &Transform,
+    exploding_bomb_location: Vec3,
     object_in_blast_transform: &Transform,
     commands: &mut Commands,
 ) -> Entity {
-    let location_delta_from_bomb =
-        object_in_blast_transform.translation - bomb_transform.translation;
+    let location_delta_from_bomb = object_in_blast_transform.translation - exploding_bomb_location;
     let blast_strength =
         BOMB_BLAST_FACTOR / location_delta_from_bomb.norm_squared().clamp(5.0, 100.0);
     let delta_due_to_blast = location_delta_from_bomb.normalize() * blast_strength;
