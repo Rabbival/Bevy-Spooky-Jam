@@ -97,7 +97,7 @@ fn bomb_throw_calculator(
 ) -> Entity {
     commands
         .spawn(GoingEventValueCalculator::new(
-            TimerCalculatorSetPolicy::AppendToTimersOfType,
+            TimerCalculatorSetPolicy::KeepNewTimer,
             ValueByInterpolation::from_goal_and_current(
                 bomb_transform.translation,
                 cursor_position.extend(Z_LAYER_BOMB),
