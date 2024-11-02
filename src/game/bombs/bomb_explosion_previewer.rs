@@ -14,6 +14,7 @@ impl Plugin for BombExplosionPreviewerPlugin {
             .add_systems(
                 Update,
                 (toggle_bomb_explosion_preview, update_explosion_preview)
+                    .chain()
                     .in_set(InputSystemSet::Handling),
             );
     }
@@ -35,7 +36,8 @@ fn spawn_bomb_explosion_preview(mut commands: Commands) {
 }
 
 fn toggle_bomb_explosion_preview(
-    changed_players: Query<(&Player, &Transform), (Changed<Player>, Without<BombExplosionPreview>)>,
+    bombs_query: Query<&GlobalTransform, With<Bomb>>,
+    changed_players: Query<&Player, (Changed<Player>, Without<BombExplosionPreview>)>,
     mut explosion_preview_query: Query<
         (&mut PointLight2d, &mut Transform),
         (With<BombExplosionPreview>, Without<Player>),
@@ -47,19 +49,21 @@ fn toggle_bomb_explosion_preview(
         return;
     }
     let mut found_bomb_holder = false;
-    for (player, player_transform) in &changed_players {
+    for player in &changed_players {
         if let Some(held_bomb_entity) = player.held_bomb {
-            found_bomb_holder = true;
-            for (_, mut explosion_preview_transform) in &mut explosion_preview_query {
-                update_explosion_preview_location(
-                    held_bomb_entity,
-                    player_transform.translation.truncate(),
-                    mouse_position.0,
-                    &mut explosion_preview_transform,
-                    &explode_in_contact_query,
-                );
+            if let Ok(bomb_transform) = bombs_query.get(held_bomb_entity) {
+                found_bomb_holder = true;
+                for (_, mut explosion_preview_transform) in &mut explosion_preview_query {
+                    update_explosion_preview_location(
+                        held_bomb_entity,
+                        bomb_transform.translation().truncate(),
+                        mouse_position.0,
+                        &mut explosion_preview_transform,
+                        &explode_in_contact_query,
+                    );
+                }
+                break;
             }
-            break;
         }
     }
     for (mut explosion_preveiewer_light, _) in &mut explosion_preview_query {
@@ -72,7 +76,8 @@ fn toggle_bomb_explosion_preview(
 }
 
 fn update_explosion_preview(
-    player_query: Query<(&Player, &Transform), Without<BombExplosionPreview>>,
+    bombs_query: Query<&GlobalTransform, With<Bomb>>,
+    player_query: Query<&Player, Without<BombExplosionPreview>>,
     mut explosion_preview_query: Query<
         &mut Transform,
         (With<BombExplosionPreview>, Without<Player>),
@@ -84,23 +89,22 @@ fn update_explosion_preview(
         (
             Changed<Transform>,
             Or<(With<Player>, With<ExplodeInContact>)>,
-            Without<BombExplosionPreview>,
         ),
     >,
 ) {
-    let players_holding_bomb = player_query
-        .iter()
-        .filter(|(player, _)| player.held_bomb.is_some());
+    let held_bomb_entities = player_query.iter().filter_map(|player| player.held_bomb);
     if mouse_position.is_changed() || relevant_transform_changes.iter().count() > 0 {
-        for (player, player_transform) in players_holding_bomb {
-            for mut explosion_preview_transform in &mut explosion_preview_query {
-                update_explosion_preview_location(
-                    player.held_bomb.unwrap(),
-                    player_transform.translation.truncate(),
-                    mouse_position.0,
-                    &mut explosion_preview_transform,
-                    &explode_in_contact_query,
-                );
+        for held_bomb_entity in held_bomb_entities {
+            if let Ok(bomb_transform) = bombs_query.get(held_bomb_entity) {
+                for mut explosion_preview_transform in &mut explosion_preview_query {
+                    update_explosion_preview_location(
+                        held_bomb_entity,
+                        bomb_transform.translation().truncate(),
+                        mouse_position.0,
+                        &mut explosion_preview_transform,
+                        &explode_in_contact_query,
+                    );
+                }
             }
         }
     }
@@ -108,12 +112,12 @@ fn update_explosion_preview(
 
 fn update_explosion_preview_location(
     held_bomb_entity: Entity,
-    player_location: Vec2,
+    held_bomb_location: Vec2,
     mouse_location: Vec2,
     explosion_preview_transform: &mut Transform,
     explode_in_contact_query: &Query<(&ExplodeInContact, Entity)>,
 ) {
-    let ray = Ray2d::new(player_location, mouse_location);
+    let ray = Ray2d::new(held_bomb_location, mouse_location - held_bomb_location);
     let bomb_bounding_circle = BoundingCircle::new(
         explosion_preview_transform.translation.truncate(),
         BOMB_SIZE,
@@ -121,7 +125,7 @@ fn update_explosion_preview_location(
     let circle_cast = BoundingCircleCast::from_ray(
         bomb_bounding_circle,
         ray,
-        player_location.distance(mouse_location),
+        held_bomb_location.distance(mouse_location),
     );
     let explosion_location = if let Some(collision_point) =
         closest_collision(held_bomb_entity, &circle_cast, explode_in_contact_query)

@@ -7,4 +7,5 @@ pub enum LogCategory {
     Time,
     Player,
     Monster,
+    Bomb,
 }
