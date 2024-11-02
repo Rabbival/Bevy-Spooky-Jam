@@ -79,12 +79,19 @@ fn update_explosion_preview(
     >,
     mouse_position: Res<CursorWorldPosition>,
     explode_in_contact_query: Query<(&ExplodeInContact, Entity)>,
-    changed_explode_in_contact_compoenents: Query<&ExplodeInContact, Changed<ExplodeInContact>>,
+    relevant_transform_changes: Query<
+        (),
+        (
+            Changed<Transform>,
+            Or<(With<Player>, With<ExplodeInContact>)>,
+            Without<BombExplosionPreview>,
+        ),
+    >,
 ) {
     let players_holding_bomb = player_query
         .iter()
         .filter(|(player, _)| player.held_bomb.is_some());
-    if mouse_position.is_changed() || changed_explode_in_contact_compoenents.iter().count() > 0 {
+    if mouse_position.is_changed() || relevant_transform_changes.iter().count() > 0 {
         for (player, player_transform) in players_holding_bomb {
             for mut explosion_preview_transform in &mut explosion_preview_query {
                 update_explosion_preview_location(
