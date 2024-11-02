@@ -11,6 +11,7 @@ pub mod bomb_state;
 pub mod bomb_throwing;
 pub mod bomb_ticker;
 pub mod consts;
+pub mod explode_in_contact_manager;
 pub mod explosion_manager;
 pub mod tags;
 
@@ -27,6 +28,7 @@ impl Plugin for BombsPlugin {
             BombTickerPlugin,
             BombEventsPlugin,
             BombExplosionPreviewerPlugin,
+            ExplodeInContactManagerPlugin,
         ));
     }
 }

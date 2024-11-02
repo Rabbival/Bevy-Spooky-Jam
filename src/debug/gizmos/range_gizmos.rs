@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::color::palettes::css::{ORANGE, YELLOW};
+use bevy::color::palettes::css::{ORANGE, RED, YELLOW};
 
 pub struct RangeGizmosPlugin;
 
@@ -11,6 +11,7 @@ impl Plugin for RangeGizmosPlugin {
                 // draw_monster_hearing_ring_system,
                 draw_player_bomb_picking_range,
                 draw_bomb_explosion_radius,
+                draw_explode_on_contact_radius,
             ),
         );
     }
@@ -59,5 +60,17 @@ fn draw_bomb_explosion_radius(
                 Color::from(YELLOW),
             );
         }
+    }
+}
+
+fn draw_explode_on_contact_radius(
+    mut gizmos: Gizmos,
+    explode_in_contact: Query<&ExplodeInContact>,
+) {
+    for circle in explode_in_contact
+        .iter()
+        .map(|component| component.bounding_circle)
+    {
+        gizmos.circle_2d(circle.center, circle.radius(), Color::from(RED));
     }
 }
