@@ -65,12 +65,20 @@ fn draw_bomb_explosion_radius(
 
 fn draw_explode_on_contact_radius(
     mut gizmos: Gizmos,
-    explode_in_contact: Query<&ExplodeInContact>,
+    explode_in_contact: Query<(&ExplodeInContact, Entity)>,
+    player_query: Query<&Player>,
 ) {
-    for circle in explode_in_contact
+    'circle_iteration: for (circle, entity) in explode_in_contact
         .iter()
-        .map(|component| component.bounding_circle)
+        .map(|(component, entity)| (component.bounding_circle, entity))
     {
+        for player in &player_query {
+            if let Some(bomb_entity) = player.held_bomb {
+                if entity == bomb_entity {
+                    continue 'circle_iteration;
+                }
+            }
+        }
         gizmos.circle_2d(circle.center, circle.radius(), Color::from(RED));
     }
 }

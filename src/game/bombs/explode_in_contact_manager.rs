@@ -34,6 +34,8 @@ fn listen_for_scale_change_requests(
                 let mut delta = event_from_timer.value_delta.x;
                 if maybe_monster.is_some() {
                     delta *= MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING;
+                } else {
+                    delta *= BOMB_SIZE;
                 }
                 circle_container.bounding_circle.circle.radius += delta;
             }
