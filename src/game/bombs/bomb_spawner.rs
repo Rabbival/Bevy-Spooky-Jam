@@ -1,4 +1,4 @@
-use bevy::sprite::*;
+use bevy::{math::bounding::BoundingCircle, sprite::*};
 use bevy_light_2d::light::PointLight2d;
 use rand::Rng;
 
@@ -111,6 +111,12 @@ fn try_spawning_a_bomb(
             bomb_component,
             WorldBoundsWrapped,
             BombAffected::default(),
+            ExplodeInContact {
+                bounding_circle: BoundingCircle::new(
+                    place_to_spawn_in.truncate(),
+                    BOMB_SPAWN_SCALE * BOMB_SIZE,
+                ),
+            },
         ))
         .id();
     timer_fire_request_writer.send(TimerFireRequest {

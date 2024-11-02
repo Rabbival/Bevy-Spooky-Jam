@@ -1,5 +1,5 @@
 use crate::{prelude::*, read_no_field_variant};
-use bevy::color::palettes::css::BLUE;
+use bevy::{color::palettes::css::BLUE, math::bounding::BoundingCircle};
 use bevy_light_2d::light::PointLight2d;
 use rand::{rngs::ThreadRng, Rng};
 
@@ -133,6 +133,9 @@ fn try_spawning_a_monster(
         BombAffected::default(),
         AffectingTimerCalculators::default(),
         WorldBoundsWrapped,
+        ExplodeInContact {
+            bounding_circle: BoundingCircle::new(place_to_spawn_in.truncate(), MONSTER_FULL_SIZE),
+        },
     ));
     spawn_grace_period_timer(monster_entity.id(), event_writer, commands);
     Ok(())

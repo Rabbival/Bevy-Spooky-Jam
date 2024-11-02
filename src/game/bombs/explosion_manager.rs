@@ -25,7 +25,7 @@ fn explode_bombs_on_direct_collision(
     mut timer_fire_request_writer: EventWriter<TimerFireRequest>,
     mut time_multiplier_request_writer: EventWriter<SetTimeMultiplier>,
     mut bomb_exploded_event_writer: EventWriter<BombExploded>,
-    explode_in_contact_query: Query<(&Transform, Option<&Monster>, Option<&BombTag>, Entity)>,
+    explode_in_contact_query: Query<(&Transform, &ExplodeInContact, Entity)>,
     mut bomb_query: Query<(&GlobalTransform, &mut Bomb, Entity)>,
     mut transform_query: Query<
         (
@@ -43,19 +43,11 @@ fn explode_bombs_on_direct_collision(
 ) {
     for (bomb_transform, mut bomb, bomb_entity) in &mut bomb_query {
         if let BombState::PostHeld = bomb.state {
-            for (transform, maybe_monster, maybe_bomb, entity) in &explode_in_contact_query {
-                if bomb_entity == entity || (maybe_monster.is_none() && maybe_bomb.is_none()) {
+            for (transform, explode_in_contact, entity) in &explode_in_contact_query {
+                if bomb_entity == entity {
                     continue;
                 }
-                let radius_of_exploded = if let Some(monster) = maybe_monster {
-                    if let MonsterState::Chasing(_) = monster.state {
-                        MONSTER_COLLIDER_RADIUS + MONSTER_COLLIDER_RADIUS_FACTOR_WHEN_CHASING
-                    } else {
-                        MONSTER_COLLIDER_RADIUS
-                    }
-                } else {
-                    BOMB_SIZE
-                };
+                let radius_of_exploded = explode_in_contact.bounding_circle.radius();
                 if bomb_transform.translation().distance(transform.translation)
                     <= BOMB_SIZE + radius_of_exploded
                 {
