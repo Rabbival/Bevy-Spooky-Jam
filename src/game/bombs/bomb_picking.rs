@@ -206,7 +206,7 @@ fn update_bomb_text_color_after_pick(
                         if text_parent_entity.get() == bomb_entity {
                             if let Some(bomb_state_colors) = bomb.to_colors() {
                                 text.sections[0].style.color = bomb_state_colors.text;
-                                light.color = bomb_state_colors.text;
+                                light.color = bomb_state_colors.bomb;
                             }
                         }
                     }
