@@ -6,7 +6,9 @@ lazy_static! {
     pub static ref LOG_CATEGORYS_TO_PRINT: Vec<LogCategory> = vec![
         LogCategory::Crucial,
         #[cfg(debug_assertions)]
-        LogCategory::Bomb
+        LogCategory::Bomb,
+        // #[cfg(debug_assertions)]
+        // LogCategory::RequestNotFulfilled
     ];
     pub static ref LOG_CATEGORYS_TO_APPEND_TO_SESSION_LOG: Vec<LogCategory> =
         vec![LogCategory::Crucial];

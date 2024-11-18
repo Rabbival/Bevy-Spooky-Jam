@@ -10,13 +10,51 @@ impl Plugin for MonsterStateChangerPlugin {
                 (
                     update_monster_hearing_rings,
                     listen_for_monsters_done_spawning,
+                    listen_for_manual_danger_check_requests,
                 )
                     .chain()
                     .in_set(MonsterSystemSet::StateChanging)
             } else {
-                listen_for_monsters_done_spawning.in_set(MonsterSystemSet::StateChanging)
+                (
+                    listen_for_monsters_done_spawning,
+                    listen_for_manual_danger_check_requests,
+                )
+                    .chain()
+                    .in_set(MonsterSystemSet::StateChanging)
             },
         );
+    }
+}
+
+fn listen_for_manual_danger_check_requests(
+    mut done_timers_listener: EventReader<TimerDoneEvent>,
+    mut monster_state_set_writer: EventWriter<MonsterStateChanged>,
+    mut monsters_query: Query<(&mut Monster, Entity, &Transform)>,
+    bomb_query: Query<(&Transform, &Bomb, Entity)>,
+) {
+    for done_timer in done_timers_listener.read() {
+        if let TimerDoneEventType::CheckEnvironmentForDangers = done_timer.event_type {
+            for entity in done_timer.affected_entities.affected_entities_iter() {
+                if let Ok((mut monster, monster_entity, monster_transform)) =
+                    monsters_query.get_mut(entity)
+                {
+                    if let Some(most_danger_posing_bomb_location) =
+                        determine_most_danger_posing_bomb_location(
+                            monster_transform,
+                            &monster,
+                            &bomb_query,
+                        )
+                    {
+                        monster_state_set_writer.send(MonsterStateChanged {
+                            monster: monster_entity,
+                            next_state: MonsterState::Fleeing(most_danger_posing_bomb_location),
+                            previous_state: monster.state,
+                        });
+                        monster.state = MonsterState::Fleeing(most_danger_posing_bomb_location);
+                    }
+                }
+            }
+        }
     }
 }
 

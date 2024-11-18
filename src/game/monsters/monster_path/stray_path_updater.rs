@@ -141,8 +141,9 @@ fn replace_current_path_get_new_delta(
         target_location
     } else {
         target_location
-            + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS * 1.2
+            + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS * 1.8
     };
+    let timer_duration = location_to_move_towards.distance(monster_location) / speed;
     let new_path_calculator =
         spawn_monster_move_calculator(monster_location, location_to_move_towards, commands);
     let path_timer_parent_sequence = destroy_current_path_timer_and_calculator(
@@ -159,10 +160,22 @@ fn replace_current_path_get_new_delta(
                 value_calculator_entity: Some(new_path_calculator),
             }],
             vec![TimeMultiplierId::GameTimeMultiplier],
-            location_to_move_towards.distance(monster_location) / speed,
+            timer_duration,
             TimerDoneEventType::SetAnimationCycleByPathParentSequence,
         ),
         parent_sequence: Some(path_timer_parent_sequence),
+    });
+    timer_fire_request_writer.send(TimerFireRequest {
+        timer: EmittingTimer::new(
+            vec![TimerAffectedEntity {
+                affected_entity: monster_entity,
+                value_calculator_entity: None,
+            }],
+            vec![TimeMultiplierId::GameTimeMultiplier],
+            timer_duration,
+            TimerDoneEventType::SetAnimationCycleByPathParentSequence,
+        ),
+        parent_sequence: None,
     });
     Ok((location_to_move_towards - monster_location).truncate())
 }
