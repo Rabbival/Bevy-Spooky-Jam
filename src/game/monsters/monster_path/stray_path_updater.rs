@@ -141,7 +141,7 @@ fn replace_current_path_get_new_delta(
         target_location
     } else {
         target_location
-            + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS * 1.8
+            + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS * 1.65
     };
     let timer_duration = location_to_move_towards.distance(monster_location) / speed;
     let new_path_calculator =
@@ -173,7 +173,7 @@ fn replace_current_path_get_new_delta(
             }],
             vec![TimeMultiplierId::GameTimeMultiplier],
             timer_duration,
-            TimerDoneEventType::SetAnimationCycleByPathParentSequence,
+            TimerDoneEventType::UpdateState,
         ),
         parent_sequence: None,
     });
