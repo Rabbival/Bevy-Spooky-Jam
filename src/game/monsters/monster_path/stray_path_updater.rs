@@ -36,8 +36,8 @@ fn listen_for_state_set(
                             &mut affecting_timer_calculators,
                             &emitting_timer_parent_sequence_query,
                             &mut timer_fire_request_writer,
-                            &mut commands,
                             event.previous_state,
+                            &mut commands,
                         ) {
                             Ok(new_delta) => {
                                 new_path_event_writer.send(MonsterStrayPathUpdated {
@@ -94,8 +94,8 @@ fn update_stray_path(
                     &mut affecting_timer_calculators,
                     &emitting_timer_parent_sequence_query,
                     &mut timer_fire_request_writer,
-                    &mut commands,
                     monster.state,
+                    &mut commands,
                 ) {
                     Ok(new_delta) => {
                         new_path_event_writer.send(MonsterStrayPathUpdated {
@@ -123,15 +123,9 @@ fn replace_current_path_get_new_delta(
     affecting_timer_calculators: &mut AffectingTimerCalculators,
     emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
     timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
-    commands: &mut Commands,
     monster_previous_state: MonsterState,
+    commands: &mut Commands,
 ) -> Result<Vec2, MonsterError> {
-    let should_destroy_previous_calculator =
-        if let MonsterState::Chasing(_) | MonsterState::Fleeing(_) = monster_previous_state {
-            true
-        } else {
-            false
-        };
     let speed = if let MonsterState::Chasing(_) = monster.state {
         MONSTER_SPEED_WHEN_CHASING
     } else {
@@ -143,7 +137,37 @@ fn replace_current_path_get_new_delta(
         target_location
             + (monster_location - target_location).normalize() * BOMB_EXPLOSION_RADIUS * 1.65
     };
-    let timer_duration = location_to_move_towards.distance(monster_location) / speed;
+    let timer_duration = max(
+        location_to_move_towards.distance(monster_location) / speed,
+        A_MILLISECOND_IN_SECONDS,
+    );
+    fire_new_timer(
+        monster,
+        monster_location,
+        location_to_move_towards,
+        monster_entity,
+        timer_duration,
+        affecting_timer_calculators,
+        emitting_timer_parent_sequence_query,
+        timer_fire_request_writer,
+        monster.state == monster_previous_state,
+        commands,
+    )?;
+    Ok((location_to_move_towards - monster_location).truncate())
+}
+
+fn fire_new_timer(
+    monster: &Monster,
+    monster_location: Vec3,
+    location_to_move_towards: Vec3,
+    monster_entity: Entity,
+    timer_duration: f32,
+    affecting_timer_calculators: &mut AffectingTimerCalculators,
+    emitting_timer_parent_sequence_query: &Query<&TimerParentSequence, With<EmittingTimer>>,
+    timer_fire_request_writer: &mut EventWriter<TimerFireRequest>,
+    should_destroy_previous_calculator: bool,
+    commands: &mut Commands,
+) -> Result<(), MonsterError> {
     let new_path_calculator =
         spawn_monster_move_calculator(monster_location, location_to_move_towards, commands);
     let path_timer_parent_sequence = destroy_current_path_timer_and_calculator(
@@ -165,19 +189,21 @@ fn replace_current_path_get_new_delta(
         ),
         parent_sequence: Some(path_timer_parent_sequence),
     });
-    timer_fire_request_writer.send(TimerFireRequest {
-        timer: EmittingTimer::new(
-            vec![TimerAffectedEntity {
-                affected_entity: monster_entity,
-                value_calculator_entity: None,
-            }],
-            vec![TimeMultiplierId::GameTimeMultiplier],
-            timer_duration,
-            TimerDoneEventType::UpdateState,
-        ),
-        parent_sequence: None,
-    });
-    Ok((location_to_move_towards - monster_location).truncate())
+    if !should_destroy_previous_calculator {
+        timer_fire_request_writer.send(TimerFireRequest {
+            timer: EmittingTimer::new(
+                vec![TimerAffectedEntity {
+                    affected_entity: monster_entity,
+                    value_calculator_entity: None,
+                }],
+                vec![TimeMultiplierId::GameTimeMultiplier],
+                timer_duration,
+                TimerDoneEventType::UpdateState,
+            ),
+            parent_sequence: None,
+        });
+    }
+    Ok(())
 }
 
 fn destroy_current_path_timer_and_calculator(
