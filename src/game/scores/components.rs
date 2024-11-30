@@ -7,4 +7,4 @@ pub struct CurrentGameScore(pub u32);
 pub struct BestScoreSoFar(pub u32);
 
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq)]
-pub struct LongestSurvivedSoFar(pub f32);
+pub struct LastGameScore(pub u32);

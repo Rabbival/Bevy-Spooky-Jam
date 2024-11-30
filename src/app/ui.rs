@@ -13,10 +13,9 @@ impl Plugin for UiPlugin {
             app.add_systems(
                 Update,
                 (
-                    update_player_game_stopwatch,
                     update_player_scoring,
                     update_high_score,
-                    update_longest_run_text,
+                    update_last_game_score_text,
                 ),
             );
         }
@@ -62,49 +61,23 @@ fn spawn_ui(
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "00'00''00",
-                TextStyle {
-                    font: text_fonts_resource.kenny_blocks_handle.clone(),
-                    font_size: 60.0,
-                    color: text_color,
-                },
-            )
-            .with_justify(JustifyText::Left),
-            text_2d_bounds: Text2dBounds {
-                size: Vec2::new(WINDOW_SIZE_IN_PIXELS, TOP_UI_HEADER_BAR_HEIGHT),
-            },
-            transform: Transform::from_translation(
-                Vec2::new(
-                    0.0,
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
-                )
-                .extend(101.0),
-            ),
-            ..default()
-        },
-        PlayerGameStopwatchUi { ..default() },
-        DoNotDestroyOnRestart,
-    ));
-    commands.spawn((
-        Text2dBundle {
-            text: Text::from_section(
                 "Score: 0000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
-                    font_size: 30.0,
+                    font_size: 40.0,
                     color: text_color,
                 },
             )
             .with_justify(JustifyText::Left),
             text_2d_bounds: Text2dBounds {
                 size: Vec2::new(
-                    WINDOW_SIZE_IN_PIXELS / 3.0,
+                    WINDOW_SIZE_IN_PIXELS / 2.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
-                    (-WINDOW_SIZE_IN_PIXELS / 2.0) + 100.0,
+                    -WINDOW_SIZE_IN_PIXELS / 3.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 )
                 .extend(101.0),
@@ -117,23 +90,23 @@ fn spawn_ui(
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Hi  Score: 0000000",
+                "Best Score: 0000000",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
-                    font_size: 30.0,
+                    font_size: 40.0,
                     color: text_color,
                 },
             )
             .with_justify(JustifyText::Left),
             text_2d_bounds: Text2dBounds {
                 size: Vec2::new(
-                    WINDOW_SIZE_IN_PIXELS / 3.0,
+                    WINDOW_SIZE_IN_PIXELS / 2.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 ),
             },
             transform: Transform::from_translation(
                 Vec2::new(
-                    (WINDOW_SIZE_IN_PIXELS / 2.0) - 110.0,
+                    11.0 * WINDOW_SIZE_IN_PIXELS / 36.0,
                     (WINDOW_SIZE_IN_PIXELS / 2.0) + (TOP_UI_HEADER_BAR_HEIGHT / 2.0),
                 )
                 .extend(101.0),
@@ -143,28 +116,6 @@ fn spawn_ui(
         BestScoreTextUi,
         DoNotDestroyOnRestart,
     ));
-}
-
-fn update_player_game_stopwatch(
-    mut player_game_stopwatch_text_query: Query<(&mut Text, &mut PlayerGameStopwatchUi)>,
-    time: Res<Time>,
-) {
-    for (mut text, mut stopwatch) in &mut player_game_stopwatch_text_query {
-        stopwatch.timer.tick(time.delta());
-        text.sections[0].value = seconds_elapsed_to_pretty_string(stopwatch.timer.elapsed_secs());
-    }
-}
-
-fn update_longest_run_text(
-    changed_longest_run_query: Query<&LongestSurvivedSoFar, Changed<LongestSurvivedSoFar>>,
-    mut longest_run_text_query: Query<&mut Text, With<LongestSurvivedUi>>,
-) {
-    for longest_run_time in &changed_longest_run_query {
-        for mut longest_run_text in &mut longest_run_text_query {
-            longest_run_text.sections[0].value =
-                String::from("Longest: ") + &seconds_elapsed_to_pretty_string(longest_run_time.0);
-        }
-    }
 }
 
 fn update_player_scoring(
@@ -186,19 +137,19 @@ fn update_high_score(
     for best_score in &changed_best_score_query {
         for mut high_score_text in &mut high_score_text_query {
             high_score_text.sections[0].value =
-                format!("Hi  Score: {:0>7}", best_score.0.to_string());
+                format!("Best Score: {:0>7}", best_score.0.to_string());
         }
     }
 }
 
-fn seconds_elapsed_to_pretty_string(seconds_elapsed: f32) -> String {
-    let minutes = (seconds_elapsed / 60.0) as i32;
-    let seconds = (seconds_elapsed % 60.0) as i32;
-    let milliseconds = (seconds_elapsed.fract() * 100.0) as i32;
-    format!(
-        "{:0>2}'{:0>2}''{:0>2}",
-        minutes.to_string(),
-        seconds.to_string(),
-        milliseconds.to_string()
-    )
+fn update_last_game_score_text(
+    last_game_score_query: Query<&LastGameScore, Changed<LastGameScore>>,
+    mut last_run_score_text_query: Query<&mut Text, With<LastRunScoreTextUi>>,
+) {
+    for last_game_score in &last_game_score_query {
+        for mut last_run_score_text in &mut last_run_score_text_query {
+            last_run_score_text.sections[0].value =
+                format!("Score: {:0>7}", last_game_score.0.to_string());
+        }
+    }
 }

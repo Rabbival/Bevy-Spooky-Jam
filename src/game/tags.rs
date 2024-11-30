@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-use bevy::time::Stopwatch;
-
 #[derive(Component, Debug)]
 pub struct WorldBoundsWrapped;
 
@@ -9,18 +7,13 @@ pub struct WorldBoundsWrapped;
 pub struct InWorldButNotBoundWrapped;
 
 #[derive(Component, Default)]
-pub struct PlayerGameStopwatchUi {
-    pub timer: Stopwatch,
-}
-
-#[derive(Component, Default)]
 pub struct PlayerScoreTextUi;
 
 #[derive(Component, Default)]
-pub struct BestScoreTextUi;
+pub struct LastRunScoreTextUi;
 
 #[derive(Component, Default)]
-pub struct LongestSurvivedUi;
+pub struct BestScoreTextUi;
 
 #[derive(Component)]
 pub struct AgainScreen;

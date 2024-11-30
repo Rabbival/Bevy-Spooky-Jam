@@ -44,7 +44,7 @@ fn spawn_invisible_again_screen(
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Hi  Score: 0000000",
+                "Score: {:0>7}",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 80.0,
@@ -63,14 +63,14 @@ fn spawn_invisible_again_screen(
             ..default()
         },
         AffectingTimerCalculators::default(),
-        BestScoreTextUi,
+        LastRunScoreTextUi,
         DoNotDestroyOnRestart,
         AgainScreen,
     ));
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Longest: ",
+                "Best Score: {:0>7}",
                 TextStyle {
                     font: text_fonts_resource.kenny_high_square_handle.clone(),
                     font_size: 80.0,
@@ -89,7 +89,7 @@ fn spawn_invisible_again_screen(
             ..default()
         },
         AffectingTimerCalculators::default(),
-        LongestSurvivedUi,
+        BestScoreTextUi,
         DoNotDestroyOnRestart,
         AgainScreen,
     ));
