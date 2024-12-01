@@ -10,6 +10,7 @@ impl Plugin for UiInputMapPlugin {
         app.add_plugins(InputManagerPlugin::<UiAction>::default())
             .insert_resource::<UiInputMap>(UiInputMap(InputMap::new([
                 (UiAction::CloseGame, KeyCode::Escape),
+                (UiAction::StartGame, KeyCode::Enter),
                 #[cfg(debug_assertions)]
                 (UiAction::DebugKey, KeyCode::KeyK),
             ])));

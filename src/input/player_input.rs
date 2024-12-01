@@ -17,9 +17,14 @@ impl Plugin for PlayerInputHandlerPlugin {
 }
 
 fn listen_for_player_pressed_controls(
+    current_app_state: Res<State<AppState>>,
     mut player_request_writer: EventWriter<PlayerRequest>,
     player_query: Query<&ActionState<PlayerAction>, With<Player>>,
 ) {
+    if let AppState::Menu = current_app_state.get() {
+        return;
+    }
+
     for action_map in &player_query {
         if let Some(normalized_movement_vector) = determine_move_direction(action_map) {
             player_request_writer.send(PlayerRequest::Move(normalized_movement_vector));

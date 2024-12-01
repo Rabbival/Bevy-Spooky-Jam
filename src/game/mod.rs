@@ -4,6 +4,7 @@ pub mod bombs;
 pub mod bounds_wrapped_logic;
 pub mod consts;
 pub mod event_channels;
+pub mod floor_spawner;
 pub mod game_event_handler;
 pub mod monsters;
 pub mod player_management;
@@ -25,6 +26,7 @@ impl Plugin for GamePlugin {
             GameEventHandlerPlugin,
             RespawnerPlugin,
             BoundsWrappedLogicPlugin,
+            FloorSpawningPlugin,
         ));
     }
 }

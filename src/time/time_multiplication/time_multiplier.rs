@@ -4,6 +4,7 @@ use crate::prelude::*;
 pub struct TimeMultiplier {
     id: TimeMultiplierId,
     value: f32,
+    maybe_overriding_value: Option<f32>,
     changeable: bool,
 }
 
@@ -13,6 +14,7 @@ impl TimeMultiplier {
         Self {
             id,
             value: clamped_value,
+            maybe_overriding_value: None,
             changeable,
         }
     }
@@ -22,7 +24,11 @@ impl TimeMultiplier {
     }
 
     pub fn value(&self) -> f32 {
-        self.value
+        if let Some(overriding_value) = self.maybe_overriding_value {
+            overriding_value
+        } else {
+            self.value
+        }
     }
 
     pub fn changeable(&self) -> bool {
@@ -38,5 +44,13 @@ impl TimeMultiplier {
                 vec![LogCategory::RequestNotFulfilled, LogCategory::Time],
             )
         }
+    }
+
+    pub fn set_overriding_value(&mut self, new_value: Option<f32>) {
+        self.maybe_overriding_value = new_value;
+    }
+
+    pub fn set_value(&mut self, new_value: f32) {
+        self.value = new_value;
     }
 }

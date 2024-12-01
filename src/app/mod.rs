@@ -5,13 +5,15 @@ use bevy_light_2d::plugin::Light2dPlugin;
 use crate::prelude::*;
 use std::env;
 
+pub mod app_events;
+pub mod app_state;
+pub mod app_state_manager;
 pub mod assets_loader;
 pub mod consts;
 pub mod generic_plugins;
 pub mod main_camera;
 pub mod screen_setup;
 pub mod tags;
-pub mod ui;
 
 #[bevy_main]
 pub fn main() {
@@ -36,6 +38,8 @@ pub fn main() {
             LateDespawnerPlugin,
             UiPlugin,
             GameAudioPlugin,
+            AppStateManagerPlugin,
+            AppEventsPlugin,
             #[cfg(debug_assertions)]
             DebugPlugin,
         ))
