@@ -149,7 +149,9 @@ pub mod prelude {
         TimePlugin,
     };
     pub use crate::trait_unions::*;
-    pub use crate::ui::{consts::*, ui_spawner::*, ui_updater::*, UiPlugin};
+    pub use crate::ui::{
+        consts::*, instructions_text_manager::*, tags::*, ui_spawner::*, ui_updater::*, UiPlugin,
+    };
     pub use bevy::{prelude::*, utils::HashMap};
     pub use leafwing_input_manager::prelude::*;
     pub use std::marker::PhantomData;

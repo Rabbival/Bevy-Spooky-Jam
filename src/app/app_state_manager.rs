@@ -7,26 +7,29 @@ impl Plugin for AppStateManagerPlugin {
             .add_systems(
                 Update,
                 (
-                    listen_to_app_state_toggle_requests,
+                    listen_to_pause_toggle_requests,
                     listen_to_bomb_throwing_requests.run_if(in_state(AppState::Menu)),
                 )
                     .in_set(InputSystemSet::Handling),
             )
             .add_systems(OnEnter(AppState::Menu), pause_spawners)
-            .add_systems(OnExit(AppState::Menu), unpause_spawners);
+            .add_systems(OnExit(AppState::Menu), unpause_spawners)
+            .add_systems(OnEnter(AppState::Paused), pause_game_timers)
+            .add_systems(OnExit(AppState::Paused), unpause_game_timers);
     }
 }
 
-fn listen_to_app_state_toggle_requests(
-    mut app_state_set_request_reader: EventReader<AppStateToggleRequest>,
+fn listen_to_pause_toggle_requests(
+    mut app_state_set_request_reader: EventReader<PauseToggleRequest>,
     mut game_event_writer: EventWriter<GameEvent>,
     current_app_state: Res<State<AppState>>,
     mut next_state: ResMut<NextState<AppState>>,
 ) {
     for _set_request in app_state_set_request_reader.read() {
         let set_to = match current_app_state.get() {
-            AppState::Game => AppState::Menu,
-            AppState::Menu => AppState::Game,
+            AppState::Game => AppState::Paused,
+            AppState::Menu => AppState::Menu,
+            AppState::Paused => AppState::Game,
         };
         set_app_state(&mut game_event_writer, set_to, &mut next_state);
     }
@@ -53,7 +56,6 @@ fn set_app_state(
     if let AppState::Menu = set_to {
         game_event_writer.send(GameEvent::RestartGame);
     }
-    info!("Changed app state to: {:?}", set_to);
 }
 
 fn pause_spawners(mut event_writer: EventWriter<SetTimeMultiplierOverridingValue>) {
@@ -66,6 +68,20 @@ fn pause_spawners(mut event_writer: EventWriter<SetTimeMultiplierOverridingValue
 fn unpause_spawners(mut event_writer: EventWriter<SetTimeMultiplierOverridingValue>) {
     event_writer.send(SetTimeMultiplierOverridingValue {
         multiplier_id: TimeMultiplierId::EntitySpawnersTimeMultiplier,
+        new_overriding_value: None,
+    });
+}
+
+fn pause_game_timers(mut event_writer: EventWriter<SetTimeMultiplierOverridingValue>) {
+    event_writer.send(SetTimeMultiplierOverridingValue {
+        multiplier_id: TimeMultiplierId::GameTimeMultiplier,
+        new_overriding_value: Some(0.0),
+    });
+}
+
+fn unpause_game_timers(mut event_writer: EventWriter<SetTimeMultiplierOverridingValue>) {
+    event_writer.send(SetTimeMultiplierOverridingValue {
+        multiplier_id: TimeMultiplierId::GameTimeMultiplier,
         new_overriding_value: None,
     });
 }

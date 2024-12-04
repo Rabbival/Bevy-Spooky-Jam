@@ -24,7 +24,7 @@ fn spawn_ui_input_listener(ui_input_map: Res<UiInputMap>, mut commands: Commands
 
 fn listen_for_ui_just_pressed_controls(
     mut game_event_writer: EventWriter<GameEvent>,
-    mut app_state_set_writer: EventWriter<AppStateToggleRequest>,
+    mut app_state_set_writer: EventWriter<PauseToggleRequest>,
     mut player_query: Query<&ActionState<UiAction>>,
 ) {
     for action_map in &mut player_query {
@@ -35,8 +35,8 @@ fn listen_for_ui_just_pressed_controls(
                     game_event_writer.send(GameEvent::DebugKeyPressed);
                 }
                 #[cfg(debug_assertions)]
-                UiAction::ToggleMenu => {
-                    app_state_set_writer.send(AppStateToggleRequest);
+                UiAction::PauseGame => {
+                    app_state_set_writer.send(PauseToggleRequest);
                 }
             }
         }
