@@ -24,11 +24,12 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
     commands.spawn((
         AudioBundle {
             source: music_assets_resource.calm_layer_handle.clone(),
-            settings: PlaybackSettings::LOOP.with_volume(Volume::new(1.0)),
+            settings: PlaybackSettings::LOOP.with_volume(Volume::ZERO),
         },
         MusicLayer::Base,
-        DoNotDestroyOnRestart,
         AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
+        DoNotDestroyOnRestart,
+        AffectingTimerCalculators::default(),
     ));
     commands.spawn((
         AudioBundle {
