@@ -30,12 +30,12 @@ fn listen_for_ui_just_pressed_controls(
     for action_map in &mut player_query {
         for action in action_map.get_just_pressed() {
             match action {
-                #[cfg(debug_assertions)]
                 UiAction::DebugKey => {
+                    #[cfg(debug_assertions)]
                     game_event_writer.send(GameEvent::DebugKeyPressed);
                 }
-                #[cfg(debug_assertions)]
                 UiAction::PauseGame => {
+                    #[cfg(debug_assertions)]
                     app_state_set_writer.send(PauseToggleRequest);
                 }
             }
