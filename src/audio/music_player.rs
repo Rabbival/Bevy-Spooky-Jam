@@ -6,15 +6,17 @@ pub struct MusicPlayerPlugin;
 
 impl Plugin for MusicPlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_and_play_music).add_systems(
-            Update,
-            (
-                change_layers_by_danger,
-                listen_to_music_volume_update_requests,
-                check_dangers_after_despawns,
-                calm_down_music_when_game_over.in_set(GameRestartSystemSet::Spawning),
-            ),
-        );
+        app.add_systems(Startup, load_and_play_music)
+            .add_systems(
+                Update,
+                (
+                    change_layers_by_danger,
+                    listen_to_music_volume_update_requests,
+                    check_dangers_after_despawns,
+                    calm_down_music_when_game_over.in_set(GameRestartSystemSet::Spawning),
+                ),
+            )
+            .add_systems(OnExit(AppState::Menu), fade_base_layer_in);
     }
 }
 
@@ -24,7 +26,7 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
             source: music_assets_resource.calm_layer_handle.clone(),
             settings: PlaybackSettings::LOOP.with_volume(Volume::new(1.0)),
         },
-        MusicLayer(1),
+        MusicLayer::Base,
         DoNotDestroyOnRestart,
         AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
     ));
@@ -33,7 +35,7 @@ fn load_and_play_music(music_assets_resource: Res<MusicAssets>, mut commands: Co
             source: music_assets_resource.intense_layer_handle.clone(),
             settings: PlaybackSettings::LOOP.with_volume(Volume::ZERO),
         },
-        MusicLayer(2),
+        MusicLayer::Chase,
         AffectingTimeMultiplier(TimeMultiplierId::GameTimeMultiplier),
         DoNotDestroyOnRestart,
         AffectingTimerCalculators::default(),
@@ -50,7 +52,7 @@ fn change_layers_by_danger(
     for set_request in monster_state_set_listener.read() {
         if let MonsterState::Chasing(_) = set_request.next_state {
             for (audio_entity, music_layer, audio) in &music_layers_query {
-                if music_layer.0 == 2 {
+                if let MusicLayer::Chase = music_layer {
                     fire_music_set_timer(
                         audio.volume(),
                         1.0,
@@ -98,7 +100,7 @@ fn calm_down_music_when_game_over(
 ) {
     for _game_over in read_no_field_variant!(game_event_listener, GameEvent::RestartGame) {
         for (audio_entity, music_layer, audio) in &music_layers_query {
-            if music_layer.0 == 2 {
+            if let MusicLayer::Chase = music_layer {
                 fire_music_set_timer(
                     audio.volume(),
                     0.0,
@@ -123,7 +125,7 @@ fn calm_down_music_if_there_are_no_chasing_monsters(
         }
     }
     for (audio_entity, music_layer, audio) in music_layers_query {
-        if music_layer.0 == 2 {
+        if let MusicLayer::Chase = music_layer {
             fire_music_set_timer(
                 audio.volume(),
                 0.0,
@@ -131,6 +133,26 @@ fn calm_down_music_if_there_are_no_chasing_monsters(
                 fire_request_writer,
                 commands,
             );
+        }
+    }
+}
+
+fn fade_base_layer_in(
+    mut fire_request_writer: EventWriter<TimerFireRequest>,
+    music_layers_query: Query<(Entity, &MusicLayer, &AudioSink)>,
+    mut commands: Commands,
+) {
+    for (audio_entity, music_layer, audio) in &music_layers_query {
+        if let MusicLayer::Base = music_layer {
+            if audio.volume() != 1.0 {
+                fire_music_set_timer(
+                    audio.volume(),
+                    1.0,
+                    audio_entity,
+                    &mut fire_request_writer,
+                    &mut commands,
+                );
+            }
         }
     }
 }

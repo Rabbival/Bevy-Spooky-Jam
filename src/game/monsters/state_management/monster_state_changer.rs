@@ -13,6 +13,7 @@ impl Plugin for MonsterStateChangerPlugin {
                     listen_for_manual_danger_check_requests,
                 )
                     .chain()
+                    .run_if(in_state(AppState::Game))
                     .in_set(MonsterSystemSet::StateChanging)
             } else {
                 (
@@ -20,9 +21,11 @@ impl Plugin for MonsterStateChangerPlugin {
                     listen_for_manual_danger_check_requests,
                 )
                     .chain()
+                    .run_if(in_state(AppState::Game))
                     .in_set(MonsterSystemSet::StateChanging)
             },
-        );
+        )
+        .add_systems(OnExit(AppState::Menu), declare_all_monsters_done_spawning);
     }
 }
 
@@ -68,20 +71,49 @@ fn listen_for_monsters_done_spawning(
         if let TimerDoneEventType::DeclareSpawnDone = done_timer.event_type {
             for entity in done_timer.affected_entities.affected_entities_iter() {
                 if let Ok((mut monster, monster_entity)) = monsters_query.get_mut(entity) {
-                    monster_state_set_writer.send(MonsterStateChanged {
-                        monster: entity,
-                        next_state: MonsterState::default(),
-                        previous_state: monster.state,
-                    });
-                    monster.state = MonsterState::default();
-                    if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
-                        commands
-                            .entity(monster_entity)
-                            .insert(PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS));
-                    }
+                    declare_monster_spawning_done(
+                        &mut monster_state_set_writer,
+                        monster_entity,
+                        &mut monster,
+                        &mut commands,
+                    );
                 }
             }
         }
+    }
+}
+
+fn declare_all_monsters_done_spawning(
+    mut monster_state_set_writer: EventWriter<MonsterStateChanged>,
+    mut monsters_query: Query<(&mut Monster, Entity)>,
+    mut commands: Commands,
+) {
+    for (mut monster, monster_entity) in &mut monsters_query {
+        declare_monster_spawning_done(
+            &mut monster_state_set_writer,
+            monster_entity,
+            &mut monster,
+            &mut commands,
+        );
+    }
+}
+
+fn declare_monster_spawning_done(
+    monster_state_set_writer: &mut EventWriter<MonsterStateChanged>,
+    monster_entity: Entity,
+    monster: &mut Monster,
+    commands: &mut Commands,
+) {
+    monster_state_set_writer.send(MonsterStateChanged {
+        monster: monster_entity,
+        next_state: MonsterState::default(),
+        previous_state: monster.state,
+    });
+    monster.state = MonsterState::default();
+    if FunctionalityOverride::DontCheckMonsterColliders.disabled() {
+        commands
+            .entity(monster_entity)
+            .insert(PlayerMonsterCollider::new(MONSTER_COLLIDER_RADIUS));
     }
 }
 

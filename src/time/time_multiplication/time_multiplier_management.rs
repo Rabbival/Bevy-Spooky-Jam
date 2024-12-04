@@ -12,6 +12,7 @@ impl Plugin for TimeMultiplierPlugin {
                 (
                     listen_for_time_multiplier_update_requests,
                     listen_for_time_multiplier_set_requests,
+                    listen_for_time_multiplier_overriding_value_set_requests,
                 )
                     .in_set(TickingSystemSet::PostTicking),
             );
@@ -121,4 +122,19 @@ fn spawn_calculator_and_fire_multiplier_changer(
         ),
         parent_sequence: None,
     });
+}
+
+fn listen_for_time_multiplier_overriding_value_set_requests(
+    mut time_multiplier_set_request_reader: EventReader<SetTimeMultiplierOverridingValue>,
+    mut time_multipliers: Query<&mut TimeMultiplier>,
+) {
+    for request in time_multiplier_set_request_reader.read() {
+        for mut time_multiplier in &mut time_multipliers {
+            if time_multiplier.id() == request.multiplier_id {
+                if time_multiplier.changeable() {
+                    time_multiplier.set_overriding_value(request.new_overriding_value);
+                }
+            }
+        }
+    }
 }

@@ -9,8 +9,7 @@ impl Plugin for UiInputMapPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<UiAction>::default())
             .insert_resource::<UiInputMap>(UiInputMap(InputMap::new([
-                (UiAction::CloseGame, KeyCode::Escape),
-                (UiAction::StartGame, KeyCode::Enter),
+                (UiAction::ToggleMenu, KeyCode::Escape),
                 #[cfg(debug_assertions)]
                 (UiAction::DebugKey, KeyCode::KeyK),
             ])));

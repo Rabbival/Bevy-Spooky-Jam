@@ -1,7 +1,10 @@
 use crate::prelude::*;
 
 #[derive(Debug, Component)]
-pub struct MusicLayer(pub u8);
+pub enum MusicLayer {
+    Base,
+    Chase,
+}
 
 #[derive(Debug, Component)]
 pub struct AffectingTimeMultiplier(pub TimeMultiplierId);

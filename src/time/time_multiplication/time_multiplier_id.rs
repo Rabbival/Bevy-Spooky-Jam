@@ -8,6 +8,7 @@ pub enum TimeMultiplierId {
     RealTime,
     GameTimeMultiplier,
     UiTimeMultiplier,
+    EntitySpawnersTimeMultiplier,
 }
 
 impl TimeMultiplierId {

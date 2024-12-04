@@ -1,3 +1,5 @@
+use bevy::math::Vec3;
+
 pub const BOMB_SPAWNING_ATTEMPTS: usize = 42;
 pub const BOMB_SAFE_RADIUS: f32 = 20.0;
 pub const Z_LAYER_BOMB: f32 = 8.0;
@@ -29,3 +31,5 @@ pub const MAX_BOMB_COUNT: usize = 20;
 pub const BOMB_NORMAL_LIGHT_INTENSITY: f32 = 1.0;
 pub const BOMB_ABOUT_TO_EXPLODE_LIGHT_INTENSITY: f32 = 6.0;
 pub const EXPLOSION_PREVIEW_LIGHT_INTENSITY: f32 = 10.0;
+
+pub const BOMB_SPAWN_LOCATION_ON_MENU: Vec3 = Vec3::new(30.0, 30.0, Z_LAYER_BOMB);

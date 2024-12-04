@@ -43,7 +43,10 @@ fn spawn_bomb_spawner_timer_sequence(
         &mut timer_fire_event_writer,
         &vec![EmittingTimer::new(
             vec![],
-            vec![TimeMultiplierId::GameTimeMultiplier],
+            vec![
+                TimeMultiplierId::GameTimeMultiplier,
+                TimeMultiplierId::EntitySpawnersTimeMultiplier,
+            ],
             BOMB_SPAWN_INITIAL_INTERVAL,
             TimerDoneEventType::Spawn(SpawnRequestType::Bomb),
         )],
