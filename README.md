@@ -24,5 +24,4 @@ Good luck!
 
 #### Some Cool Things We Did
 * The game is very modular, meaning that it can be turned into a very different-feeling game in about a minute of coding
-  * This is also due to the fact we use decoupled tweening with my timer system: https://github.com/Rabbival/Playground
 * Enemies are smart but can still be overcome- they'd run from the closest-to-explosion bomb they hear but would risk their life and ignore all bombs if they hear the player
