@@ -1,6 +1,8 @@
 Soul Bomb Monster Hunt
 ======================
 
+![spooky_jam_showcase](https://github.com/user-attachments/assets/2a417339-9044-4574-a45f-8705ffe5fe75)
+
 Soul Bomb Monster Hunt Bevy Spooky Jam entry.
 
 A link to the game's itch page: https://rabbival.itch.io/soul-bomb-monster-hunt-bevy-spooky-jam-entry
